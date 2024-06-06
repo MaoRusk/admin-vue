@@ -11,6 +11,171 @@ export default [
       text: 'NEW',
     },
   },
+
+  {
+    component: 'CNavTitle',
+    name: 'Configuración',
+  },
+  {
+    component: 'CNavGroup',
+    name: 'Seguridad',
+    to: '/seguridad',
+    icon: 'cil-lock-locked',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Perfiles',
+        to: '/seguridad/perfiles',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Usuarios',
+        to: '/seguridad/usuarios',
+      },
+    ]
+  },
+
+  // ? OPERACIÓN
+  {
+    component: 'CNavTitle',
+    name: 'Operación',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Empresas',
+    to: '/operacion/empresas',
+    icon: 'cil-list',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Pólizas de Acceso',
+    to: '/operacion/polizas',
+    icon: 'cil-list',
+  },
+
+
+    // ? CONTENIDO WEB
+    {
+      component: 'CNavTitle',
+      name: 'Contenido Web',
+    },
+    {
+      component: 'CNavGroup',
+      name: 'Marketing',
+      to: '/marketing',
+      icon: 'cil-shareBoxed',
+      items: [
+        {
+          component: 'CNavGroup',
+          name: 'Páginas',
+          to: '/marketing/paginas',
+          icon: 'cil-code',
+          items: [
+            {
+              component: 'CNavItem',
+              name: 'Categorías',
+              to: '/marketing/paginas/categorias',
+            },
+            {
+              component: 'CNavItem',
+              name: 'Páginas',
+              to: '/marketing/paginas/paginas',
+            },
+            {
+              component: 'CNavItem',
+              name: 'Imágenes',
+              to: '/marketing/paginas/imagenes',
+            },
+          ],
+        },
+        {
+          component: 'CNavItem',
+          name: 'Banners',
+          to: '/marketing/banners',
+          icon: 'cil-check-circle',
+        },
+        {
+          component: 'CNavItem',
+          name: 'Fotogalerías',
+          to: '/marketing/fotogalerias',
+          icon: 'cil-check-circle',
+        },
+        {
+          component: 'CNavItem',
+          name: 'Configuración',
+          to: '/marketing/configuracion',
+          icon: 'cil-options',
+        },
+        {
+          component: 'CNavItem',
+          name: 'Boletín',
+          to: '/marketing/boletin',
+          icon: 'cil-check-circle',
+        },
+        {
+          component: 'CNavItem',
+          name: 'Carga de Documentos',
+          to: '/marketing/cargadedocumentos',
+          icon: 'cil-file',
+        },
+        {
+          component: 'CNavItem',
+          name: 'Registros Newsletter',
+          to: '/marketing/registrosnewsletter',
+          icon: 'cil-pencil',
+        },
+      ],
+    },
+
+
+    // ? ESTADÍSTICAS
+    {
+    component: 'CNavTitle',
+    name: 'Estadísticas',
+  },
+  {component: 'CNavGroup',
+    name: 'Graficas',
+    to: '/Graficas',
+    icon: 'cil-chartPie',
+    items: [
+  {
+    component: 'CNavItem',
+    name: 'Visitas Por Mes',
+    to: '/estadisticas/visitaspormes',
+    icon: 'cil-chart-pie',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Visitas Por Usuario',
+    to: '/estadisticas/visitasporusuario',
+    icon: 'cil-chart-pie',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Clicks Por Ciudad Y País',
+    to: '/estadisticas/clicksporciudadypais',
+    icon: 'cil-chart-pie',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Visitas Por Empresa',
+    to: '/estadisticas/visitasporempresa',
+    icon: 'cil-chart-pie',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Banners Visitas Por Mes',
+    to: '/estadisticas/bannersvisitaspormes',
+    icon: 'cil-chart-pie',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Visitas General Por Mes',
+    to: '/estadisticas/visitasgeneralpormes',
+    icon: 'cil-chart-pie',
+  },]},
+
+
   {
     component: 'CNavTitle',
     name: () => i18next.t('theme'),
