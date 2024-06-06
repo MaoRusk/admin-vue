@@ -1,3 +1,4 @@
+/*
 export const logo = [
   '618 116',
   `<g fill="none" fill-rule="nonzero">
@@ -19,4 +20,13 @@ export const logo = [
     </g>
   </g>
 `,
+]
+*/
+
+import logoPath from '../images/market-logo.jpg'; 
+export const logo = [
+  '300 116',
+  `
+    <image href="${logoPath}" width="300" height="116" />,
+  `,
 ]
