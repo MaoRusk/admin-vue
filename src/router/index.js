@@ -4,6 +4,8 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import i18next from '@/i18n';
 import DefaultLayout from '@/layouts/DefaultLayout'
 
+import EmpresaDetalle from '../views/operacion/empresas/EmpresaDetalle.vue';
+import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue';
 const routes = [
   {
     path: '/',
@@ -22,6 +24,36 @@ const routes = [
             /* webpackChunkName: "dashboard" */ '@/views/dashboard/Dashboard.vue'
           ),
       },
+      {
+        path: '/operacion',
+        name: 'Theme',
+        redirect: '/operacion/polizas',
+      },
+      {
+        path: '/operacion/polizas',
+        name: 'Polizas',
+        component: () => import('@/views/operacion/polizas/Polizas.vue'),
+      },
+      {
+        path: '/operacion/poliza/:id', // Nueva ruta para PolizaDetalle
+        name: 'PolizaDetalle',
+        component: PolizaDetalle,
+        props: true, // Permitir pasar parámetros como props
+      },
+      {
+        path: '/operacion/empresas',
+        name: 'Empresas',
+        component: () => import('@/views/operacion/empresas/Empresas.vue'),
+      },
+      {
+        path: '/operacion/empresa/:id', // Nueva ruta para EmpresaDetalle
+        name: 'EmpresaDetalle',
+        component: EmpresaDetalle,
+        props: true, // Permitir pasar parámetros como props
+      },
+
+
+
       {
         path: '/theme',
         name: () => i18next.t('theme'),
