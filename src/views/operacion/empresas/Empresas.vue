@@ -15,3 +15,4 @@ import SmartTableCompanies from './EmpresasTable.vue'
     </CCol>
   </CRow>
 </template>
+  
