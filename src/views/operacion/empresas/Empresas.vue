@@ -1,18 +1,18 @@
+<script setup>
+import SmartTableCompanies from './EmpresasTable.vue'
+// import SmartTableDownloadableExample from './SmartTableDownloadableExample.vue'
+// import SmartTableSelectableExample from './SmartTableSelectableExample.vue'
+</script>
+
 <template>
-    <div>
-      <h1>Hello World</h1>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'HelloWorld',
-  };
-  </script>
-  
-  <style scoped>
-  h1 {
-    color: blue;
-  }
-  </style>
+  <CRow>
+    <CCol :xs="12">
+      <CCard class="mb-4">
+        <CCardBody>
+          <SmartTableCompanies />
+        </CCardBody>
+      </CCard>
+    </CCol>
+  </CRow>
+</template>
   
