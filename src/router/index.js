@@ -23,6 +23,17 @@ const routes = [
           ),
       },
       {
+        path: '/operacion/empresas',
+        name: 'Empresas',
+        component: () => import('@/views/operacion/empresas/Empresas.vue'),
+      },
+      {
+        path: '/operacion/empresa/:id',
+        name: 'Empresa Detalle',
+        component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
+        props: true
+      },
+      {
         path: '/theme',
         name: () => i18next.t('theme'),
         redirect: '/theme/typography',
