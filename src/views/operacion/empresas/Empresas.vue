@@ -7,11 +7,7 @@ import SmartTableCompanies from './EmpresasTable.vue'
 <template>
   <CRow>
     <CCol :xs="12">
-      <CCard class="mb-4">
-        <CCardBody>
-          <SmartTableCompanies />
-        </CCardBody>
-      </CCard>
+      <SmartTableCompanies />
     </CCol>
   </CRow>
 </template>
