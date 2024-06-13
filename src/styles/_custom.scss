@@ -1,1 +1,17 @@
 // Here you can add other styles
+.dark-theme .sidebar, [data-coreui-theme=dark] .sidebar {
+    background-color: #15598a !important;
+    background-image: none !important;
+}
+
+.sidebar-header{
+    background-color: white !important;
+}
+.sidebar-toggler {
+    --cui-sidebar-toggler-color: rgb(21 89 138);
+    --cui-sidebar-toggler-hover-color: rgb(21 89 138 / 65%);
+    --cui-sidebar-toggler-focus-color: rgb(0 148 255);
+}
+.simplebar-content{
+background: #15598a;
+}
