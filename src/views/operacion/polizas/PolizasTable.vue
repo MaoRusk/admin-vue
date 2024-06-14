@@ -1,60 +1,59 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+  import { ref, onMounted, computed } from 'vue';
+  import axios from 'axios';
+  import { useRouter } from 'vue-router';
+  import { cilUserPlus } from '@coreui/icons'
 
-const users = ref([]);
-const router = useRouter();
+  const users = ref([]);
+  const router = useRouter();
 
-const columns = [
-  { key: 'name', _style: { width: '25%' } },
-  { key: 'lastName', _style: { width: '15%' } },
-  { key: 'userName', _style: { width: '15%' } },
-  { key: 'status', _style: { width: '15%' } },
-  { key: 'actions', _style: { width: '15%' } }
-];
+  const columns = [
+    { key: 'name', _style: { width: '25%' } },
+    { key: 'lastName', _style: { width: '15%' } },
+    { key: 'userName', _style: { width: '15%' } },
+    { key: 'status', _style: { width: '15%' } },
+    { key: 'actions', _style: { width: '15%' } }
+  ];
 
-onMounted(() => {
-  fetchUsers();
-});
+  onMounted(() => {
+    fetchUsers();
+  });
 
-const fetchUsers = async () => {
-  try {
-    const response = await axios.get('http://localhost:8000/api/user');
-    users.value = response.data;
-  } catch (error) {
-    console.error('Hubo un error obteniendo las polizas:', error);
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/user');
+      users.value = response.data;
+    } catch (error) {
+      console.error('Hubo un error obteniendo las polizas:', error);
+    }
+  };
+
+  const getBadge = (status) => {
+    switch (status) {
+      case 'Activo': return 'success';
+      case 'Inactivo': return 'danger';
+      default: return 'secondary';
+    }
+  };
+
+  const showUserDetails = (item) => {
+    router.push({
+      name: 'PolizaDetalle',
+      params: { id: Number(item.id) },
+    })
   }
-};
-
-const getBadge = (status) => {
-  switch (status) {
-    case 'Activo': return 'success';
-    case 'Inactivo': return 'danger';
-    default: return 'secondary';
+  const addUserFunction = () => {
+    router.push({
+      name: 'PolizaDetalle',
+      params: { id: Number(0) },
+    })
   }
-};
-
-const showUserDetails = (item) => {
-  router.push({
-    name: 'PolizaDetalle',
-    params: { id: item.id },
-  })
-}
-
-const colorStyle = (color) => ({
-  backgroundColor: color,
-  width: '100%',
-  height: '100%',
-  display: 'block',
-  borderRadius: '4px'
-});
 </script>
 
 <template>
   <!-- Botón para agregar usuario -->
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="primary" @click="addUserFunction(0)">
+    <CButton color="success" @click="addUserFunction()">
       <CIcon :content="cilUserPlus" size="sm" />
       Add User
     </CButton>

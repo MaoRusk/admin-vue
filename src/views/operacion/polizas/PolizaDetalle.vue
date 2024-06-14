@@ -6,11 +6,13 @@
   import profile from './TabProfile.vue'
 
   const router = useRouter()
-  const userId = router.user
-  
-  onMounted(() => {
-  console.log('User ID:', userId);
-});
+  const props = defineProps({
+    id: {
+        type: Number,
+        required: true
+      },
+  });
+ 
 
 </script>
 <template>
@@ -31,15 +33,13 @@
       </CTabList>
       <CTabContent>
         <h2>User Details</h2>
-    <p>User ID: </p>
-    <pre>{{ userId }}</pre>
         <CTabPanel class="p-3" itemKey="profile">
           <!-- Modulo de perfil -->
-          <profile /> 
+          <profile :id="Number(props.id)"/> 
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="permissions">
           <!-- Modulo de permisos -->
-          <permissionsModules />
+          <permissionsModules :id="Number(props.id)"/>
         </CTabPanel>
       </CTabContent>
     </CTabs>
