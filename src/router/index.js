@@ -40,19 +40,6 @@ const routes = [
         component: PolizaDetalle,
         props: true, // Permitir pasar parámetros como props
       },
-      {
-        path: '/operacion/empresas',
-        name: 'Empresas',
-        component: () => import('@/views/operacion/empresas/Empresas.vue'),
-      },
-      {
-        path: '/operacion/empresa/:id', // Nueva ruta para EmpresaDetalle
-        name: 'EmpresaDetalle',
-        component: EmpresaDetalle,
-        props: true, // Permitir pasar parámetros como props
-      },
-
-
 
       {
         path: '/operacion/empresas',
@@ -65,6 +52,19 @@ const routes = [
         component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
         props: true
       },
+
+      {
+        path: '/operacion/availability',
+        name: 'Availability',
+        component: () => import('@/views/operacion/availability/Availability.vue'),
+      },
+      {
+        path: '/operacion/availability/:id',
+        name: 'Availability Detail',
+        component: () => import('@/views/operacion/availability/AvailabilityDetail.vue'),
+        props: true
+      },
+
       {
         path: '/theme',
         name: () => i18next.t('theme'),

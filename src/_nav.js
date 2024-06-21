@@ -48,6 +48,12 @@ export default [
   },
   {
     component: 'CNavItem',
+    name: 'Availability',
+    to: '/operacion/availability',
+    icon: 'cil-list',
+  },
+  {
+    component: 'CNavItem',
     name: 'Pólizas de Acceso',
     to: '/operacion/polizas',
     icon: 'cil-list',

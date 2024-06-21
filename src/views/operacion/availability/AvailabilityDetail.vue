@@ -94,7 +94,7 @@
             showConfirmButton: false,
             timer: 1500
           }).then(() => {
-            this.$router.push('/operacion/empresas');
+            this.$router.push('/operacion/availability');
           });
 
         }).catch(error => {
@@ -136,7 +136,7 @@
             showConfirmButton: false,
             timer: 1500
           }).then(() => {
-            this.$router.push('/operacion/empresas');
+            this.$router.push('/operacion/availability');
           });
         }).catch(error => {
           Swal.fire({
@@ -169,7 +169,7 @@
                 showConfirmButton: false,
                 timer: 1500
               }).then(() => {
-                this.$router.push('/operacion/empresas');
+                this.$router.push('/operacion/availability');
               });
               
             }).catch(error => {
@@ -197,7 +197,7 @@
       <CCol :xs="12" :xl="10"></CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <router-link to="../empresas">
+          <router-link to="../availability">
             <CButton color="primary" type="submit" variant="outline">
               <CIcon icon="cil-arrow-left" class="me-2" />Go Back
             </CButton>
