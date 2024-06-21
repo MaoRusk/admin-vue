@@ -2,6 +2,14 @@
 
   import axios from 'axios';
 
+  const check = (event, id) => {
+    if (event.target.checked) {
+      selected.value = [...selected.value, id]
+    } else {
+      selected.value = selected.value.filter((itemId) => itemId !== id)
+    }
+  }
+
   export default {
 
     data() {
@@ -10,11 +18,12 @@
         companies: [],
         details: [],
         columns: [
-          { key: 'nameCompany', _style: { width: '25%' } },
-          { key: 'primaryColor', _style: { width: '15%' } },
-          { key: 'secondaryColor', _style: { width: '15%' } },
-          { key: 'status', _style: { width: '15%' } },
-          { key: 'actions', _style: { width: '15%' } }
+          { key: 'select', label: '', filter: false, sorter: false, _style: { width: '3%' }},
+          { key: 'nameCompany', label: 'Company', _style: { width: '22%' } },
+          { key: 'primaryColor', label: 'Primary Color', _style: { width: '15%' } },
+          { key: 'secondaryColor', label: 'Secondary Color', _style: { width: '15%' } },
+          { key: 'status', label: 'Status', _style: { width: '15%' } },
+          { key: 'actions', label: 'Actions', _style: { width: '15%' } }
         ]
       };
     },
@@ -90,10 +99,11 @@
   </CCard>
 
   <CCard class="mb-4">
+
     <CCardBody>
       <!-- * PARAMETROS DE SMART-TABLE -->
       <!-- column-filter -->
-      <CSmartTable
+      <!-- <CSmartTable
         :active-page="1"
         cleaner
         column-sorter
@@ -111,7 +121,29 @@
           striped: true,
           responsive: true,
         }"
+      > -->
+      <CSmartTable
+        clickableRows
+        :tableProps="{
+          striped: true,
+          hover: true,
+        }"
+        :active-page="1"
+        header
+        :items="companies"
+        :columns="columns"
+        tableFilter
+        cleaner
+        items-per-page-select
+        :items-per-page="10"
+        pagination
       >
+        <template #select="{ item }">
+          <td>
+            <CFormCheck :id="`checkbox${item.id}`" />
+          </td>
+        </template>
+        
         <template #nameCompany="{ item }">
           <td>
             <CAvatar :src="item.logoUrl"/>
