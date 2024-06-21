@@ -7,6 +7,7 @@
   import uniquePermissions from '../../../assets/json/uniquePermissions'
   import { useRouter } from 'vue-router'
   import Swal from 'sweetalert2';
+  import { cilChevronCircleDownAlt } from '@coreui/icons'
 
 
   const router = useRouter()
@@ -94,6 +95,7 @@ const props = defineProps({
   const buildOptionsSubmarkets = () => {
     optionsSubmarkets.value = marketsCbo.value.map(market => ({
       label: market.label,
+      value: "market_"+market.value,
       background: 'darkblue',
       color: '#fff',
       options: submarketCbo.value
@@ -194,8 +196,90 @@ const props = defineProps({
           });
     }
 
-</script>
 
+
+
+  const selectedGroups = ref([]);
+  const selectedOptions = ref([]);
+
+  const toggleGroup = (group, checked) => {
+    if (checked) {
+      selectedGroups.value.push(group.value);
+      group.options.forEach(option => {
+        if (!selectedOptions.value.includes(option.value)) {
+          selectedOptions.value.push(option.value);
+          option.selected = true;
+        }
+      });
+    } else {
+      selectedGroups.value = selectedGroups.value.filter(val => val !== group.value);
+      group.options.forEach(option => {
+        selectedOptions.value = selectedOptions.value.filter(val => val !== option.value);
+        option.selected = false;
+      });
+    }
+  };
+
+
+  const toggleOption = (group, option, checked) => {
+    option.selected = checked;
+    if (checked) {
+      if (!selectedOptions.value.includes(option.value)) {
+        selectedOptions.value.push(option.value);
+      }
+      if (!selectedGroups.value.includes(group.value)) {
+        selectedGroups.value.push(group.value);
+      }
+    } else {
+      selectedOptions.value = selectedOptions.value.filter(val => val !== option.value);
+      const anyOptionSelected = group.options.some(opt => opt.selected);
+      if (!anyOptionSelected) {
+        selectedGroups.value = selectedGroups.value.filter(val => val !== group.value);
+      }
+    }
+  };
+
+  const selectAll = () => {
+    optionsSubmarkets.value.forEach(group => {
+      if (!selectedGroups.value.includes(group.value)) {
+        selectedGroups.value.push(group.value);
+      }
+      group.options.forEach(option => {
+        if (!selectedOptions.value.includes(option.value)) {
+          selectedOptions.value.push(option.value);
+          option.selected = true;
+        }
+      });
+    });
+  };
+
+  const deselectAll = () => {
+    selectedGroups.value = [];
+    selectedOptions.value = [];
+    optionsSubmarkets.value.forEach(group => {
+      group.options.forEach(option => {
+        option.selected = false;
+      });
+    });
+  };
+  const visibleA = ref(false)
+
+
+
+</script>
+<style>
+.list-group-item-pather-custom{
+  background: #15598a;
+  color: white;
+  padding: 5px 16px;
+}
+.list-group-children-custom {
+  padding: 2px 16px;
+}
+.form-check {
+  margin-bottom: 0rem;
+}
+</style>
 <template>
     <div class="docs-example rounded-top p-4">
         <CContainer>
@@ -206,7 +290,8 @@ const props = defineProps({
                 label="Select permissions"
                 :options="uniquePermissionsCbo" 
                 @change="handleUniquePermissionsChange($event)"
-                selectionType="counter" />
+                selectionType="counter"
+                 />
             </CCol>
             <CCol>
                 <CMultiSelect 
@@ -216,7 +301,7 @@ const props = defineProps({
                 @change="handletest($event)"
                 selectionType="counter" />
             </CCol>
-            <CCol>
+            <!-- <CCol>
                 <CMultiSelect 
                 label="Select Markets"
                 :options="marketsCbo" 
@@ -231,6 +316,41 @@ const props = defineProps({
                 v-model="selectedSubmarketId"
                 @change="handletest($event)"
                 selectionType="counter" />
+            </CCol> -->
+            <CCol>
+              <CButton color="secondary"  variant="outline" @click="visibleA = !visibleA"  class="d-grid gap-2 col-12 mt-3">
+                Select Markets And Submarkets
+                <CIcon :content="cilChevronCircleDownAlt" size="sm" />
+              </CButton>
+              <CCollapse :visible="visibleA">
+                  <div class="mt-1" style="display: flex;justify-content: center;">
+                    <CButton color="primary" variant="ghost" @click="selectAll" class="me-2">Select All</CButton>
+                    <CButton color="primary" variant="ghost" @click="deselectAll">Deselect All</CButton>
+                  </div>
+                  <CListGroup>
+                    <CListGroupItem v-for="group in optionsSubmarkets" :key="group.value" class="list-group-item-pather-custom">
+                      <CFormCheck
+                        hitArea="full"
+                        :id="group.value"
+                        :label="group.label"
+                        :modelValue="selectedGroups.includes(group.value)"
+                        @update:modelValue="(checked) => toggleGroup(group, checked)"
+                      />
+                      <CListGroup class="mt-2" >
+                        <CListGroupItem v-for="option in group.options" :key="option.value" class="ms-4 list-group-children-custom">
+                          <CFormCheck
+                            hitArea="full"
+                            :id="option.value"
+                            :label="option.label"
+                            :modelValue="selectedOptions.includes(option.value)"
+                            @update:modelValue="(checked) => toggleOption(group, option, checked)"
+                          />
+                        </CListGroupItem>
+                      </CListGroup>
+                    </CListGroupItem>
+                  </CListGroup>
+              </CCollapse>
+
             </CCol>
             </CCol>
             <CCol :md="6">

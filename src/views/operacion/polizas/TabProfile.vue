@@ -290,11 +290,24 @@
             </CForm>
             </CCol>
             <CCol>
-                <CFormInput type="number"
-                label="Total Screens *" 
-                placeholder="totalScreens" 
-                v-model="totalScreens"
-                aria-label="default input example"/>
+              <CRow>
+                <CCol class="mb-4">
+                  <CFormInput type="number"
+                  label="Total Screens *" 
+                  placeholder="totalScreens" 
+                  v-model="totalScreens"
+                  aria-label="default input example"/>
+                </CCol>
+                <CCol class="mb-8">
+                  <CMultiSelect
+                    :multiple="false"
+                    label="Select companie *"
+                    v-model="selectedCompany"
+                    :options="companiesCbo"
+                    @change="handleCompanyChange($event)"
+                    />
+                </CCol>
+              </CRow>
             </CCol> 
             </CCol>
             <CCol :md="6">
