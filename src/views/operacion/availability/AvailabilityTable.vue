@@ -111,7 +111,7 @@
       <CCol :xs="12" :xl="2">
         <CCardBody>
           <CButton color="success" @click="newAvailability()">
-            <CIcon icon="cil-plus" class="me-2" />New Company
+            <CIcon icon="cil-plus" class="me-2" />Save
           </CButton>
         </CCardBody>
       </CCol>
@@ -126,6 +126,7 @@
         :tableProps="{
           striped: true,
           hover: true,
+          style: { overflowX: 'auto' }
         }"
         :active-page="1"
         header

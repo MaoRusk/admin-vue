@@ -1,7 +1,7 @@
 <script setup>
   import { ref, onMounted, computed, watch } from 'vue';
   import Swal from 'sweetalert2';
-  import { cilTrash, cilPencil } from '@coreui/icons'
+  import { cilTrash, cilPencil, cilLowVision } from '@coreui/icons'
   import axios from 'axios';
   import { useRouter } from 'vue-router'
 
@@ -19,14 +19,34 @@
   const lastName = ref('Herrera');
   const middleName = ref('');
   const userName = ref('MNHR');
-  const password = ref('1234');
+  const password = ref('qqqq')
+  const passwordFieldType = ref("password")
+  const passwordVisible = ref(false)
   const totalScreens = ref('3');
   const status = ref('Activo');
   const position = ref('developer');
-  // const email = ref('');
+  const email = ref('');
   const selectedCompany = ref('');
   
   const confirmPassword = ref('')
+
+  const isValidEmail = ref(true)
+
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
+
+  const validateEmail = () => {
+    isValidEmail.value = emailRegex.test(email.value) || email.value === ''
+  }
+  
+  const isValid = ref(true)
+  const validationFeedback = ref('')
+
+    const togglePasswordVisibility = () => {
+        passwordFieldType.value = passwordFieldType.value === 'password' ? 'text' : 'password'
+    }
+
+
+
 
   onMounted(() => {
     if (props.id) {
@@ -103,6 +123,7 @@
       position.value.trim() !== '' &&
       userName.value.trim() !== '' &&
       password.value.trim() !== '' &&
+      // isValidEmail.value == 'true' &&
       (props.id === 0 || props.id === ''
         ? confirmPassword.value.trim() !== '' && password.value === confirmPassword.value
         : true)
@@ -114,10 +135,10 @@
     if (!isFormValid.value) {
       Swal.fire({
         title: "Lo sentimos!",
-        text: "Por favor, rellena todos los campos requeridos.",
+        text: "Por favor, rellena todos los campos requeridos o revisa tu email en caso de tenerlo.",
         icon: "info",
         showConfirmButton: false,
-        timer: 1500
+        timer: 3000
       });
       return;
     }else{
@@ -138,7 +159,7 @@
               text: "User added successfully.",
               icon: "success",
               showConfirmButton: false,
-              timer: 1500
+              timer: 3500
             }).then(() => {
               router.push({
                 name: 'Polizas',
@@ -152,7 +173,7 @@
               text: error.response.data.message,
               icon: "error",
               showConfirmButton: false,
-              timer: 2000
+              timer: 3500
             });
           });
     }
@@ -285,7 +306,10 @@
                 label="Email address"
                 placeholder="name@example.com"
                 text="Must be 8-20 characters long."
-                aria-describedby="exampleFormControlInputHelpInline"
+                :valid="isValidEmail"
+                :invalid="!isValidEmail && email !== ''"
+                v-model="email"
+                @input="validateEmail"
                 />
             </CForm>
             </CCol>
@@ -301,10 +325,8 @@
                 <CCol class="mb-8">
                   <CMultiSelect
                     :multiple="false"
-                    label="Select companie *"
+                    label="Deactivate screen"
                     v-model="selectedCompany"
-                    :options="companiesCbo"
-                    @change="handleCompanyChange($event)"
                     />
                 </CCol>
               </CRow>
@@ -326,12 +348,19 @@
                 aria-label="default input example"/>
             </CCol>
             <CCol>
-              <CFormInput
-                label="Password *"
-                type="password"
-                v-model="password"
-                id="inputPassword"
-              />
+              <label for="">Password *</label>
+              <div style="display: flex;">
+                <CFormInput
+                  :type="passwordFieldType"
+                  v-model="password"
+                  id="inputPassword"
+                />
+                <CButton color="secondary" variant="outline" @click="togglePasswordVisibility">
+                  <!-- <CIcon :content="cilLowVision" size="sm" /> -->
+                  {{ passwordFieldType === 'password' ? 'Show' : 'Hide' }}
+                </CButton>
+              </div>
+
             </CCol>
             <CCol v-if="props.id === 0 || props.id === ''">
               <CFormInput

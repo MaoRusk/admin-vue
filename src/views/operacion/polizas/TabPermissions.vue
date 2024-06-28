@@ -2,8 +2,8 @@
   import { ref, onMounted, computed, watch } from 'vue';
   import axios from 'axios';
   import permissionsModules from './TabPermissions.vue'
-  import years from '../../../assets/json/years'
-  import quarters from '../../../assets/json/quarters'
+  // import years from '../../../assets/json/years'
+  import quartersAndYears from '../../../assets/json/quarters'
   import uniquePermissions from '../../../assets/json/uniquePermissions'
   import { useRouter } from 'vue-router'
   import Swal from 'sweetalert2';
@@ -27,24 +27,19 @@ const props = defineProps({
   // Submarkets Permissions 
   const submarketCbo = ref([]);
   const selectedSubmarketId = ref(null);  
-  const optionsSubmarkets = ref([]);
+  const optionsMarketsAndSubmarkets = ref([]);
   // Unique Permissions
   const uniquePermissionsCbo = ref(uniquePermissions);
   // Years Y quarters Combos
-  const yearsCbo = ref(years);
-  const quartersCbo = ref(quarters);
+  // const yearsCbo = ref(years);
+  const quartersAndYearsCbo = ref(quartersAndYears);
 
   const selectedPermissions = ref([]);
   const excelPermission = ref("");
   const fibrasPermission = ref("");
   const biChartsPermission = ref("");
 
-  const selectedModules = ref([]);
-  const selectedMarkets = ref([]);
-  const selectedSubmarkets = ref([]);
-  const data = ref([]);
-
-  
+  const arrayPermission = ref({})
 
   onMounted(() => {
     fetchData();
@@ -91,9 +86,9 @@ const props = defineProps({
   };
 
   
-  // Ordenar y dar formato a Submarkets Permissions 
+  // Ordenar y dar formato a Submarkets Permissions Para el Select
   const buildOptionsSubmarkets = () => {
-    optionsSubmarkets.value = marketsCbo.value.map(market => ({
+    optionsMarketsAndSubmarkets.value = marketsCbo.value.map(market => ({
       label: market.label,
       value: "market_"+market.value,
       background: 'darkblue',
@@ -115,6 +110,7 @@ const props = defineProps({
     };
     const handletest = (newValue) => {
       selectedPermissions.value = newValue;
+      console.log(selectedPermissions.value);
       generateData();
     };
     const updatePermissions = () => {
@@ -126,39 +122,48 @@ const props = defineProps({
       console.log(excelPermission.value);
     };
 
+  // const newString = ref('');
+  // const generateMarkets = () => {
+  //   const userId = props.id; 
+
+  //   selectedGroups.value.forEach(module => {
+  //     const removeMarketPrefix = (str) => {
+  //       return str.replace('market_', '');
+  //     };
+
+  //     newString.value = removeMarketPrefix(module.value);
+
+  //     dataModules.push({
+  //       ID:0,
+  //       userId: userId,
+  //       moduleID: newString.value,
+  //     });      
+  //   });
+  //   console.log(dataModules);
+  //   return dataModules;
+  // };
 
   const generateData = () => {
     const userId = props.id; 
+    selectedGroups.value.forEach(module => {
+      const removeMarketPrefix = (str) => {
+        return str.replace('market_', '');
+      };
 
-    selectedModules.value.forEach(module => {
-      selectedMarkets.value.forEach(market => {
-        selectedSubmarkets.value.forEach(submarket => {
-          data.push({
-            userId,
-            moduleId: module.value,
-            marketId: market.value,
-            subMarketId: submarket.value,
-            
-          });
-        });
-      });
+      newString.value = removeMarketPrefix(module.value);
+
+      dataModules.push({
+        ID:0,
+        userId: userId,
+        moduleID: newString.value,
+      });      
     });
-
-    console.log(data);
-    return data;
+    console.log(dataModules);
+    return dataModules;
   };
   // Add services
   const submitFunction = async () => {
-          const formPermissions = new formPermissions();
-          formPermissions.append('userId', props.id);
-          formPermissions.append('moduleId', 1);
-          formPermissions.append('marketId', excelPermission.value);
-          formPermissions.append('subMarketId', fibrasPermission.value);
-          formPermissions.append('year', biChartsPermission.value);
-          formPermissions.append('quarter', biChartsPermission.value);
-          formPermissions.append('status', "Activo");
-  
-          axios.post('http://localhost:8000/api/premission', formPermissions).then(response => {
+          axios.post(`http://localhost:8000/api/premission/${props.id}`, arrayPermission).then(response => {
            
             const formDataUnique = new FormDataUnique();
             formDataUnique.append('userId', props.id);
@@ -182,7 +187,6 @@ const props = defineProps({
                   })
                 });
               })
-  
           })
           
           .catch(error => {
@@ -196,12 +200,87 @@ const props = defineProps({
           });
     }
 
-
-
-
+// *****************************SELECCIONES DE MERCADOS SURBMERCADOS / AÑOS Y TRIMESTRES****************************************
   const selectedGroups = ref([]);
   const selectedOptions = ref([]);
+  const selectedYears = ref([]);
+  const selectedQuarters = ref([]);
 
+// ---------------AÑOS Y TRIMESTRES------------------
+  // *Deseleccionar O Seleccionar* el Año con todos sus quarters
+  const toggleGroupYeasAndQuarters = (group, checked) => {
+    if (checked) {
+      selectedYears.value.push(group.value);
+      group.options.forEach(option => {
+        if (!selectedQuarters.value.includes(option.value)) {
+          selectedQuarters.value.push(option.value);
+          option.selected = true;
+        }
+      });
+    } else {
+      selectedYears.value = selectedYears.value.filter(val => val !== group.value);
+      group.options.forEach(option => {
+        selectedQuarters.value = selectedQuarters.value.filter(val => val !== option.value);
+        option.selected = false;
+      });
+    }
+    console.log("Deseleccionar O Seleccionar* el Market con todos sus subMarkets" +  selectedQuarters.value);
+    console.log("Deseleccionar O Seleccionar* el Market con todos sus subMarkets" +  selectedYears.value);
+
+  };
+
+  // Deseleccionar un Trimestre
+  const toggleOptionQuarters = (group, option, checked) => {
+    option.selected = checked;
+    if (checked) {
+      if (!selectedQuarters.value.includes(option.value)) {
+        selectedQuarters.value.push(option.value);
+      }
+      if (!selectedYears.value.includes(group.value)) {
+        selectedYears.value.push(group.value);
+      }
+    } else {
+      selectedQuarters.value = selectedQuarters.value.filter(val => val !== option.value);
+      const anyOptionSelected = group.options.some(opt => opt.selected);
+      if (!anyOptionSelected) {
+        selectedYears.value = selectedYears.value.filter(val => val !== group.value);
+      }
+    }
+    console.log("Deseleccionar un SubMarket" + selectedQuarters.value);
+    console.log("Deseleccionar un SubMarket" + selectedYears.value);
+  };
+// Seleccionar todos los años y trimestres
+  const selectAllYearsAndQuarters = () => {
+    quartersAndYearsCbo.value.forEach(group => {
+        if (!selectedYears.value.includes(group.value)) {
+          selectedYears.value.push(group.value);
+        }
+        group.options.forEach(option => {
+          if (!selectedQuarters.value.includes(option.value)) {
+            selectedQuarters.value.push(option.value);
+            option.selected = true;
+          }
+        });
+        console.log("Seleccionar todos los markets y subMarkets" + selectedQuarters.value);
+        console.log("Seleccionar todos los markets y subMarkets" + selectedYears.value);
+      });
+    };
+
+    const deselectAllYearsAndQuarters = () => {
+    selectedYears.value = [];
+    selectedQuarters.value = [];
+    quartersAndYearsCbo.value.forEach(group => {
+      group.options.forEach(option => {
+        option.selected = false;
+      });
+    });
+    console.log("Deseleccionar todos los markets y subMarkets"+ selectedQuarters.value);
+    console.log("Deseleccionar todos los markets y subMarkets"+ selectedYears.value);
+  };
+
+// ---------------MARTES Y SUBMARKETS---------------
+
+// *Deseleccionar O Seleccionar* el Market con todos sus subMarkets
   const toggleGroup = (group, checked) => {
     if (checked) {
       selectedGroups.value.push(group.value);
@@ -218,9 +297,12 @@ const props = defineProps({
         option.selected = false;
       });
     }
+    console.log("Deseleccionar O Seleccionar* el Market con todos sus subMarkets" +  selectedOptions.value);
+    console.log("Deseleccionar O Seleccionar* el Market con todos sus subMarkets" +  selectedGroups.value);
+
   };
 
-
+// Deseleccionar un SubMarket
   const toggleOption = (group, option, checked) => {
     option.selected = checked;
     if (checked) {
@@ -237,10 +319,13 @@ const props = defineProps({
         selectedGroups.value = selectedGroups.value.filter(val => val !== group.value);
       }
     }
+    console.log("Deseleccionar un SubMarket" + selectedOptions.value);
+    console.log("Deseleccionar un SubMarket" + selectedGroups.value);
   };
-
+  
+// Seleccionar todos los markets y subMarkets
   const selectAll = () => {
-    optionsSubmarkets.value.forEach(group => {
+    optionsMarketsAndSubmarkets.value.forEach(group => {
       if (!selectedGroups.value.includes(group.value)) {
         selectedGroups.value.push(group.value);
       }
@@ -250,35 +335,48 @@ const props = defineProps({
           option.selected = true;
         }
       });
+      console.log("Seleccionar todos los markets y subMarkets" + selectedOptions.value);
+      console.log("Seleccionar todos los markets y subMarkets" + selectedGroups.value);
     });
   };
 
+// Deseleccionar todos los markets y subMarkets
   const deselectAll = () => {
     selectedGroups.value = [];
     selectedOptions.value = [];
-    optionsSubmarkets.value.forEach(group => {
+    optionsMarketsAndSubmarkets.value.forEach(group => {
       group.options.forEach(option => {
         option.selected = false;
       });
     });
+    console.log("Deseleccionar todos los markets y subMarkets"+ selectedOptions.value);
+    console.log("Deseleccionar todos los markets y subMarkets"+ selectedGroups.value);
   };
-  const visibleA = ref(false)
-
-
-
 </script>
 <style>
-.list-group-item-pather-custom{
-  background: #15598a;
-  color: white;
-  padding: 5px 16px;
-}
-.list-group-children-custom {
-  padding: 2px 16px;
-}
-.form-check {
-  margin-bottom: 0rem;
-}
+  /* Css para el select de markets y submarkets */
+  .list-group-item-pather-custom{
+    background: #15598a;
+    color: white;
+    padding: 5px 16px;
+  }
+  .list-group-children-custom {
+    padding: 2px 16px;
+  }
+  .form-check {
+    margin-bottom: 0rem;
+  }
+  .accordion-button {
+    padding: 6px 12px;
+  }
+  .accordion-body
+  {
+    padding-top: 0px;
+  }
+  .accordion-button:not(.collapsed) {
+      color: var(--cui-accordion-border-color);
+      background-color: #d6ebff00;
+  }
 </style>
 <template>
     <div class="docs-example rounded-top p-4">
@@ -312,50 +410,60 @@ const props = defineProps({
             <CCol>
                 <CMultiSelect 
                 label="Select SubMarkets"
-                :options="optionsSubmarkets" 
+                :options="optionsMarketsAndSubmarkets" 
                 v-model="selectedSubmarketId"
                 @change="handletest($event)"
                 selectionType="counter" />
             </CCol> -->
             <CCol>
-              <CButton color="secondary"  variant="outline" @click="visibleA = !visibleA"  class="d-grid gap-2 col-12 mt-3">
+              <!-- <CButton color="secondary"  variant="outline" @click="visibleA = !visibleA"  class="d-grid gap-2 col-12 mt-3">
                 Select Markets And Submarkets
                 <CIcon :content="cilChevronCircleDownAlt" size="sm" />
               </CButton>
               <CCollapse :visible="visibleA">
-                  <div class="mt-1" style="display: flex;justify-content: center;">
-                    <CButton color="primary" variant="ghost" @click="selectAll" class="me-2">Select All</CButton>
-                    <CButton color="primary" variant="ghost" @click="deselectAll">Deselect All</CButton>
-                  </div>
-                  <CListGroup>
-                    <CListGroupItem v-for="group in optionsSubmarkets" :key="group.value" class="list-group-item-pather-custom">
-                      <CFormCheck
-                        hitArea="full"
-                        :id="group.value"
-                        :label="group.label"
-                        :modelValue="selectedGroups.includes(group.value)"
-                        @update:modelValue="(checked) => toggleGroup(group, checked)"
-                      />
-                      <CListGroup class="mt-2" >
-                        <CListGroupItem v-for="option in group.options" :key="option.value" class="ms-4 list-group-children-custom">
-                          <CFormCheck
-                            hitArea="full"
-                            :id="option.value"
-                            :label="option.label"
-                            :modelValue="selectedOptions.includes(option.value)"
-                            @update:modelValue="(checked) => toggleOption(group, option, checked)"
-                          />
-                        </CListGroupItem>
-                      </CListGroup>
-                    </CListGroupItem>
-                  </CListGroup>
-              </CCollapse>
-
+                  
+              </CCollapse> -->
+              <label for="" class="mt-1"> Select Markets And Submarkets </label>
+              <CAccordion class="mt-2">
+                <CAccordionItem :item-key="1">
+                  <CAccordionHeader>
+                    Select...
+                  </CAccordionHeader>
+                  <CAccordionBody>
+                    <div class="mt-1" style="display: flex;justify-content: center;">
+                      <CButton color="primary" variant="ghost" @click="selectAll" class="me-2">Select All</CButton>
+                      <CButton color="primary" variant="ghost" @click="deselectAll">Deselect All</CButton>
+                    </div>
+                    <CListGroup>
+                      <CListGroupItem v-for="group in optionsMarketsAndSubmarkets" :key="group.value" class="list-group-item-pather-custom">
+                        <CFormCheck
+                          hitArea="full"
+                          :id="group.value"
+                          :label="group.label"
+                          :modelValue="selectedGroups.includes(group.value)"
+                          @update:modelValue="(checked) => toggleGroup(group, checked)"
+                        />
+                        <CListGroup class="mt-2" >
+                          <CListGroupItem v-for="option in group.options" :key="option.value" class="ms-4 list-group-children-custom">
+                            <CFormCheck
+                              hitArea="full"
+                              :id="option.value"
+                              :label="option.label"
+                              :modelValue="selectedOptions.includes(option.value)"
+                              @update:modelValue="(checked) => toggleOption(group, option, checked)"
+                            />
+                          </CListGroupItem>
+                        </CListGroup>
+                      </CListGroupItem>
+                    </CListGroup>
+                  </CAccordionBody>
+                </CAccordionItem>
+              </CAccordion>
             </CCol>
             </CCol>
             <CCol :md="6">
             <CCol>
-                <CMultiSelect 
+                <!-- <CMultiSelect 
                 label="Select Years"
                 :options="yearsCbo" 
                 @change="handletest($event)"
@@ -366,7 +474,44 @@ const props = defineProps({
                 label="Select Quarters"
                 :options="quartersCbo" 
                 @change="handletest($event)"
-                selectionType="counter" />
+                selectionType="counter" /> -->
+
+                <label for="" class="mt-1"> Select Yeasr And Quarters </label>
+              <CAccordion class="mt-2">
+                <CAccordionItem :item-key="1">
+                  <CAccordionHeader>
+                    Select...
+                  </CAccordionHeader>
+                  <CAccordionBody>
+                    <div class="mt-1" style="display: flex;justify-content: center;">
+                      <CButton color="primary" variant="ghost" @click="selectAllYearsAndQuarters" class="me-2">Select All</CButton>
+                      <CButton color="primary" variant="ghost" @click="deselectAllYearsAndQuarters">Deselect All</CButton>
+                    </div>
+                    <CListGroup>
+                      <CListGroupItem v-for="group in quartersAndYearsCbo" :key="group.value" class="list-group-item-pather-custom">
+                        <CFormCheck
+                          hitArea="full"
+                          :id="group.value"
+                          :label="group.label"
+                          :modelValue="selectedYears.includes(group.value)"
+                          @update:modelValue="(checked) => toggleGroupYeasAndQuarters(group, checked)"
+                        />
+                        <CListGroup class="mt-2" >
+                          <CListGroupItem v-for="option in group.options" :key="option.value" class="ms-4 list-group-children-custom">
+                            <CFormCheck
+                              hitArea="full"
+                              :id="option.value"
+                              :label="option.label"
+                              :modelValue="selectedQuarters.includes(option.value)"
+                              @update:modelValue="(checked) => toggleOptionQuarters(group, option, checked)"
+                            />
+                          </CListGroupItem>
+                        </CListGroup>
+                      </CListGroupItem>
+                    </CListGroup>
+                  </CAccordionBody>
+                </CAccordionItem>
+              </CAccordion>
             </CCol>
             </CCol>
         </CRow>

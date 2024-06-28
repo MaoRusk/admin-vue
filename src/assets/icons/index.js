@@ -26,6 +26,8 @@ import {
 } from '@coreui/icons'
 import { cifUs, cifBr, cifIn, cifFr, cifEs, cifPl, cifGb } from '@coreui/icons'
 import {
+  cilLowVision,
+  cilCloudUpload,
   cilAlignCenter,
   cilAlignLeft,
   cilAlignRight,
@@ -120,6 +122,8 @@ import {
 export const iconsSet = Object.assign(
   {},
   {
+    cilLowVision,
+    cilCloudUpload,
     cilAlignCenter,
     cilAlignLeft,
     cilAlignRight,
