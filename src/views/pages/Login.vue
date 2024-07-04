@@ -6,7 +6,7 @@
           <CCardGroup>
             <CCard class="p-4">
               <CCardBody>
-                <CForm>
+                <CForm @submit.prevent="login">
                   <h1>Login</h1>
                   <p class="text-body-secondary">Sign In to your account</p>
                   <CInputGroup class="mb-3">
@@ -14,6 +14,7 @@
                       <CIcon icon="cil-user" />
                     </CInputGroupText>
                     <CFormInput
+                      v-model="userName"
                       placeholder="Username"
                       autocomplete="username"
                     />
@@ -23,6 +24,7 @@
                       <CIcon icon="cil-lock-locked" />
                     </CInputGroupText>
                     <CFormInput
+                      v-model="password"
                       type="password"
                       placeholder="Password"
                       autocomplete="current-password"
@@ -30,7 +32,7 @@
                   </CInputGroup>
                   <CRow>
                     <CCol :xs="6">
-                      <CButton color="primary" class="px-4"> Login </CButton>
+                      <CButton color="primary" class="px-4" type="submit"> Login </CButton>
                     </CCol>
                     <CCol :xs="6" class="text-right">
                       <CButton color="link" class="px-0">
@@ -62,3 +64,33 @@
     </CContainer>
   </div>
 </template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      userName: '',
+      password: '',
+    };
+  },
+  methods: {
+    async login() {
+      try {
+        const response = await axios.post('http://localhost:8000/api/login', {
+          userName: this.userName,
+          password: this.password,
+        });
+        
+        localStorage.setItem('auth_token', response.data.access_token);
+        this.$router.push('/#/dashboard'); // Redirige a la página de inicio o la que desees
+
+      } catch (error) {
+        console.error('Error during login:', error);
+        alert('Login failed. Please check your credentials.');
+      }
+    },
+  },
+};
+</script>
