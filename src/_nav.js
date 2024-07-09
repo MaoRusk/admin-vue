@@ -48,6 +48,12 @@ export default [
   },
   {
     component: 'CNavItem',
+    name: 'Buildings',
+    to: '/operacion/Buildings',
+    icon: 'cil-list',
+  },
+  {
+    component: 'CNavItem',
     name: 'Availability',
     to: '/operacion/availability',
     icon: 'cil-list',

@@ -3,7 +3,8 @@
   import { useRouter } from 'vue-router'
   import { cilArrowCircleLeft, cilBasket } from '@coreui/icons'
   import axios from 'axios';
-  import permissionsModules from './TabPermissions.vue'
+  import MultiplePermissionsModules from './TabMultiplePermissions.vue'
+  import permissionsModules from './TabPermissionsTable.vue'
   import profile from './TabProfile.vue'
 
   const router = useRouter()
@@ -80,15 +81,22 @@
     <CTabs activeItemKey="profile">
       <CTabList variant="tabs">
         <CTab itemKey="profile">Profile</CTab>
-        <CTab itemKey="permissions">Permissions</CTab>
+        <CTab itemKey="multiplePermissions">Give Permissions</CTab>
+        <CTab itemKey="permissions">Show Permissions</CTab>
       </CTabList>
       <CTabContent>
-        <h2>User Details</h2>
         <CTabPanel class="p-3" itemKey="profile">
+          <h2>User Details</h2>
           <!-- Modulo de perfil -->
           <profile :id="Number(props.id)"/> 
         </CTabPanel>
+        <CTabPanel class="p-3" itemKey="multiplePermissions">
+          <!-- <h2>Give multiple permissions</h2> -->
+          <!-- Modulo de permisos -->
+          <MultiplePermissionsModules :id="Number(props.id)"/>
+        </CTabPanel>
         <CTabPanel class="p-3" itemKey="permissions">
+          <!-- <h2>Give permissions</h2> -->
           <!-- Modulo de permisos -->
           <permissionsModules :id="Number(props.id)"/>
         </CTabPanel>

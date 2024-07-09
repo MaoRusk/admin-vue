@@ -1,13 +1,13 @@
 <script setup>
   import { ref, onMounted, computed, watch } from 'vue';
   import axios from 'axios';
-  import permissionsModules from './TabPermissions.vue'
-  // import years from '../../../assets/json/years'
-  import quartersAndYears from '../../../assets/json/quarters'
-  import uniquePermissions from '../../../assets/json/uniquePermissions'
+  import quarters from '../../../assets/json/quarters'
+  import years from '../../../assets/json/years'
+  import { uniquePermissions, biChartsModules } from '../../../assets/json/uniquePermissions'
   import { useRouter } from 'vue-router'
   import Swal from 'sweetalert2';
-  import { cilChevronCircleDownAlt } from '@coreui/icons'
+  import checkedExcelImage from '../../../assets/images/excel_icon.png';
+  import checkedPdfImage from '../../../assets/images/pdf.png';
 
 
   const router = useRouter()
@@ -18,29 +18,23 @@ const props = defineProps({
       required: true
     },
 });
-  // Modules Permissions
   const modulesCbo = ref([]);
   const selectedModuleId = ref(null);
-  // Markets Permissions
   const marketsCbo = ref([]);
-  const selectedMarketId = ref(null);
-  // Submarkets Permissions 
   const submarketCbo = ref([]);
-  const selectedSubmarketId = ref(null);  
   const optionsMarketsAndSubmarkets = ref([]);
-  // Unique Permissions
-  const uniquePermissionsCbo = ref(uniquePermissions);
-  // Years Y quarters Combos
-  // const yearsCbo = ref(years);
-  const quartersAndYearsCbo = ref(quartersAndYears);
-
+  // const uniquePermissionsCbo = ref(uniquePermissions);
+  const biChartsModulesCbo = ref(biChartsModules);
+  const yearsCbo = ref(years);
+  const quartersCbo = ref(quarters);
   const selectedPermissions = ref([]);
   const excelPermission = ref("");
   const fibrasPermission = ref("");
   const biChartsPermission = ref("");
-  const ModulesSelectedString = ref("");
-
-  const arrayPermission = ref({})
+  const SelectedModulesString = ref("");
+  const SelectedBichartsOptions = ref("");
+  const inputCheckExcel = ref(1);
+  const inputCheckPdf = ref(1);
 
   onMounted(() => {
     fetchData();
@@ -105,48 +99,38 @@ const props = defineProps({
   };
 
     
-    const handleUniquePermissionsChange = (newValue) => {
+    const handleBichartsOptions = (newValue) => {
       selectedPermissions.value = newValue;
-      updatePermissions();
+      // Format String 
+      SelectedBichartsOptions.value = selectedPermissions.value.map(item => item.value).join(',');
+      console.log(selectedPermissions.value);
     };
     const handletest = (newValue) => {
       selectedPermissions.value = newValue;
       console.log(selectedPermissions.value);
       generateData();
     };
-    const updatePermissions = () => {
-      const selectedValues = selectedPermissions.value.map(value => value.value);
-      excelPermission.value = selectedValues.includes(2) ? 1 : 0;
-      fibrasPermission.value = selectedValues.includes(3) ? 1 : 0;
-      biChartsPermission.value = selectedValues.includes(1) ? 1 : 0;
-      console.log("Permisos");
-      console.log(excelPermission.value);
-    };
 
-  // const newString = ref('');
-  // const generateMarkets = () => {
-  //   const userId = props.id; 
+    const handleExcel = (event) => {
+      inputCheckPdf.value = event.target.checked;
+      console.log('PDF checkbox state:', inputCheckPdf.value);
+};
 
-  //   selectedMarkets.value.forEach(module => {
-  //     const removeMarketPrefix = (str) => {
-  //       return str.replace('market_', '');
-  //     };
 
-  //     newString.value = removeMarketPrefix(module.value);
 
-  //     dataModules.push({
-  //       ID:0,
-  //       userId: userId,
-  //       moduleID: newString.value,
-  //     });      
-  //   });
-  //   console.log(dataModules);
-  //   return dataModules;
-  // };
+    // const updatePermissions = () => {
+    //   const selectedValues = selectedPermissions.value.map(value => value.value);
+    //   excelPermission.value = selectedValues.includes(2) ? 1 : 0;
+    //   fibrasPermission.value = selectedValues.includes(3) ? 1 : 0;
+    //   biChartsPermission.value = selectedValues.includes(1) ? 1 : 0;
+    //   console.log("Permisos");
+    //   console.log(excelPermission.value);
+    // };
+
 
   const generateData = () => {
-    ModulesSelectedString.value = selectedPermissions.value.map(item => item.value).join(',');
-console.log(ModulesSelectedString);
+    SelectedModulesString.value = selectedPermissions.value.map(item => item.value).join(',');
+console.log(SelectedModulesString);
   };
   // Add services
   const submitFunction = async () => {
@@ -155,7 +139,7 @@ console.log(ModulesSelectedString);
           formPermissions.append('years', selectedYears.value);
           formPermissions.append('markets', selectedMarkets.value);
           formPermissions.append('submarkets', selectedSubMarkets.value);
-          formPermissions.append('modules', ModulesSelectedString.value);
+          formPermissions.append('modules', SelectedModulesString.value);
                 
           axios.post(`http://localhost:8000/api/permission/${props.id}`, formPermissions).then(response => {
            
@@ -197,80 +181,6 @@ console.log(ModulesSelectedString);
 // *****************************SELECCIONES DE MERCADOS SURBMERCADOS / AÑOS Y TRIMESTRES****************************************
   const selectedMarkets = ref([]);
   const selectedSubMarkets = ref([]);
-  const selectedYears = ref([]);
-  const selectedQuarters = ref([]);
-
-// ---------------AÑOS Y TRIMESTRES------------------
-  // *Deseleccionar O Seleccionar* el Año con todos sus quarters
-  const toggleGroupYeasAndQuarters = (group, checked) => {
-    if (checked) {
-      selectedYears.value.push(group.value);
-      group.options.forEach(option => {
-        if (!selectedQuarters.value.includes(option.value)) {
-          selectedQuarters.value.push(option.value);
-          option.selected = true;
-        }
-      });
-    } else {
-      selectedYears.value = selectedYears.value.filter(val => val !== group.value);
-      group.options.forEach(option => {
-        selectedQuarters.value = selectedQuarters.value.filter(val => val !== option.value);
-        option.selected = false;
-      });
-    }
-    console.log("Deseleccionar O Seleccionar* el Years And Quarters: " +  selectedQuarters.value);
-    console.log("Deseleccionar O Seleccionar* el Years And Quarters: " +  selectedYears.value);
-
-  };
-
-  // Deseleccionar un Trimestre
-  const toggleOptionQuarters = (group, option, checked) => {
-    option.selected = checked;
-    if (checked) {
-      if (!selectedQuarters.value.includes(option.value)) {
-        selectedQuarters.value.push(option.value);
-      }
-      if (!selectedYears.value.includes(group.value)) {
-        selectedYears.value.push(group.value);
-      }
-    } else {
-      selectedQuarters.value = selectedQuarters.value.filter(val => val !== option.value);
-      const anyOptionSelected = group.options.some(opt => opt.selected);
-      if (!anyOptionSelected) {
-        selectedYears.value = selectedYears.value.filter(val => val !== group.value);
-      }
-    }
-    console.log("Deseleccionar qurter: " + selectedQuarters.value);
-    console.log("Deseleccionar qurter: " + selectedYears.value);
-  };
-// Seleccionar todos los años y trimestres
-  const selectAllYearsAndQuarters = () => {
-    quartersAndYearsCbo.value.forEach(group => {
-        if (!selectedYears.value.includes(group.value)) {
-          selectedYears.value.push(group.value);
-        }
-        group.options.forEach(option => {
-          if (!selectedQuarters.value.includes(option.value)) {
-            selectedQuarters.value.push(option.value);
-            option.selected = true;
-          }
-        });
-        console.log("Seleccionar todos los Years And Quarters: " + selectedQuarters.value);
-        console.log("Seleccionar todos los Years And Quarters: " + selectedYears.value);
-      });
-    };
-
-    const deselectAllYearsAndQuarters = () => {
-    selectedYears.value = [];
-    selectedQuarters.value = [];
-    quartersAndYearsCbo.value.forEach(group => {
-      group.options.forEach(option => {
-        option.selected = false;
-      });
-    });
-    console.log("Deseleccionar todos YQ: "+ selectedQuarters.value);
-    console.log("Deseleccionar todos YQ: "+ selectedYears.value);
-  };
 
 // ---------------MARTES Y SUBMARKETS---------------
 
@@ -371,20 +281,100 @@ console.log(ModulesSelectedString);
       color: var(--cui-accordion-border-color);
       background-color: #d6ebff00;
   }
+  .iconsPermissions{
+    width:2rem;
+    margin-inline: .5rem;
+  }
+  /* .form-multi-select-options{
+    max-height: 200px;
+   overflow: overlay;
+  } */ 
 </style>
 <template>
     <div class="docs-example rounded-top p-4">
-        <CContainer>
+      <CContainer>
         <CRow>
             <CCol :md="6">
-            <CCol>
+              <CCol>
+              <CCard class="mb-1" >
+                <CCardBody style="padding: .6rem 1rem;">
+                  <div style="    display: flex;">
+                    <div>
+                      <CFormCheck  v-model="inputCheckExcel" checked />
+                       <img :src="checkedExcelImage" alt="Checkbox Image" class="iconsPermissions"/>
+                    </div>
+                    <div style="margin-left: 2rem;">
+                      <CFormCheck 
+                       v-model="inputCheckPdf"
+                       :checked="inputCheckPdf"
+                        @change="handleExcel($event)"
+                        />
+                      <img :src="checkedPdfImage" alt="Checkbox Image" class="iconsPermissions"/>
+                    </div>
+                 </div>
+                </CCardBody>
+              </CCard>
+              <CCard class="mb-1">
+                <CCardBody>
+                  <div >
+                    <CFormCheck  v-model="inputCheckColumnas" label="Show Columnas (Owner, Developer, Builder, Contact, Phone, Mail)" checked />                    
+                 </div>
+                </CCardBody>
+              </CCard>
+              <CCard class="mb-1">
+                <CCardBody>
+                  <div >
+                    <CFormCheck  v-model="inputCheckFibras" label="Show Modulo Fibras" checked />
+                 </div>
+                </CCardBody>
+
+              </CCard>
+            </CCol>
+            <!-- <CCol>
                 <CMultiSelect 
                 label="Select permissions"
                 :options="uniquePermissionsCbo" 
                 @change="handleUniquePermissionsChange($event)"
                 selectionType="counter"
                  />
+            </CCol> -->
+          
+            <CCol>
+                <CMultiSelect 
+                label="Select BiChart options"
+                :options="biChartsModulesCbo" 
+                @change="handleBichartsOptions($event)"
+                selectionType="counter"
+                 />
             </CCol>
+          
+            </CCol>
+            <CCol :md="6">
+              <CCol>
+              <CMultiSelect 
+              label="Select Modules"
+              :options="modulesCbo"
+              v-model="selectedModuleId" 
+              @change="handletest($event)"
+              selectionType="counter" />
+          </CCol>
+              <CRow>
+                <CCol :md="6">
+                  <CMultiSelect 
+                  label="Select Years"
+                  :options="yearsCbo" 
+                  @change="handletest($event)"
+                  selectionType="text" 
+                  />
+              </CCol>
+              <CCol :md="6">
+                  <CMultiSelect 
+                  label="Select Quarters"
+                  :options="quartersCbo"
+                  @change="handletest($event)"
+                  selectionType="text" />
+              </CCol>
+              </CRow>
             <CCol>
               <label for="" class="mt-1"> Select Markets And Submarkets </label>
               <CAccordion class="mt-2">
@@ -424,63 +414,21 @@ console.log(ModulesSelectedString);
               </CAccordion>
             </CCol>
             </CCol>
-            <CCol :md="6">
-            <CCol>
-              <CCol>
-                <CMultiSelect 
-                label="Select Modulos"
-                :options="modulesCbo"
-                @change="handletest($event)"
-                selectionType="counter" />
-            </CCol>
-
-              <label for="" class="mt-1"> Select Years And Quarters </label>
-              <CAccordion class="mt-2">
-                <CAccordionItem :item-key="1">
-                  <CAccordionHeader>
-                    Select...
-                  </CAccordionHeader>
-                  <CAccordionBody>
-                    <div class="mt-1" style="display: flex;justify-content: center;">
-                      <CButton color="primary" variant="ghost" @click="selectAllYearsAndQuarters" class="me-2">Select All</CButton>
-                      <CButton color="primary" variant="ghost" @click="deselectAllYearsAndQuarters">Deselect All</CButton>
-                    </div>
-                    <CListGroup>
-                      <CListGroupItem v-for="group in quartersAndYearsCbo" :key="group.value" class="list-group-item-pather-custom">
-                        <CFormCheck
-                          hitArea="full"
-                          :id="group.value"
-                          :label="group.label"
-                          :modelValue="selectedYears.includes(group.value)"
-                          @update:modelValue="(checked) => toggleGroupYeasAndQuarters(group, checked)"
-                        />
-                        <CListGroup class="mt-2" >
-                          <CListGroupItem v-for="option in group.options" :key="option.value" class="ms-4 list-group-children-custom">
-                            <CFormCheck
-                              hitArea="full"
-                              :id="option.value"
-                              :label="option.label"
-                              :modelValue="selectedQuarters.includes(option.value)"
-                              @update:modelValue="(checked) => toggleOptionQuarters(group, option, checked)"
-                            />
-                          </CListGroupItem>
-                        </CListGroup>
-                      </CListGroupItem>
-                    </CListGroup>
-                  </CAccordionBody>
-                </CAccordionItem>
-              </CAccordion>
-            </CCol>
-            </CCol>
         </CRow>
         <CRow>
-            <div style="display: flex; justify-content: center;padding:1rem">
+            <div style="display: flex; justify-content: space-evenly; padding:1rem">
               <CButton 
               color="success" 
               variant="outline" 
               type="submit"
               @click="submitFunction"
-              >Submit</CButton>
+              >Add Permissions</CButton>
+              <CButton 
+              color="danger" 
+              variant="outline" 
+              type="submit"
+              @click="submitFunctions"
+              >Delete Permisions</CButton>
             </div>
         </CRow>
         </CContainer>
