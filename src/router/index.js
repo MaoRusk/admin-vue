@@ -6,6 +6,8 @@ import DefaultLayout from '@/layouts/DefaultLayout'
 
 import EmpresaDetalle from '../views/operacion/empresas/EmpresaDetalle.vue';
 import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue';
+import Login from '../views/pages/Login.vue';
+
 const routes = [
   {
     path: '/',
@@ -15,6 +17,7 @@ const routes = [
     children: [
       {
         path: '/dashboard',
+        meta: { requiresAuth: true },
         name: () => i18next.t('dashboard'),
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
@@ -31,11 +34,13 @@ const routes = [
       },
       {
         path: '/operacion/polizas',
+        meta: { requiresAuth: true },
         name: 'Polizas',
         component: () => import('@/views/operacion/polizas/Polizas.vue'),
       },
       {
         path: '/operacion/poliza/:id', // Nueva ruta para PolizaDetalle
+        meta: { requiresAuth: true },
         name: 'PolizaDetalle',
         component: PolizaDetalle,
         props: true, // Permitir pasar parámetros como props
@@ -43,11 +48,13 @@ const routes = [
 
       {
         path: '/operacion/empresas',
+        meta: { requiresAuth: true },
         name: 'Empresas',
         component: () => import('@/views/operacion/empresas/Empresas.vue'),
       },
       {
         path: '/operacion/empresa/:id',
+        meta: { requiresAuth: true },
         name: 'Empresa Detalle',
         component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
         props: true
@@ -60,32 +67,38 @@ const routes = [
       {
         path: '/operacion/availability',
         name: 'Availability',
+        meta: { requiresAuth: true },
         component: () => import('@/views/operacion/availability/Availability.vue'),
       },
       {
         path: '/operacion/availability/:id',
         name: 'Availability Detail',
+        meta: { requiresAuth: true },
         component: () => import('@/views/operacion/availability/AvailabilityDetail.vue'),
         props: true
       },
 
       {
         path: '/theme',
+        meta: { requiresAuth: true },
         name: () => i18next.t('theme'),
         redirect: '/theme/typography',
       },
       {
         path: '/theme/colors',
+        meta: { requiresAuth: true },
         name: () => i18next.t('colors'),
         component: () => import('@/views/theme/Colors.vue'),
       },
       {
         path: '/theme/typography',
+        meta: { requiresAuth: true },
         name: () => i18next.t('typography'),
         component: () => import('@/views/theme/Typography.vue'),
       },
       {
         path: '/base',
+        meta: { requiresAuth: true },
         name: () => i18next.t('base'),
         component: {
           render() {
@@ -96,51 +109,61 @@ const routes = [
         children: [
           {
             path: '/base/accordion',
+            meta: { requiresAuth: true },
             name: 'Accordion',
             component: () => import('@/views/base/Accordion.vue'),
           },
           {
             path: '/base/breadcrumbs',
+            meta: { requiresAuth: true },
             name: 'Breadcrumbs',
             component: () => import('@/views/base/Breadcrumbs.vue'),
           },
           {
             path: '/base/cards',
+            meta: { requiresAuth: true },
             name: 'Cards',
             component: () => import('@/views/base/Cards.vue'),
           },
           {
             path: '/base/carousels',
+            meta: { requiresAuth: true },
             name: 'Carousels',
             component: () => import('@/views/base/Carousels.vue'),
           },
           {
             path: '/base/collapses',
+            meta: { requiresAuth: true },
             name: 'Collapses',
             component: () => import('@/views/base/Collapses.vue'),
           },
           {
             path: '/base/list-groups',
+            meta: { requiresAuth: true },
             name: 'List Groups',
             component: () => import('@/views/base/ListGroups.vue'),
           },
           {
             path: '/base/navs',
+            meta: { requiresAuth: true },
             name: 'Navs',
             component: () => import('@/views/base/Navs.vue'),
           },
           {
             path: '/base/paginations',
+            meta: { requiresAuth: true },
             name: 'Paginations',
             component: () => import('@/views/base/Paginations.vue'),
           },
           {
             path: '/base/placeholders',
+            meta: { requiresAuth: true },
             name: 'Placeholders',
             component: () => import('@/views/base/Placeholders.vue'),
           },
           {
             path: '/base/popovers',
+            meta: { requiresAuth: true },
             name: 'Popovers',
             component: () => import('@/views/base/Popovers.vue'),
           },
@@ -398,7 +421,7 @@ const routes = [
       {
         path: 'login',
         name: 'Login',
-        component: () => import('@/views/pages/Login'),
+        component: Login,
       },
       {
         path: 'register',
@@ -440,5 +463,18 @@ const router = createRouter({
     return { top: 0 }
   },
 })
+
+router.beforeEach((to, from, next) => {
+  console.log('Navigating to:', to.fullPath);
+  const isAuthenticated = !!localStorage.getItem('auth_token');
+  console.log('Is authenticated:'. isAuthenticated);
+
+  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    console.log('router requires auth and user is not autenticated, redirecting to login.');
+    next({ name: 'Login' });
+  } else {
+    next();
+  }
+});
 
 export default router

@@ -1,9 +1,17 @@
 <script setup>
 import { useTranslation } from 'i18next-vue'
 import avatar from '@/assets/images/avatars/8.jpg'
+import { useRouter } from 'vue-router';
 
 const { t } = useTranslation()
 const itemsCount = 42
+const router = useRouter()
+
+const logout = () => {
+  localStorage.removeItem('auth_token')
+  router.push('/pages/login')
+}
+
 </script>
 
 <template>
@@ -49,7 +57,7 @@ const itemsCount = 42
       </CDropdownItem>
       <CDropdownDivider />
       <CDropdownItem> <CIcon icon="cil-shield-alt" /> {{ t('lockAccount') }} </CDropdownItem>
-      <CDropdownItem> <CIcon icon="cil-lock-locked" /> {{ t('logout') }} </CDropdownItem>
+      <CDropdownItem @click="logout"> <CIcon icon="cil-lock-locked" /> {{ t('logout') }} </CDropdownItem>
     </CDropdownMenu>
   </CDropdown>
 </template>
