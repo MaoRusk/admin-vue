@@ -33,8 +33,13 @@ const props = defineProps({
   const biChartsPermission = ref("");
   const SelectedModulesString = ref("");
   const SelectedBichartsOptions = ref("");
-  const inputCheckExcel = ref(1);
-  const inputCheckPdf = ref(1);
+  const SelectedModulesCbo = ref("");
+  const SelectedYearsCbo = ref("");
+  const SelectedQuartersCbo = ref("");
+  const inputCheckExcel = ref(true);
+  const inputCheckPdf = ref(true);
+  const inputCheckColumns = ref(true);
+  const inputCheckFibras = ref(true);
 
   onMounted(() => {
     fetchData();
@@ -103,19 +108,43 @@ const props = defineProps({
       selectedPermissions.value = newValue;
       // Format String 
       SelectedBichartsOptions.value = selectedPermissions.value.map(item => item.value).join(',');
-      console.log(selectedPermissions.value);
+      console.log("BiCHartsOptions: "+SelectedBichartsOptions.value);
     };
-    const handletest = (newValue) => {
+    const handleModulesCbo = (newValue) => {
       selectedPermissions.value = newValue;
-      console.log(selectedPermissions.value);
-      generateData();
+      SelectedModulesCbo.value = selectedPermissions.value.map(item => item.value).join(',');
+      console.log("ModulesCbo: "+SelectedModulesCbo.value);    
+    };
+    const handleYearsCbo = (newValue) => {
+      selectedPermissions.value = newValue;
+      SelectedYearsCbo.value = selectedPermissions.value.map(item => item.value).join(',');
+      console.log("YearsCbo: "+SelectedYearsCbo.value);    
     };
 
-    const handleExcel = (event) => {
-      inputCheckPdf.value = event.target.checked;
-      console.log('PDF checkbox state:', inputCheckPdf.value);
-};
+    const handleQuartersCbo = (newValue) => {
+      selectedPermissions.value = newValue;
+      SelectedQuartersCbo.value = selectedPermissions.value.map(item => item.value).join(',');
+      console.log("QuartersCbo: "+SelectedQuartersCbo.value);    
+    };
 
+
+    
+    const handleExcel = (event) => {
+          inputCheckExcel.value = event.target.checked;
+          console.log('Excel checkbox state:', inputCheckExcel.value);
+    };
+    const handlePdf = (event) => {
+          inputCheckPdf.value = event.target.checked;
+          console.log('PDF checkbox state:', inputCheckPdf.value);
+    };
+    const handleColumns = (event) => {
+          inputCheckColumns.value = event.target.checked;
+          console.log('Columns checkbox state:', inputCheckColumns.value);
+    };
+    const handleFibras = (event) => {
+          inputCheckFibras.value = event.target.checked;
+          console.log('Fibras checkbox state:', inputCheckFibras.value);
+    };
 
 
     // const updatePermissions = () => {
@@ -128,10 +157,10 @@ const props = defineProps({
     // };
 
 
-  const generateData = () => {
-    SelectedModulesString.value = selectedPermissions.value.map(item => item.value).join(',');
-console.log(SelectedModulesString);
-  };
+//   const generateData = () => {
+//     SelectedModulesString.value = selectedPermissions.value.map(item => item.value).join(',');
+// console.log(SelectedModulesString);
+//   };
   // Add services
   const submitFunction = async () => {
           const formPermissions = new FormData();
@@ -201,8 +230,8 @@ console.log(SelectedModulesString);
         option.selected = false;
       });
     }
-    console.log("Deseleccionar O Seleccionar* el Market con todos sus subMarkets" +  selectedSubMarkets.value);
-    console.log("Deseleccionar O Seleccionar* el Market con todos sus subMarkets" +  selectedMarkets.value);
+    console.log("Deseleccionar O Seleccionar* el Market con todos sus selectedSubMarkets: " +  selectedSubMarkets.value);
+    console.log("Deseleccionar O Seleccionar* el Market con todos sus selectedMarkets: " +  selectedMarkets.value);
 
   };
 
@@ -223,8 +252,8 @@ console.log(SelectedModulesString);
         selectedMarkets.value = selectedMarkets.value.filter(val => val !== group.value);
       }
     }
-    console.log("Deseleccionar un SubMarket" + selectedSubMarkets.value);
-    console.log("Deseleccionar un SubMarket" + selectedMarkets.value);
+    console.log("Deseleccionar un selectedSubMarkets: " + selectedSubMarkets.value);
+    console.log("Deseleccionar un selectedMarkets: " + selectedMarkets.value);
   };
   
 // Seleccionar todos los markets y subMarkets
@@ -239,8 +268,8 @@ console.log(SelectedModulesString);
           option.selected = true;
         }
       });
-      console.log("Seleccionar todos los markets y subMarkets" + selectedSubMarkets.value);
-      console.log("Seleccionar todos los markets y subMarkets" + selectedMarkets.value);
+      console.log("Seleccionar todos selectedSubMarkets: " + selectedSubMarkets.value);
+      console.log("Seleccionar todos selectedMarkets: " + selectedMarkets.value);
     });
   };
 
@@ -253,8 +282,8 @@ console.log(SelectedModulesString);
         option.selected = false;
       });
     });
-    console.log("Deseleccionar todos los markets y subMarkets"+ selectedSubMarkets.value);
-    console.log("Deseleccionar todos los markets y subMarkets"+ selectedMarkets.value);
+    console.log("Deseleccionar todos selectedSubMarkets: "+ selectedSubMarkets.value);
+    console.log("Deseleccionar todos selectedMarkets: "+ selectedMarkets.value);
   };
 </script>
 <style>
@@ -300,14 +329,16 @@ console.log(SelectedModulesString);
                 <CCardBody style="padding: .6rem 1rem;">
                   <div style="    display: flex;">
                     <div>
-                      <CFormCheck  v-model="inputCheckExcel" checked />
-                       <img :src="checkedExcelImage" alt="Checkbox Image" class="iconsPermissions"/>
+                      <CFormCheck                        
+                      @change="handleExcel($event)"
+                      v-model="inputCheckExcel" />
+                      <img :src="checkedExcelImage" alt="Checkbox Image" class="iconsPermissions"/>
                     </div>
                     <div style="margin-left: 2rem;">
                       <CFormCheck 
                        v-model="inputCheckPdf"
                        :checked="inputCheckPdf"
-                        @change="handleExcel($event)"
+                        @change="handlePdf($event)"
                         />
                       <img :src="checkedPdfImage" alt="Checkbox Image" class="iconsPermissions"/>
                     </div>
@@ -317,14 +348,22 @@ console.log(SelectedModulesString);
               <CCard class="mb-1">
                 <CCardBody>
                   <div >
-                    <CFormCheck  v-model="inputCheckColumnas" label="Show Columnas (Owner, Developer, Builder, Contact, Phone, Mail)" checked />                    
+                    <CFormCheck  
+                    v-model="inputCheckColumns" 
+                    @change="handleColumns($event)"
+                    label="Show Columnas (Owner, Developer, Builder, Contact, Phone, Mail)" 
+                     />                    
                  </div>
                 </CCardBody>
               </CCard>
               <CCard class="mb-1">
                 <CCardBody>
                   <div >
-                    <CFormCheck  v-model="inputCheckFibras" label="Show Modulo Fibras" checked />
+                    <CFormCheck  
+                    v-model="inputCheckFibras" 
+                    @change="handleFibras($event)"
+                    label="Show Modulo Fibras" 
+                     />
                  </div>
                 </CCardBody>
 
@@ -346,7 +385,7 @@ console.log(SelectedModulesString);
               label="Select Modules"
               :options="modulesCbo"
               v-model="selectedModuleId" 
-              @change="handletest($event)"
+              @change="handleModulesCbo($event)"
               selectionType="counter" />
           </CCol>
               <CRow>
@@ -354,7 +393,7 @@ console.log(SelectedModulesString);
                   <CMultiSelect 
                   label="Select Years"
                   :options="yearsCbo" 
-                  @change="handletest($event)"
+                  @change="handleYearsCbo($event)"
                   selectionType="text" 
                   />
               </CCol>
@@ -362,7 +401,7 @@ console.log(SelectedModulesString);
                   <CMultiSelect 
                   label="Select Quarters"
                   :options="quartersCbo"
-                  @change="handletest($event)"
+                  @change="handleQuartersCbo($event)"
                   selectionType="text" />
               </CCol>
               </CRow>

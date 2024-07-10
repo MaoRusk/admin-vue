@@ -452,7 +452,7 @@ console.log(ModulesSelectedString);
            </CCol>
            </CCol>
         </CRow>
-        <CRow>
+        <!-- <CRow>
             <div style="display: flex; justify-content: center;padding:1rem">
               <CButton 
               color="success" 
@@ -461,7 +461,7 @@ console.log(ModulesSelectedString);
               @click="submitFunction"
               >Submit</CButton>
             </div>
-        </CRow>
+        </CRow> -->
         </CContainer>
     </div>
 </template>
