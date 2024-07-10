@@ -59,7 +59,11 @@ const routes = [
         component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
         props: true
       },
-
+      {
+        path: '/operacion/Buildings',
+        name: 'Buildings',
+        component: () => import('@/views/operacion/buildings/Buildings.vue'),
+      },
       {
         path: '/operacion/availability',
         name: 'Availability',

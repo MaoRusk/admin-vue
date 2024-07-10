@@ -45,9 +45,6 @@
         passwordFieldType.value = passwordFieldType.value === 'password' ? 'text' : 'password'
     }
 
-
-
-
   onMounted(() => {
     if (props.id) {
         fetchCompaniesCbo(props.id);
@@ -74,10 +71,12 @@
       // Llamado de apis en paralelo
       const [userResponse, companiesResponse] = await Promise.all([
         axios.get(`http://localhost:8000/api/user/${userId}`),
-        axios.get('http://localhost:8000/api/companies')
+        axios.get('http://localhost:8000/api/companies'),
+        // axios.get(`http://localhost:8000/api/user-details/${userId}`),
       ]);
 
       const userInfo = userResponse.data;
+      // const userInfoDetails = userDetailsResponse.data;
       const companies = companiesResponse.data;
 
       // Mapeo de empresa seleccionada
@@ -92,12 +91,35 @@
       middleName.value    = userInfo.middleName;
       userName.value      = userInfo.userName;
       totalScreens.value  = userInfo.totalScreens;
+      // image.value  = userInfoDetails.totalScreens;
+      // logoUrl.value  = userInfoDetails.totalScreens;
+
       status.value = userInfo.status === "Activo" ? "Activo" : "Inactivo";
 
     } catch (error) {
       console.error('Hubo un error obteniendo los datos:', error);
     }
   };
+
+// Dar de alta imagenes
+  
+const image = ref(null)
+const logoUrl = ref(null)
+
+const handleImageUpload = (event) => {
+  const file = event.target.files[0]
+  image.value = file
+}
+const localCompany = ref({ ...props.company })
+
+watch(() => props.company, (newVal) => {
+  localCompany.value = { ...newVal }
+})
+
+// const addNewImage = () => {
+//   image = null
+//   logoUrl = null
+// }
 
   // Validaciones
   const updateStatus = (newStatus) => {
@@ -296,7 +318,11 @@
                 label="Last Name *" 
                 placeholder="lastName" 
                 v-model="lastName"
+                :class="{'is-invalid': lastName .trim() === ''}"
                 aria-label="default input example"/>
+                <div v-if="lastName.trim() === ''" class="invalid-feedback">
+                El campo nombre no puede estar vacío
+              </div>
             </CCol>
             <CCol>
             <CForm>
@@ -320,7 +346,9 @@
                   label="Total Screens *" 
                   placeholder="totalScreens" 
                   v-model="totalScreens"
-                  aria-label="default input example"/>
+                  aria-label="default input example"
+                  required
+                  />
                 </CCol>
                 <CCol class="mb-8">
                   <CMultiSelect
@@ -338,14 +366,18 @@
                 label="Position *" 
                 placeholder="Position" 
                 v-model="position"
-                aria-label="default input example"/>
+                aria-label="default input example"
+                required
+                />
             </CCol>
             <CCol>
                 <CFormInput type="text"
                 label="UserName *" 
                 placeholder="userName" 
                 v-model="userName"
-                aria-label="default input example"/>
+                aria-label="default input example"
+                required
+                />
             </CCol>
             <CCol>
               <label for="">Password *</label>
@@ -372,12 +404,25 @@
                 :feedback="isPasswordMatch ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'"
               />
             </CCol>
-            <CCol>
+            <!-- <CCol md="6" class="mb-3" v-if="!logoUrl">
+              <CFormLabel for="formFile">Image:</CFormLabel>
                 <CFormInput 
                 type="file"
                 id="formFile" 
-                label="Image Profile" />
-            </CCol>
+                label="Image Profile" 
+                aria-label="file example"
+                @change="handleImageUpload"
+                />
+            </CCol> -->
+            <!-- <CCol md="6" class="mb-3" v-else>
+              <CFormLabel></CFormLabel><br>
+              <CAvatar color="secondary" size="xl" :src=logoUrl></CAvatar>
+              &nbsp;
+              <CButton color="primary" @click="addNewImage">
+                <CIcon icon="cil-image-plus" class="me-2" />
+                Change Image
+              </CButton>          
+            </CCol> -->
             <CCol>
                 <div style="display: flex; justify-content: left; align-items: center;">
                 <label for="status">Status</label>
