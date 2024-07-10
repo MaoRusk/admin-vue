@@ -329,16 +329,7 @@ console.log(SelectedModulesString);
                 </CCardBody>
 
               </CCard>
-            </CCol>
-            <!-- <CCol>
-                <CMultiSelect 
-                label="Select permissions"
-                :options="uniquePermissionsCbo" 
-                @change="handleUniquePermissionsChange($event)"
-                selectionType="counter"
-                 />
-            </CCol> -->
-          
+            </CCol>          
             <CCol>
                 <CMultiSelect 
                 label="Select BiChart options"

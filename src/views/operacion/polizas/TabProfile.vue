@@ -116,10 +116,10 @@ watch(() => props.company, (newVal) => {
   localCompany.value = { ...newVal }
 })
 
-const addNewImage = () => {
-  image = null
-  logoUrl = null
-}
+// const addNewImage = () => {
+//   image = null
+//   logoUrl = null
+// }
 
   // Validaciones
   const updateStatus = (newStatus) => {
@@ -404,7 +404,7 @@ const addNewImage = () => {
                 :feedback="isPasswordMatch ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'"
               />
             </CCol>
-            <CCol md="6" class="mb-3" v-if="!logoUrl">
+            <!-- <CCol md="6" class="mb-3" v-if="!logoUrl">
               <CFormLabel for="formFile">Image:</CFormLabel>
                 <CFormInput 
                 type="file"
@@ -413,8 +413,8 @@ const addNewImage = () => {
                 aria-label="file example"
                 @change="handleImageUpload"
                 />
-            </CCol>
-            <CCol md="6" class="mb-3" v-else>
+            </CCol> -->
+            <!-- <CCol md="6" class="mb-3" v-else>
               <CFormLabel></CFormLabel><br>
               <CAvatar color="secondary" size="xl" :src=logoUrl></CAvatar>
               &nbsp;
@@ -422,7 +422,7 @@ const addNewImage = () => {
                 <CIcon icon="cil-image-plus" class="me-2" />
                 Change Image
               </CButton>          
-            </CCol>
+            </CCol> -->
             <CCol>
                 <div style="display: flex; justify-content: left; align-items: center;">
                 <label for="status">Status</label>
