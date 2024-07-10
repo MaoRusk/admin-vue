@@ -461,15 +461,14 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  console.log('Navigating to:', to.fullPath);
   const isAuthenticated = !!localStorage.getItem('auth_token');
-  console.log('Is authenticated:'. isAuthenticated);
 
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    console.log('router requires auth and user is not autenticated, redirecting to login.');
     next({ name: 'Login' });
+
   } else {
     next();
+
   }
 });
 
