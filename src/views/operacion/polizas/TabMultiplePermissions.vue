@@ -219,18 +219,21 @@ const props = defineProps({
       selectedMarkets.value.push(group.value);
       group.options.forEach(option => {
         if (!selectedSubMarkets.value.includes(option.value)) {
-          selectedSubMarkets.value.push(option.value);
+          selectedSubMarkets.value.push({
+            subMarketId: option.value,
+            marketId: group.value
+          });          
           option.selected = true;
         }
       });
     } else {
       selectedMarkets.value = selectedMarkets.value.filter(val => val !== group.value);
       group.options.forEach(option => {
-        selectedSubMarkets.value = selectedSubMarkets.value.filter(val => val !== option.value);
+        selectedSubMarkets.value = selectedSubMarkets.value.filter(val => val.subMarketId !== option.value);
         option.selected = false;
       });
     }
-    console.log("Deseleccionar O Seleccionar* el Market con todos sus selectedSubMarkets: " +  selectedSubMarkets.value);
+    console.log("Deseleccionar O Seleccionar* el Market con todos sus selectedSubMarkets: " ,  selectedSubMarkets.value);
     console.log("Deseleccionar O Seleccionar* el Market con todos sus selectedMarkets: " +  selectedMarkets.value);
 
   };
@@ -240,19 +243,22 @@ const props = defineProps({
     option.selected = checked;
     if (checked) {
       if (!selectedSubMarkets.value.includes(option.value)) {
-        selectedSubMarkets.value.push(option.value);
-      }
+        selectedSubMarkets.value.push({
+            subMarketId: option.value,
+            marketId: group.value
+          });  
+        }
       if (!selectedMarkets.value.includes(group.value)) {
         selectedMarkets.value.push(group.value);
       }
     } else {
-      selectedSubMarkets.value = selectedSubMarkets.value.filter(val => val !== option.value);
+      selectedSubMarkets.value = selectedSubMarkets.value.filter(val => val.subMarketId !== option.value);
       const anyOptionSelected = group.options.some(opt => opt.selected);
       if (!anyOptionSelected) {
         selectedMarkets.value = selectedMarkets.value.filter(val => val !== group.value);
       }
     }
-    console.log("Deseleccionar un selectedSubMarkets: " + selectedSubMarkets.value);
+    console.log("Deseleccionar un selectedSubMarkets: " , selectedSubMarkets.value);
     console.log("Deseleccionar un selectedMarkets: " + selectedMarkets.value);
   };
   
@@ -264,11 +270,14 @@ const props = defineProps({
       }
       group.options.forEach(option => {
         if (!selectedSubMarkets.value.includes(option.value)) {
-          selectedSubMarkets.value.push(option.value);
+          selectedSubMarkets.value.push({
+            subMarketId: option.value,
+            marketId: group.value
+          });  
           option.selected = true;
         }
       });
-      console.log("Seleccionar todos selectedSubMarkets: " + selectedSubMarkets.value);
+      console.log("Seleccionar todos selectedSubMarkets: " , selectedSubMarkets.value);
       console.log("Seleccionar todos selectedMarkets: " + selectedMarkets.value);
     });
   };
@@ -282,7 +291,7 @@ const props = defineProps({
         option.selected = false;
       });
     });
-    console.log("Deseleccionar todos selectedSubMarkets: "+ selectedSubMarkets.value);
+    console.log("Deseleccionar todos selectedSubMarkets: ", selectedSubMarkets.value);
     console.log("Deseleccionar todos selectedMarkets: "+ selectedMarkets.value);
   };
 </script>
@@ -432,7 +441,7 @@ const props = defineProps({
                               hitArea="full"
                               :id="option.value"
                               :label="option.label"
-                              :modelValue="selectedSubMarkets.includes(option.value)"
+                              :modelValue="selectedSubMarkets.some(item => item.subMarketId === option.value)"
                               @update:modelValue="(checked) => toggleOption(group, option, checked)"
                             />
                           </CListGroupItem>
