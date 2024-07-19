@@ -386,7 +386,7 @@ console.log(ModulesSelectedString);
                  />
             </CCol>
             <CCol>
-              <label for="" class="mt-1"> Select Markets And Submarkets </label>
+              <label class="mt-1"> Select Markets And Submarkets </label>
               <CAccordion class="mt-2">
                 <CAccordionItem :item-key="1">
                   <CAccordionHeader>

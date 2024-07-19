@@ -1,39 +1,35 @@
 <script setup>
-import { computed, ref } from 'vue'
-import data from './_data'
+  import { ref, onMounted, computed } from 'vue';
+  import axios from 'axios';
+  import { useRouter } from 'vue-router';
+  import { cilPlus } from '@coreui/icons'
+  import data from './_data'
 
-const selected = ref([2, 3])
+  const router = useRouter();
+  const users = ref(data);
 
-const usersData = computed(() =>
-  data.map((item, id) => {
-    const _selected = selected.value.includes(id)
-    return {
-      ...item,
-      id,
-      _selected,
-    }
-  }),
-)
+  const selectedStatus = ref('All');
 
-const check = (event, id) => {
-  if (event.target.checked) {
-    selected.value = [...selected.value, id]
-  } else {
-    selected.value = selected.value.filter((itemId) => itemId !== id)
+const statusOptions = computed(() => ['All', ...new Set(users.value.map(user => user.status))]);
+
+const filteredUsers = computed(() => {
+  if (selectedStatus.value === 'All') {
+    return users.value;
   }
-}
+  return users.value.filter(user => user.status === selectedStatus.value);
+});
 
-const columns = [
-  { key: 'select', label: '', filter: false, sorter: false },
-  { key: 'name1', label: 'Name', filter: false, sorter: false },
-  { key: 'registered', label: 'Registered', filter: false, sorter: false },
-  { key: 'status', label: 'Status', filter: false, sorter: false },
-  { key: 'market', label: 'Marke', filter: false, sorter: false },
-  { key: 'subMarket', label: 'SubMarket', filter: false, sorter: false },
-  { key: 'industrialPark', label: 'Industria Park', filter: false, sorter: false },
+  const columns = [
+    { key: 'status', label: 'status' },
+    { key: 'name1', label: 'BuildingName' },
+    { key: 'market', label: 'market' },
+    { key: 'subMarket', label: 'subMarket' },
+    { key: 'industrialPark', label: 'industrialPark' },
+    { key: 'registered', label: 'registered' },
+    { key: 'actions', label: 'actions' },
+  ];
+
   
-]
-
 const getBadge = (status) => {
   switch (status) {
     case 'Available':
@@ -46,36 +42,70 @@ const getBadge = (status) => {
       'primary'
   }
 }
+
+  const showUserDetails = (item) => {
+    router.push({
+      name: 'BuildingDetalle',
+      params: { id: Number(item.id) },
+    })
+  }
+  const addUserFunction = () => {
+    router.push({
+      name: 'BuildingDetalle',
+      params: { id: 0 },
+    })
+  }
 </script>
 
 <template>
-  Selected: {{ JSON.stringify(selected) }}
+  <!-- Botón para agregar usuario -->
+  <div class="d-flex justify-content-end mb-3">
+    <CButton color="success" @click="addUserFunction()">
+      <CIcon :content="cilPlus" size="sm" />
+      New Building
+    </CButton>
+  </div>
+  <div class="d-flex justify-content-end align-items-center mb-3">
+    <div>
+      <CFormSelect
+        v-model="selectedStatus"
+        :options="statusOptions"
+        style="width: 200px;"
+      />
+    </div>
+
+  </div>
   <CSmartTable
-    :items="usersData"
-    :columns="columns"
-    column-filter
-    table-filter
+    :active-page="1"
     cleaner
-    :items-per-page="5"
+    column-filter
     column-sorter
+    :columns="columns"
+    clickable-rows
+    footer
+    header
+    :items-per-page="10"
+    items-per-page-select
+    :items="filteredUsers"
     pagination
+    table-filter
     :table-props="{
+      hover: true,
+      striped: true,
       responsive: true,
     }"
   >
-    <template #status="{ item }">
+  <template #status="{ item }">
       <td>
         <CBadge :color="getBadge(item.status)">{{ item.status }}</CBadge>
       </td>
     </template>
-    <template #select="{ item }">
+
+    <template #actions="{ item }">
       <td class="py-2">
-        <CFormCheck
-          :id="`checkbox${item.id}`"
-          :checked="item._selected"
-          @change="(event) => check(event, item.id)"
-        />
-        <CFormLabel variant="custom-checkbox" :for="`checkbox${item.id}`" />
+        <CButton color="primary" variant="outline" square size="sm" @click="showUserDetails(item)">
+          {{ 'Details' }}
+        </CButton>
       </td>
     </template>
   </CSmartTable>

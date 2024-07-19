@@ -297,7 +297,7 @@ console.log(ModulesSelectedString);
             <CCol :md="6">
            
            <CCol>
-             <label for="" class="mt-1"> Select Markets And Submarkets </label>
+             <label class="mt-1"> Select Markets And Submarkets </label>
            
                    <CListGroup>
                      <CListGroupItem v-for="group in optionsMarketsAndSubmarkets" :key="group.value" class="list-group-item-pather-custom">

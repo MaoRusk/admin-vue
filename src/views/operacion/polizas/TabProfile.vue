@@ -380,7 +380,7 @@ watch(() => props.company, (newVal) => {
                 />
             </CCol>
             <CCol>
-              <label for="">Password *</label>
+              <label >Password *</label>
               <div style="display: flex;">
                 <CFormInput
                   :type="passwordFieldType"

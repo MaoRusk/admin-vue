@@ -6,6 +6,7 @@ import DefaultLayout from '@/layouts/DefaultLayout'
 
 import EmpresaDetalle from '../views/operacion/empresas/EmpresaDetalle.vue';
 import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue';
+import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue';
 import Login from '../views/pages/Login.vue';
 
 const routes = [
@@ -60,9 +61,16 @@ const routes = [
         props: true
       },
       {
-        path: '/operacion/Buildings',
+        path: '/operacion/buildings',
         name: 'Buildings',
         component: () => import('@/views/operacion/buildings/Buildings.vue'),
+      },
+      {
+        path: '/operacion/building/:id', // Nueva ruta para BuildingDetalle
+        meta: { requiresAuth: true },
+        name: 'BuildingDetalle',
+        component: BuildingDetalle,
+        props: true, // Permitir pasar parámetros como props
       },
       {
         path: '/operacion/availability',
