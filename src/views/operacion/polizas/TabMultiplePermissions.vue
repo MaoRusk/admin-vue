@@ -28,9 +28,6 @@ const props = defineProps({
   const yearsCbo = ref(years);
   const quartersCbo = ref(quarters);
   const selectedPermissions = ref([]);
-  const excelPermission = ref("");
-  const fibrasPermission = ref("");
-  const biChartsPermission = ref("");
   const SelectedModulesString = ref("");
   const SelectedBichartsOptions = ref("");
   const SelectedModulesCbo = ref("");
@@ -43,6 +40,8 @@ const props = defineProps({
 
   onMounted(() => {
     fetchData();
+    // Se formatean daos en SelectedBichartsOptions por si no se modifica el select(al no tocarse enviaria datos vacios aunque haya datos default) 
+    SelectedBichartsOptions.value = biChartsModulesCbo.value[0].options.map(item => item.value).join(',');
   });
 
   watch(
@@ -101,6 +100,7 @@ const props = defineProps({
           selected: false, 
         })),
     }));
+    console.log("Arreglo de markets y subMarkets " ,optionsMarketsAndSubmarkets.value);
   };
 
     
@@ -146,65 +146,38 @@ const props = defineProps({
           console.log('Fibras checkbox state:', inputCheckFibras.value);
     };
 
-
-    // const updatePermissions = () => {
-    //   const selectedValues = selectedPermissions.value.map(value => value.value);
-    //   excelPermission.value = selectedValues.includes(2) ? 1 : 0;
-    //   fibrasPermission.value = selectedValues.includes(3) ? 1 : 0;
-    //   biChartsPermission.value = selectedValues.includes(1) ? 1 : 0;
-    //   console.log("Permisos");
-    //   console.log(excelPermission.value);
-    // };
-
-
-//   const generateData = () => {
-//     SelectedModulesString.value = selectedPermissions.value.map(item => item.value).join(',');
-// console.log(SelectedModulesString);
-//   };
   // Add services
   const submitFunction = async () => {
-          const formPermissions = new FormData();
-          formPermissions.append('quarters', selectedQuarters.value);
-          formPermissions.append('years', selectedYears.value);
-          formPermissions.append('markets', selectedMarkets.value);
-          formPermissions.append('submarkets', selectedSubMarkets.value);
-          formPermissions.append('modules', SelectedModulesString.value);
-                
-          axios.post(`http://localhost:8000/api/permission/${props.id}`, formPermissions).then(response => {
-           
-            const formDataUnique = new FormData();
-            formDataUnique.append('userId', props.id);
-            formDataUnique.append('moduleId', 1);
-            formDataUnique.append('excelPermission', excelPermission.value);
-            formDataUnique.append('fibrasPermission', fibrasPermission.value);
-            formDataUnique.append('biChartsPermission', biChartsPermission.value);
-            formDataUnique.append('status', "Activo");
-              axios.post('http://localhost:8000/api/unique', formDataUnique)
-              .then(segundaRespuesta => {
-                Swal.fire({
-                  title: "Added!",
-                  text: "Permissions added successfully.",
-                  icon: "success",
-                  showConfirmButton: false,
-                  timer: 1500
-                }).then(() => {
-                  router.push({
-                    name: 'Polizas',
-                    params: { id: Number(0) },
-                  })
-                });
-              })
+
+      const formPermissions = new FormData();
+      formPermissions.append('excelPermission', inputCheckExcel.value);
+      formPermissions.append('flyerPermission', inputCheckPdf.value);
+      formPermissions.append('columnsPermission', inputCheckColumns.value);
+      formPermissions.append('fibrasPermission', inputCheckFibras.value);
+      formPermissions.append('biChartsPermission', SelectedBichartsOptions.value);
+      formPermissions.append('modulesCbo', SelectedModulesCbo.value);
+      formPermissions.append('yearsCbo', SelectedYearsCbo.value);
+      formPermissions.append('quartersCbo', SelectedQuartersCbo.value);
+      formPermissions.append('marketsArray', JSON.stringify(selectedSubMarkets.value));
+            
+      axios.post(`http://localhost:8000/api/permissions/multiple/${props.id}`, formPermissions).then(response => {
+        Swal.fire({
+          title: "Added!",
+          text: "Permissions added successfully.",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 1500
           })
-          
-          .catch(error => {
-            Swal.fire({
-              title: "Error adding Permissions.",
-              text: error.response.data.message,
-              icon: "error",
-              showConfirmButton: false,
-              timer: 2000
-            });
-          });
+        })
+      .catch(error => {
+        Swal.fire({
+          title: "Error adding Permissions.",
+          text: error.response.data.message,
+          icon: "error",
+          showConfirmButton: false,
+          timer: 10000
+        });
+      });
     }
 
 // *****************************SELECCIONES DE MERCADOS SURBMERCADOS / AÑOS Y TRIMESTRES****************************************
@@ -233,6 +206,7 @@ const props = defineProps({
         option.selected = false;
       });
     }
+
     console.log("Deseleccionar O Seleccionar* el Market con todos sus selectedSubMarkets: " ,  selectedSubMarkets.value);
     console.log("Deseleccionar O Seleccionar* el Market con todos sus selectedMarkets: " +  selectedMarkets.value);
 
@@ -393,7 +367,6 @@ const props = defineProps({
               <CMultiSelect 
               label="Select Modules"
               :options="modulesCbo"
-              v-model="selectedModuleId" 
               @change="handleModulesCbo($event)"
               selectionType="counter" />
           </CCol>
