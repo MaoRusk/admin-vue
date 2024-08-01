@@ -4,7 +4,7 @@
   import { cilArrowCircleLeft, cilBasket } from '@coreui/icons'
   import axios from 'axios';
   import MultiplePermissionsModules from './TabMultiplePermissions.vue'
-  import permissionsModules from './TabPermissionsTable.vue'
+  import permissionsModules from './TabPermissionsOneToOne.vue'
   import profile from './TabProfile.vue'
 
   const router = useRouter()

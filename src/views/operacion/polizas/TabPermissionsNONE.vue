@@ -1,7 +1,7 @@
 <script setup>
   import { ref, onMounted, computed, watch } from 'vue';
   import axios from 'axios';
-  import permissionsModules from './TabPermissions.vue'
+  import permissionsModules from './TabPermissionsNONE.vue'
   // import years from '../../../assets/json/years'
   import quartersAndYears from '../../../assets/json/quarters'
   import uniquePermissions from '../../../assets/json/uniquePermissions'
