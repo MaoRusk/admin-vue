@@ -14,7 +14,9 @@
       },
   });
 
-  const companiesCbo = ref([]);
+
+
+  const userTypesCbo = ref([]);
   const name = ref('Miriam');
   const lastName = ref('Herrera');
   const middleName = ref('');
@@ -24,76 +26,50 @@
   const passwordVisible = ref(false)
   const totalScreens = ref('3');
   const status = ref('Activo');
-  const position = ref('developer');
-  const email = ref('');
-  const selectedCompany = ref('');
+  const selectedUserType = ref('');
   
   const confirmPassword = ref('')
-
-  const isValidEmail = ref(true)
-
-  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
-
-  const validateEmail = () => {
-    isValidEmail.value = emailRegex.test(email.value) || email.value === ''
-  }
   
-  const isValid = ref(true)
-  const validationFeedback = ref('')
-
-    const togglePasswordVisibility = () => {
-        passwordFieldType.value = passwordFieldType.value === 'password' ? 'text' : 'password'
-    }
+    // const togglePasswordVisibility = () => {
+    //     passwordFieldType.value = passwordFieldType.value === 'password' ? 'text' : 'password'
+    // }
 
   onMounted(() => {
-    if (props.id) {
-        fetchCompaniesCbo(props.id);
+    if (props.id != 0) {
+        fetchServices(props.id);
       }else{
         fetchCompanies();
       }
   });
 
+  
   const fetchCompanies = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/companies');
-      companiesCbo.value = response.data.map(company => ({
-        value: company.id,
-        label: company.nameCompany,
-        selected: false
-      }));
+      const response = await axios.get(`http://localhost:8000/api/user-types`);
+      userTypesCbo.value = response.data;
+
     } catch (error) {
       console.error('Hubo un error obteniendo el combo companies:', error);
     }
   };
   
-  const fetchCompaniesCbo = async (userId) => {
+  
+  const fetchServices = async (userId) => {
     try {
       // Llamado de apis en paralelo
-      const [userResponse, companiesResponse] = await Promise.all([
+      const [userResponse] = await Promise.all([
         axios.get(`http://localhost:8000/api/user/${userId}`),
-        axios.get('http://localhost:8000/api/companies'),
-        // axios.get(`http://localhost:8000/api/user-details/${userId}`),
       ]);
 
       const userInfo = userResponse.data;
+
       // const userInfoDetails = userDetailsResponse.data;
       const companies = companiesResponse.data;
-
-      // Mapeo de empresa seleccionada
-      companiesCbo.value = companies.map(company => ({
-        value: company.id,
-        label: company.nameCompany,
-        selected: company.id === userInfo.companyId
-      }));
 
       name.value          = userInfo.name;
       lastName.value      = userInfo.lastName;
       middleName.value    = userInfo.middleName;
       userName.value      = userInfo.userName;
-      totalScreens.value  = userInfo.totalScreens;
-      // image.value  = userInfoDetails.totalScreens;
-      // logoUrl.value  = userInfoDetails.totalScreens;
-
       status.value = userInfo.status === "Activo" ? "Activo" : "Inactivo";
 
     } catch (error) {
@@ -101,35 +77,15 @@
     }
   };
 
-// Dar de alta imagenes
-  
-const image = ref(null)
-const logoUrl = ref(null)
-
-const handleImageUpload = (event) => {
-  const file = event.target.files[0]
-  image.value = file
-}
-const localCompany = ref({ ...props.company })
-
-watch(() => props.company, (newVal) => {
-  localCompany.value = { ...newVal }
-})
-
-// const addNewImage = () => {
-//   image = null
-//   logoUrl = null
-// }
-
   // Validaciones
   const updateStatus = (newStatus) => {
     status.value = newStatus;
   };
   
-  const handleCompanyChange = (value) => {
+  const handleUserTypeChange = (value) => {
     if (value != 0) {   
-      selectedCompany.value = value[0].value;
-      console.log("Selected company ID:", selectedCompany.value);
+      selectedUserType.value = value[0].value;
+      console.log("Selected User type ID:", selectedUserType.value);
     }
   };
   const isPasswordMatch = computed(() => {
@@ -140,13 +96,10 @@ watch(() => props.company, (newVal) => {
     return (
       name.value.trim() !== '' &&
       lastName.value.trim() !== '' &&
-      // email.value.trim() !== '' &&
-      totalScreens.value !== '' &&
-      position.value.trim() !== '' &&
       userName.value.trim() !== '' &&
       password.value.trim() !== '' &&
       // isValidEmail.value == 'true' &&
-      (props.id === 0 || props.id === ''
+      (props.id == 0 || props.id === ''
         ? confirmPassword.value.trim() !== '' && password.value === confirmPassword.value
         : true)
     );
@@ -167,12 +120,9 @@ watch(() => props.company, (newVal) => {
       const formData = new FormData();
           formData.append('name', name.value);
           formData.append('lastName', lastName.value);
-          formData.append('middleName', middleName.value);
           formData.append('userName', userName.value);
           formData.append('password', password.value);
-          formData.append('companyId', selectedCompany.value);
-          formData.append('userTypeId', 2);
-          formData.append('totalScreens', totalScreens.value);
+          formData.append('userTypeId', selectedUserType.value);
           formData.append('status', status.value);
   
           axios.post('http://localhost:8000/api/user', formData).then(response => {
@@ -184,7 +134,7 @@ watch(() => props.company, (newVal) => {
               timer: 3500
             }).then(() => {
               router.push({
-                name: 'Polizas',
+                name: 'Employees',
                 params: { id: Number(0) },
               })
             });
@@ -219,7 +169,7 @@ watch(() => props.company, (newVal) => {
         formData.append('middleName', middleName.value);
         formData.append('userName', userName.value);
         formData.append('password', password.value);
-        formData.append('companyId', selectedCompany.value);
+        formData.append('companyId', selectedUserType.value);
         formData.append('userTypeId', 2);
         formData.append('totalScreens', totalScreens.value);
         formData.append('status', status.value);
@@ -234,7 +184,7 @@ watch(() => props.company, (newVal) => {
           timer: 1500
         }).then(() => {
           router.push({
-            name: 'Polizas',
+            name: 'Employees',
             params: { id: Number(0) },
           })
         });
@@ -271,7 +221,7 @@ watch(() => props.company, (newVal) => {
             timer: 1500
           }).then(() => {
             router.push({
-              name: 'Polizas',
+              name: 'Employees',
               params: { id: Number(0) },
             })
           });
@@ -291,15 +241,6 @@ watch(() => props.company, (newVal) => {
     <CContainer>
         <CRow>
             <CCol :md="6">
-            <CCol>     
-              <CMultiSelect
-                  :multiple="false"
-                  label="Select companie *"
-                  v-model="selectedCompany"
-                  :options="companiesCbo"
-                  @change="handleCompanyChange($event)"
-                  />
-            </CCol>
             <CCol>
               <CFormInput
                 type="text"
@@ -325,51 +266,20 @@ watch(() => props.company, (newVal) => {
               </div>
             </CCol>
             <CCol>
-            <CForm>
-                <CFormInput
-                type="email"
-                id="exampleFormControlInput1"
-                label="Email address"
-                placeholder="name@example.com"
-                text="Must be 8-20 characters long."
-                :valid="isValidEmail"
-                :invalid="!isValidEmail && email !== ''"
-                v-model="email"
-                @input="validateEmail"
-                />
-            </CForm>
-            </CCol>
-            <CCol>
-              <CRow>
-                <CCol class="mb-4">
-                  <CFormInput type="number"
-                  label="Total Screens *" 
-                  placeholder="totalScreens" 
-                  v-model="totalScreens"
-                  aria-label="default input example"
-                  required
-                  />
-                </CCol>
-                <CCol class="mb-8">
-                  <CMultiSelect
+              <CMultiSelect
                     :multiple="false"
-                    label="Deactivate screen"
-                    v-model="selectedCompany"
+                    label="Select Position *"
+                    v-model="selectedUserType"
+                    optionsStyle="text"
+                    :options="userTypesCbo"
+                  @change="handleUserTypeChange"
                     />
-                </CCol>
-              </CRow>
-            </CCol> 
+            </CCol>
+
+            <CCol>
+            </CCol>
             </CCol>
             <CCol :md="6">
-            <CCol>
-                <CFormInput type="text"
-                label="Position *" 
-                placeholder="Position" 
-                v-model="position"
-                aria-label="default input example"
-                required
-                />
-            </CCol>
             <CCol>
                 <CFormInput type="text"
                 label="UserName *" 
@@ -387,14 +297,10 @@ watch(() => props.company, (newVal) => {
                   v-model="password"
                   id="inputPassword"
                 />
-                <CButton color="secondary" variant="outline" @click="togglePasswordVisibility">
-                  <!-- <CIcon :content="cilLowVision" size="sm" /> -->
-                  {{ passwordFieldType === 'password' ? 'Show' : 'Hide' }}
-                </CButton>
               </div>
 
             </CCol>
-            <CCol v-if="props.id === 0 || props.id === ''">
+            <CCol v-if="props.id == 0 || props.id === ''">
               <CFormInput
                 label="Confirm Password"
                 type="password"
@@ -404,25 +310,6 @@ watch(() => props.company, (newVal) => {
                 :feedback="isPasswordMatch ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'"
               />
             </CCol>
-            <!-- <CCol md="6" class="mb-3" v-if="!logoUrl">
-              <CFormLabel for="formFile">Image:</CFormLabel>
-                <CFormInput 
-                type="file"
-                id="formFile" 
-                label="Image Profile" 
-                aria-label="file example"
-                @change="handleImageUpload"
-                />
-            </CCol> -->
-            <!-- <CCol md="6" class="mb-3" v-else>
-              <CFormLabel></CFormLabel><br>
-              <CAvatar color="secondary" size="xl" :src=logoUrl></CAvatar>
-              &nbsp;
-              <CButton color="primary" @click="addNewImage">
-                <CIcon icon="cil-image-plus" class="me-2" />
-                Change Image
-              </CButton>          
-            </CCol> -->
             <CCol>
                 <div style="display: flex; justify-content: left; align-items: center;">
                 <label for="status">Status</label>
@@ -451,7 +338,7 @@ watch(() => props.company, (newVal) => {
             </CCol>
         </CRow>
         <CRow>
-            <template v-if="props.id !== 0 && props.id !== ''">
+            <template v-if="props.id != 0 && props.id !== ''">
               <div style="display: flex; justify-content: center;padding:1rem">
                 <CButton color="danger" variant="outline" @click="deleteUser()" style="margin-right: 1rem;">
                   <CIcon :content="cilTrash" size="sm" />

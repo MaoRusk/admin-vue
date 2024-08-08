@@ -72,7 +72,7 @@ export default {
           password: this.password,
         });
         
-        localStorage.setItem('auth_token', response.data.access_token);
+        sessionStorage.setItem('auth_token', response.data.access_token);
         this.$router.push('/dashboard'); // Redirige a la página de inicio o la que desees
 
       } catch (error) {

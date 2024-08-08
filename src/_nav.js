@@ -42,8 +42,14 @@ export default [
   },
   {
     component: 'CNavItem',
-    name: 'Empresas',
+    name: 'Companies',
     to: '/operacion/empresas',
+    icon: 'cil-list',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Employees',
+    to: '/operacion/employees',
     icon: 'cil-list',
   },
   {

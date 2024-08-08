@@ -4,7 +4,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import i18next from '@/i18n';
 import DefaultLayout from '@/layouts/DefaultLayout'
 
-import EmpresaDetalle from '../views/operacion/empresas/EmpresaDetalle.vue';
+import EmployeeDetalle from '../views/operacion/employees/EmployeeDetalle.vue';
 import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue';
 import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue';
 import Login from '../views/pages/Login.vue';
@@ -60,13 +60,28 @@ const routes = [
         component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
         props: true
       },
+
+      {
+        path: '/operacion/employees',
+        meta: { requiresAuth: true },
+        name: 'Employees',
+        component: () => import('@/views/operacion/employees/Employees.vue'),
+      },
+      {
+        path: '/operacion/employee/:id',
+        meta: { requiresAuth: true },
+        name: 'EmployeeDetalle',
+        component: EmployeeDetalle,
+        props: true
+      },
+
       {
         path: '/operacion/buildings',
         name: 'Buildings',
         component: () => import('@/views/operacion/buildings/Buildings.vue'),
       },
       {
-        path: '/operacion/building/:id', // Nueva ruta para BuildingDetalle
+        path: '/operacion/building/:id', // Nueva ruta
         meta: { requiresAuth: true },
         name: 'BuildingDetalle',
         component: BuildingDetalle,
@@ -473,7 +488,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem('auth_token');
+  const isAuthenticated = !!sessionStorage.getItem('auth_token');
 
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
     next({ name: 'Login' });
