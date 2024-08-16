@@ -15,16 +15,16 @@
   });
 
   const companiesCbo = ref([]);
-  const name = ref('Miriam');
-  const lastName = ref('Herrera');
+  const name = ref('');
+  const lastName = ref('');
   const middleName = ref('');
-  const userName = ref('MNHR');
-  const password = ref('qqqq')
-  const passwordFieldType = ref("password")
+  const userName = ref('');
+  const password = ref('')
+  const passwordFieldType = ref("")
   const passwordVisible = ref(false)
-  const totalScreens = ref('3');
+  const totalScreens = ref('');
   const status = ref('Activo');
-  const position = ref('developer');
+  const position = ref('');
   const email = ref('');
   const selectedCompany = ref('');
   

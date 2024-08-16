@@ -1,80 +1,72 @@
 <script setup>
-  import { ref, onMounted, computed } from 'vue';
-  import axios from 'axios';
-  import { useRouter } from 'vue-router';
-  import { cilPlus } from '@coreui/icons'
-  import data from './_data'
+import { ref, onMounted, computed } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
+import { cilPlus } from '@coreui/icons';
+import data from './_data';
 
-  const router = useRouter();
-  const users = ref(data);
+const router = useRouter();
+const employees = ref([]);
 
-  const selectedStatus = ref('All');
+const selectedStatus = ref('All');
 
-const statusOptions = computed(() => ['All', ...new Set(users.value.map(user => user.status))]);
+const statusOptions = computed(() => ['All', ...new Set(employees.value.map(employee => employee.typeName))]);
 
-const filteredUsers = computed(() => {
+const filteredEmployees = computed(() => {
   if (selectedStatus.value === 'All') {
-    return users.value;
+    return employees.value;
   }
-  return users.value.filter(user => user.status === selectedStatus.value);
+  return employees.value.filter(employee => employee.typeName === selectedStatus.value);
 });
 
-  const columns = [
-    { key: 'status', label: 'status' },
-    { key: 'name1', label: 'BuildingName' },
-    { key: 'market', label: 'market' },
-    { key: 'subMarket', label: 'subMarket' },
-    { key: 'industrialPark', label: 'industrialPark' },
-    { key: 'registered', label: 'registered' },
-    { key: 'actions', label: 'actions' },
-  ];
+const columns = [
+  { key: 'id', label: 'ID' },
+  { key: 'name', label: 'Name' },
+  { key: 'lastName', label: 'Last Name' },
+  { key: 'userName', label: 'User Name' },
+  { key: 'typeName', label: 'Position' },
+  { key: 'status', label: 'Status' },
+  { key: 'actions', label: 'Actions' },
+];
 
-  
-const getBadge = (status) => {
-  switch (status) {
-    case 'Available':
-      return 'success'
-    case 'Absorption':
-      return 'danger'
-    case 'NegativeAbsoprtion':
-      return 'secondary'
-    default:
-      'primary'
-  }
-}
+const showEmployeeDetails = (item) => {
+  router.push({
+    name: 'EmployeeDetalle',
+    params: { id: Number(item.id) },
+  });
+};
 
-  const showEmployeeDetails = (item) => {
-    router.push({
-      name: 'EmployeeDetalle',
-      params: { id: Number(item.id) },
-    })
+const addUserFunction = () => {
+  router.push({
+    name: 'EmployeeDetalle',
+    params: { id: 0 },
+  });
+};
+
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/api/employees');
+    employees.value = response.data;
+  } catch (error) {
+    console.error('Error fetching employees:', error);
   }
-  const addUserFunction = () => {
-    router.push({
-      name: 'EmployeeDetalle',
-      params: { id: 0 },
-    })
-  }
+});
 </script>
 
 <template>
-  <!-- Botón para agregar usuario -->
   <div class="d-flex justify-content-end mb-3">
     <CButton color="success" @click="addUserFunction()">
       <CIcon :content="cilPlus" size="sm" />
       New Building
     </CButton>
   </div>
+
   <div class="d-flex justify-content-end align-items-center mb-3">
     <div>
-      <CFormSelect
-        v-model="selectedStatus"
-        :options="statusOptions"
-        style="width: 200px;"
-      />
+      <CFormSelect v-model="selectedStatus" :options="statusOptions" style="width: 200px;" />
     </div>
-
   </div>
+
   <CSmartTable
     :active-page="1"
     cleaner
@@ -82,11 +74,10 @@ const getBadge = (status) => {
     column-sorter
     :columns="columns"
     clickable-rows
-    footer
     header
     :items-per-page="10"
     items-per-page-select
-    :items="filteredUsers"
+    :items="filteredEmployees"
     pagination
     table-filter
     :table-props="{
@@ -95,11 +86,6 @@ const getBadge = (status) => {
       responsive: true,
     }"
   >
-  <template #status="{ item }">
-      <td>
-        <CBadge :color="getBadge(item.status)">{{ item.status }}</CBadge>
-      </td>
-    </template>
 
     <template #actions="{ item }">
       <td class="py-2">
