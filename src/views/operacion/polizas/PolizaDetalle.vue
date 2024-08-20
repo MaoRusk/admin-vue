@@ -62,22 +62,7 @@
         </router-link>
       </div>
     </div>
-    <div style="display: flex; justify-content: right;">
-      <div style="margin-right: .5rem;">
-        <CMultiSelect
-          :multiple="false"
-          label="Heredar Permisos"
-          v-model="selectedCompany"
-          :options="usersCbo"
-          @change="handleCompanyChange($event)"
-        />
-      </div>
-      <div style="display: flex;justify-content: flex-end;align-items: flex-end;">
-          <CButton color="warning" variant="outline">
-            Confirm
-          </CButton>
-      </div>
-    </div>
+  
     <CTabs activeItemKey="profile">
       <CTabList variant="tabs">
         <CTab itemKey="profile">Profile</CTab>
