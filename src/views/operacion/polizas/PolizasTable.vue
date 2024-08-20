@@ -8,15 +8,13 @@ const router = useRouter();
 const usersData = ref([]);
 const selected = ref([]);
 const selectAll = ref(false);
+const modulesCbo = ref([]);
+const marketsCbo = ref([]);
+const submarketCbo = ref([]);
+
+
 
 const columns = [
-  {
-    key: 'select',
-    label: '',
-    _style: { width: '1%' },
-    filter: false,
-    sorter: false,
-  },
   { key: 'name', _style: { width: '25%' } },
   { key: 'lastName', _style: { width: '15%' } },
   { key: 'userName', _style: { width: '15%' } },
@@ -32,6 +30,7 @@ const processedUsersData = computed(() => {
 });
 
 onMounted(fetchUsers);
+onMounted(fetchData);
 
 async function fetchUsers() {
   try {
@@ -80,17 +79,77 @@ function toggleSelectAll() {
     selected.value = [];
   }
 }
+
+async function fetchData() {
+    try {
+      const [modulesResponse, marketsResponse, submarketResponse] = await Promise.all([
+        axios.get('http://localhost:8000/api/modules'),
+        axios.get('http://localhost:8000/api/market'),
+        axios.get('http://localhost:8000/api/submarket'),
+      ]);
+
+      modulesCbo.value = modulesResponse.data.map(module => ({
+        value: module.id,
+        label: module.moduleName,
+      }));
+
+      marketsCbo.value = marketsResponse.data.map(market => ({
+        value: market.id,
+        label: market.marketName,
+      }));
+
+      submarketCbo.value = submarketResponse.data.map(submarket => ({
+        value: submarket.id,
+        label: submarket.subMarketName,
+        marketId: submarket.marketId,
+      }));
+
+    } catch (error) {
+      console.error('Hubo un error obteniendo los datos:', error);
+    }
+  };
 </script>
 
 <template>
-  <div class="d-flex justify-content-end mb-3">
+  <!-- <div class="d-flex justify-content-end mb-3">
+    <div>
+      <CMultiSelect 
+        label="Select Modules"
+        :options="modulesCbo"
+        @change="handleModulesCbo($event)"
+        selectionType="counter" />
+    </div>
+    <div>      
+      <CMultiSelect 
+        label="Select Markets"
+        :options="modulesCbo"
+        @change="handleModulesCbo($event)"
+        selectionType="counter" />
+    </div>
+    <div>      
+      <CMultiSelect 
+        label="Select Submarket"
+        :options="modulesCbo"
+        @change="handleModulesCbo($event)"
+        selectionType="counter" />
+    </div>
+    <div>      
+      <CMultiSelect 
+        label="Select Year"
+        :options="modulesCbo"
+        @change="handleModulesCbo($event)"
+        selectionType="counter" />
+    </div>
+   
+    
     <CButton color="success" @click="addUserFunction">
       <CIcon :content="cilUserPlus" size="sm" />
       Add User
     </CButton>
-  </div>
+  </div> -->
 
   <CSmartTable
+  selectable
     :columns="columns"
     :items="processedUsersData"
     :active-page="1"
@@ -110,27 +169,6 @@ function toggleSelectAll() {
       responsive: true,
     }"
   >
-    <!-- Checkbox padre -->
-    <template #column-select>
-      <th>
-        <CFormCheck
-          v-model="selectAll"
-          @change="toggleSelectAll"
-        />
-      </th>
-    </template>
-
-    <!-- Checkbox hijo -->
-    <template #select="{ item }">
-      <td class="py-2">
-        <CFormCheck
-          :id="`checkbox${item.id}`"
-          :checked="item._selected"
-          @change="(event) => check(event, item.id)"
-        />
-      </td>
-    </template>
-
     <template #status="{ item }">
       <td>
         <CBadge :color="getBadge(item.status)">{{ item.status }}</CBadge>
