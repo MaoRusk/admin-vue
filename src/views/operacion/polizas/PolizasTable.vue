@@ -1,23 +1,26 @@
 <script setup>
+
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
 import { cilUserPlus } from '@coreui/icons';
 
 const router = useRouter();
 const usersData = ref([]);
-const selected = ref([]);
-const selectAll = ref(false);
+const selected = ref([])
 const modulesCbo = ref([]);
 const marketsCbo = ref([]);
 const submarketCbo = ref([]);
-
-
+const usersCbo = ref([]);
+const selectedCompany = ref([]);
 
 const columns = [
+  { key: 'select', label: '', filter: false, sorter: false },
   { key: 'name', _style: { width: '25%' } },
   { key: 'lastName', _style: { width: '15%' } },
   { key: 'userName', _style: { width: '15%' } },
+  { label: 'Company', key: 'nameCompany', _style: { width: '15%' } },
   { key: 'status', _style: { width: '15%' } },
   { key: 'actions', _style: { width: '15%' } }
 ];
@@ -29,8 +32,56 @@ const processedUsersData = computed(() => {
   }));
 });
 
+const check = (event, id) => {
+  if (event.target.checked) {
+    selected.value = [...selected.value, id]
+
+    getUserCombo();
+
+  } else {
+    selected.value = selected.value.filter((itemId) => itemId !== id)
+  }
+}
+
 onMounted(fetchUsers);
 onMounted(fetchData);
+onMounted(fetchData);
+getUserCombo(getUserCombo);
+
+async function getUserCombo(){
+
+  const formData = new FormData();
+  formData.append('multpleUsersId', JSON.stringify(selected.value));
+  
+  try {            
+      axios.post(`http://localhost:8000/api/user/combo`, formData).then(response => {
+
+        usersCbo.value = response.data.map(user => ({
+          value: user.id,
+          label:user.name,
+          selected:false
+        }))
+        
+      }).catch(error => {
+        // Swal.fire({
+        //   title: "Error get Permissions.",
+        //   text: error.response.data.message,
+        //   icon: "error",
+        //   showConfirmButton: false,
+        //   timer: 10000
+        // });
+      });
+
+    usersCbo.value = response.data.map(user => ({
+      value: user.id,
+      label:user.name,
+      selected:false
+    }))
+  } catch (error) {
+    console.error('Error fetching users:', error);
+  }
+
+}
 
 async function fetchUsers() {
   try {
@@ -63,20 +114,68 @@ function addUserFunction() {
   });
 }
 
-function check(event, id) {
-  if (event.target.checked) {
-    selected.value.push(id);
-  } else {
-    selected.value = selected.value.filter(itemId => itemId !== id);
-    selectAll.value = false; // Desmarca el checkbox padre si se desmarca alguno hijo
-  }
-}
+const setUserCombo = (value) => {
 
-function toggleSelectAll() {
-  if (selectAll.value) {
-    selected.value = usersData.value.map(user => user.id);
-  } else {
-    selected.value = [];
+  if (value != 0) {   
+    selectedCompany.value = value[0].value;
+  }
+};
+
+const heredarPermisos = () => {
+  
+  // * validando que almenos se seleccione un check
+  if(selected.value.length == 0){
+    Swal.fire({
+      title: "Empty cheks.",
+      text: "Please select almost one user",
+      icon: "error",
+      showConfirmButton: false,
+      timer: 3000
+    });
+  }
+
+  if (selectedCompany.value == "") {
+    Swal.fire({
+      title: "Empty User.",
+      text: "Please select one user",
+      icon: "error",
+      showConfirmButton: false,
+      timer: 3000
+    });
+  }
+
+  const formData = new FormData();
+  formData.append('userClones', selected.value);
+
+  try {            
+      axios.post(`http://localhost:8000/api/permissions/clone/multiple/${selectedCompany.value}`, formData).then(response => {
+
+        
+        Swal.fire({
+          title: response.data.title,
+          text: response.data.text,
+          icon: response.data.icon,
+          showConfirmButton: false,
+          timer: 3000
+        }).then(() => {
+
+          if (response.data.icon == "success") {
+            location.reload();
+          }
+        })
+        
+      }).catch(error => {
+        Swal.fire({
+          title: "Error to clone permissionssss.",
+          text: error.response.data.message,
+          icon: "error",
+          showConfirmButton: false,
+          timer: 3000
+        });
+      });
+
+  } catch (error) {
+    console.error('Error fetching users:', error);
   }
 }
 
@@ -111,22 +210,25 @@ async function fetchData() {
 </script>
 
 <template>
-    <div style="display: flex; justify-content: right;">
-      <div style="margin-right: .5rem;">
-        <CMultiSelect
-          :multiple="false"
-          label="Heredar Permisos De:"
-          v-model="selectedCompany"
-          :options="usersCbo"
-          @change="handleCompanyChange($event)"
-        />
-      </div>
-      <div style="display: flex;justify-content: flex-end;align-items: flex-end;">
-          <CButton color="warning" variant="outline">
-            Confirm
-          </CButton>
-      </div>
+
+  Selected: {{ JSON.stringify(selected) }}
+
+  <div style="display: flex; justify-content: right;">
+    <div style="margin-right: .5rem;">
+      <CMultiSelect
+        :multiple="false"
+        label="Heredar Permisos De:"
+        v-model="selectedCompany"
+        :options="usersCbo"
+        @change="setUserCombo($event)"
+      />
     </div>
+    <div style="display: flex; justify-content: flex-end; align-items: flex-end;">
+      <CButton color="warning" variant="outline" @click="heredarPermisos">
+        Confirm
+      </CButton>
+    </div>
+  </div>
   <!-- <div class="d-flex justify-content-end mb-3">
     <div>
       <CMultiSelect 
@@ -163,9 +265,7 @@ async function fetchData() {
       Add User
     </CButton>
   </div> -->
-
   <CSmartTable
-  selectable
     :columns="columns"
     :items="processedUsersData"
     :active-page="1"
@@ -185,7 +285,19 @@ async function fetchData() {
       responsive: true,
     }"
   >
-    <template #status="{ item }">
+
+    <template #select="{ item }">
+      <td>
+        <CFormCheck
+          :id="`checkbox${item.id}`"
+          :checked="item._selected"
+          @change="(event) => check(event, item.id)"
+        />
+
+        <CFormLabel variant="custom-checkbox" :for="`checkbox${item.id}`" />
+      </td>
+    </template>
+    <template #status="{ item }">      
       <td>
         <CBadge :color="getBadge(item.status)">{{ item.status }}</CBadge>
       </td>
