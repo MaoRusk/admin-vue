@@ -31,3 +31,54 @@ background: #15598a;
 .no-spinner[type="number"] {
   -moz-appearance: textfield;
 }
+
+.card-customer-buildings 
+{
+  --cui-bg-opacity: 1;
+  background-color: rgba(var(--cui-secondary-bg-rgb), var(--cui-bg-opacity)) !important;
+}
+.card-body-customer-buildings 
+{
+  padding: .25rem 1rem;
+  font-weight: bold;
+  color:#75797f;
+}
+
+.container-btn-flotante {
+  position: sticky;
+  top: 4.1rem;
+  right: 13.4rem;
+  display: flex;
+  // justify-content: flex-end;
+  width: fit-content;
+  margin-left: auto;  
+  z-index: 10;
+  background-color: var(--cui-body-bg);
+}
+
+// Responsivo a Celular
+@media (max-width: 768px) and (max-width: 991px) { 
+  .container-btn-flotante {
+    top: 4.5rem;
+    right: 1rem; /* Ajusta este valor según lo necesites en pantallas pequeñas */
+    left: 1rem;  /* Para centrar el contenido puedes usar left */
+    width: auto;
+  }
+}
+
+// CSS para Tablets (iPads) en Modo Horizontal:
+@media (min-width: 992px) and (max-width: 1280px) {
+  .container-btn-flotante {
+    top: 3rem;
+    right: 3.4rem;
+    width: auto;
+  }
+}
+
+// Responsivo a Laptop
+@media (min-width: 1280px) and (max-width: 1366px) {
+  .container-btn-flotante {
+    top: 5rem;
+    right: 3.2rem;
+  }
+}

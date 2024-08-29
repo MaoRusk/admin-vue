@@ -1,11 +1,12 @@
 <script setup>
   import { ref, onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router'
-  import { cilArrowCircleLeft, cilBasket } from '@coreui/icons'
+  import { cilArrowCircleLeft, cilBasket, cilSave } from '@coreui/icons'
   import axios from 'axios';
   import BuildingData from './BuildingData.vue'
   import BuildingContact from './BuildingContact.vue';
   import BuildingsExtra from './BuildingsExtra.vue';
+  import BuildingImages from './BuildingsImages.vue';
 
   const router = useRouter()
   const props = defineProps({
@@ -52,21 +53,29 @@
 </script>
 <template>
   <div>
-    <div style="display: flex; justify-content: right;">
-      <div >
-        <router-link to="../buildings">
-          <CButton color="primary" variant="outline">
-            <CIcon :content="cilArrowCircleLeft" size="sm" />
-            return
+    <!-- <div class="movil-response"></div> -->
+    <CCard class="container-btn-flotante">
+      <CCardBody>
+        <div style="text-align: center;">
+          <CButton color="success mr-2" variant="outline">
+            <CIcon :content="cilSave" size="sm" />
+            Save
           </CButton>
-        </router-link>
-      </div>
-    </div>
+          <router-link to="../buildings">
+            <CButton color="primary" variant="outline" style="margin-left: .7rem;">
+              <CIcon :content="cilArrowCircleLeft" size="sm" />
+              return
+            </CButton>
+          </router-link>
+        </div>
+      </CCardBody>
+    </CCard>
     <CTabs activeItemKey="DataBuilding">
-      <CTabList variant="tabs">
+      <CTabList variant="tabs" style="margin-top: 1rem;">
         <CTab itemKey="DataBuilding">Data Building</CTab>
-        <CTab itemKey="Extra">Extra</CTab>
+        <CTab itemKey="Extra">Features</CTab>
         <CTab itemKey="ContactBuilding">Building Contact</CTab>
+        <CTab itemKey="Images">Images</CTab>
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
@@ -79,6 +88,9 @@
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Extra">  
           <BuildingsExtra :id="Number(props.id)"/> 
+        </CTabPanel>
+        <CTabPanel class="p-3" itemKey="Images">  
+          <BuildingImages :id="Number(props.id)"/> 
         </CTabPanel>
       </CTabContent>
     

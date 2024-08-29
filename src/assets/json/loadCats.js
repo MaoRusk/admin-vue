@@ -309,4 +309,19 @@ const ListingBroker  = [
     },
 
 ];
-export { Class, IndustrialPark, Status, Owner, Developer, Type, Region, LoadingDoor, Deal, Currency, Tenancy, ListingBroker }
+
+const BuildingState = [
+    {
+        value: 1,
+        label: 'Availability',
+    },
+    {
+        value: 2,
+        label: 'Absoprtion',
+    },
+    {
+        value: 3,
+        label: 'CAM...',
+    },
+];
+export { Class, IndustrialPark, Status, Owner, Developer, Type, Region, LoadingDoor, Deal, Currency, Tenancy, ListingBroker, BuildingState }

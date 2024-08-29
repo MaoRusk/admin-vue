@@ -16,16 +16,8 @@ const SelectedIndustrialPark = ref(null)
   <CContainer>
     <CRow>
       <CCol :md="6">
-        <div class="mt-2 d-flex" style="justify-content: space-evenly;">
-            <div>
-                <div style="width: 10rem;">
-                    <label>CRANE</label>
-                </div>
-            </div>
-            <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-            <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
-        </div>
-        <div class="mt-2 d-flex" style="justify-content: space-evenly;">
+        
+        <!-- <div class="mt-2 d-flex" style="justify-content: space-evenly;">
             <div style="width: 10rem;">
                 <label>HVAC</label>
             </div>
@@ -38,7 +30,7 @@ const SelectedIndustrialPark = ref(null)
             </div>
             <CFormCheck type="radio" name="flexRadioRAIL" id="flexRadioRAIL1" label="Yes"/>
             <CFormCheck type="radio" name="flexRadioRAIL" id="flexRadioRAIL2" label="No" checked/>
-        </div>
+        </div> -->
         <div class="mt-2 d-flex" style="justify-content: space-evenly;">
             <div style="width: 10rem;">
                 <label>SPRINKLERS</label>
