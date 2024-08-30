@@ -9,6 +9,24 @@ import { Class, IndustrialPark, Status, Owner, Developer, Type, Region, LoadingD
 const selectedStatus = ref(null)
 const SelectedIndustrialPark = ref(null)
 
+const contact = ref('');
+const phone = ref('');
+const emailUsername = ref('');
+const emailServer = ref('');
+const comments = ref('');
+
+const getFormData = () => {
+  return {
+    contact: contact.value,
+    phone: phone.value,
+    email: `${emailUsername.value}@${emailServer.value}`,
+    comments: comments.value,
+  };
+};
+
+defineExpose({
+  getFormData
+});
 
 </script>
 
@@ -20,7 +38,8 @@ const SelectedIndustrialPark = ref(null)
        <div class="mt-2">
           <CFormInput 
           type="text"           
-          placeholder="Contact" 
+          v-model="contact"
+          placeholder="Contact"  
           label="Contact"
           />
         </div>
@@ -28,11 +47,12 @@ const SelectedIndustrialPark = ref(null)
          <div class="mt-2">
           <CFormInput 
           type="number" 
+          v-model="phone"
           class="no-spinner"
           @wheel.prevent
           @touchstart.prevent
           @touchmove.prevent
-          placeholder="Phone" 
+          placeholder="Phone"  
           label="Phone"
           />
         </div>
@@ -40,16 +60,16 @@ const SelectedIndustrialPark = ref(null)
          <div class="mt-2">
             <label> Email </label>
           <CInputGroup class="mb-3 mt-2">
-            <CFormInput placeholder="Username" aria-label="Username"/>
+            <CFormInput placeholder="Username" v-model="emailUsername" aria-label="Username"/>
             <CInputGroupText>@</CInputGroupText>
-            <CFormInput placeholder="Server" aria-label="Server"/>
+            <CFormInput placeholder="Server" v-model="emailServer" aria-label="Server"/>
           </CInputGroup>
         </div>
          <!-- COMMENTS -->
          <div class="mt-2">
             <label> Comments </label>
             <CInputGroup>
-                <CFormTextarea aria-label="With textarea"></CFormTextarea>
+                <CFormTextarea aria-label="With textarea" v-model="comments"></CFormTextarea>
             </CInputGroup>
         </div>
       </CCol>

@@ -44,12 +44,12 @@ const longitud_input = ref(null);
 const yearBuilt_input = ref(null);
 const clearHeight_input = ref(null);
 const officesSpace_input = ref(null);
-const crane_input = ref(null);
-const hvac_input = ref(null);
-const railSpur_input = ref(null);
-const sprinklers_input = ref(null);
-const office_input = ref(null);
-const leed_input = ref(null);
+const crane_input = ref('true');
+const hvac_input = ref('true');
+const railSpur_input = ref('true');
+const sprinklers_input = ref('true');
+const office_input = ref('true');
+const leed_input = ref('true');
 const totalLand_input = ref(null);
 const hvacProductionArea_input = ref(null);
 const status = ref('Activo');
@@ -107,47 +107,105 @@ const finalUseId_input = ref(null);
 const shelterId_input = ref(null);
 const copanyTypeId_input = ref(null);
 
-
+  const handleFinalUse = (newValue) => {
+    inputValue.value = newValue;
+    finalUseId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
+  const handleIndustry = (newValue) => {
+    inputValue.value = newValue;
+    industryId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
+  const handleTenant = (newValue) => {
+    inputValue.value = newValue;
+    tenantId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
   const handleStatusSelect = (newValue) => {
     inputValue.value = newValue;
-    selectedStatus.value = inputValue.value.map(item => item.value).join(',');
+    statusId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleIndustrialParkSelect = (newValue) => {
     inputValue.value = newValue;
-    SelectedIndustrialPark.value = inputValue.value.map(item => item.value).join(',');
+    industrialParkId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
+  const handleMarket = (newValue) => {
+    inputValue.value = newValue;
+    marketId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
+  const handleSubMarket = (newValue) => {
+    inputValue.value = newValue;
+    subMarketId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleTypeSelect = (newValue) => {
     inputValue.value = newValue;
-    SelectedType.value = inputValue.value.map(item => item.value).join(',');
+    typeId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleOwnerSelect = (newValue) => {
     inputValue.value = newValue;
-    SelectedOwner.value = inputValue.value.map(item => item.value).join(',');
+    ownerId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleDeveloperSelect = (newValue) => {
     inputValue.value = newValue;
-    SelectedDeveloper.value = inputValue.value.map(item => item.value).join(',');
+    developerId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleBuilderSelect = (newValue) => {
     inputValue.value = newValue;
-    SelectedBuilder.value = inputValue.value.map(item => item.value).join(',');
+    builderId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
+  const handleListingBroker = (newValue) => {
+    inputValue.value = newValue;
+    builderId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
+  const handleCurrency = (newValue) => {
+    inputValue.value = newValue;
+    currencyId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
+  const handleTenancy = (newValue) => {
+    inputValue.value = newValue;
+    tenancyId_input.value = inputValue.value.map(item => item.value).join(',');
+  };
+  const handleDeal = (newValue) => {
+    inputValue.value = newValue;
+    dealId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleRegionSelect = (newValue) => {
     inputValue.value = newValue;
-    SelectedRegion.value = inputValue.value.map(item => item.value).join(',');
+    regionId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleLoadingDoorSelect = (newValue) => {
     inputValue.value = newValue;
-    SelectedLoadingDoor.value = inputValue.value.map(item => item.value).join(',');
+    loadingDoorId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleBuildingState = (newValue) => {
-    inputValue.value = newValue;
-    selectedBuildingState.value = inputValue.value.map(item => item.value).join(',');    
-}
-  // Validaciones
+      inputValue.value = newValue;
+      builderStateId_input.value = inputValue.value.map(item => item.value).join(',');    
+  }
+  const handleBuildingClass = (newValue) => {
+      inputValue.value = newValue;
+      classId_input.value = inputValue.value.map(item => item.value).join(',');    
+  }
+  // Validaciones RADIO
   const updateStatus = (newStatus) => {
     status.value = newStatus;
   };
+   const updateOfficeBool = (newStatus) => {
+    office_input.value = newStatus;
+  };
+  const updateSPRINKLERSBool = (newStatus) => {
+    sprinklers_input.value = newStatus;
+  };
+  const updateCRANEBool = (newStatus) => {
+    crane_input.value = newStatus;
+  }
+  const updateHVACBool = (newStatus) => {
+    hvac_input.value = newStatus;
+  }
+  const updateLEEDBool = (newStatus) => {
+    leed_input.value = newStatus;
+    
+  }
+  const updateRailSpurBool = (newStatus) => {
+    railSpur_input.value = newStatus;
+  }
   onMounted(() => {
     fetchData();
   });
@@ -176,131 +234,93 @@ const copanyTypeId_input = ref(null);
     }
   };
 
-  // Add A New Building
-  const submitFunction = async () => {
-    if (!isFormValid.value) {
-      Swal.fire({
-        title: "Sorry!",
-        text: "Please fill in all the required fields.",
-        icon: "info",
-        showConfirmButton: false,
-        timer: 3000
-      });
-      return;
-    }else{
-      const formData = new FormData();
+  const getFormData = () => {
+    return {
+      builderStateId: builderStateId_input.value,
+      buildingName: buildingName_input.value,
+      classId: classId_input.value,
+      buildingSizeSf: buildingSizeSf_input.value,
+      expansionLand: expansionLand_input.value,
+      statusId: statusId_input.value,
+      industrialParkId: industrialParkId_input.value,
+      typeId: typeId_input.value,
+      ownerId: ownerId_input.value,
+      developerId: developerId_input.value,
+      builderId: builderId_input.value,
+      regionId: regionId_input.value,
+      marketId: marketId_input.value,
+      subMarketId: subMarketId_input.value,
+      dealId: dealId_input.value,
+      currencyId: currencyId_input.value,
+      salePriceUsd: salePriceUsd_input.value,
+      tenancyId: tenancyId_input.value,
+      latitud: latitud_input.value,
+      longitud: longitud_input.value,
+      yearBuilt: yearBuilt_input.value,
+      clearHeight: clearHeight_input.value,
+      officesSpace: officesSpace_input.value,
+      crane: crane_input.value,
+      hvac: hvac_input.value,
+      railSpur: railSpur_input.value,
+      sprinklers: sprinklers_input.value,
+      office: office_input.value,
+      leed: leed_input.value,
+      totalLand: totalLand_input.value,
+      hvacProductionArea: hvacProductionArea_input.value,
+      status: status.value,
+      loadingDoorId: loadingDoorId_input.value,
+      lighting: lighting_input.value,
+      ventilation: ventilation_input.value,
+      transformerCapacity: transformerCapacity_input.value,
+      constructionType: constructionType_input.value,
+      constructionState: constructionState_input.value,
+      roofSystem: roofSystem_input.value,
+      fireProtectionSystem: fireProtectionSystem_input.value,
+      skylightsSf: skylightsSf_input.value,
+      coverage: coverage_input.value,
+      availableSf:  availableSf_input.value,
+      minimumSpaceSf:  minimumSpaceSf_input.value,
+      expansionUpToSf:  expansionUpToSf_input.value,
+      dockDoors:  dockDoors_input.value,
+      driveInDoor:  driveInDoor_input.value,
+      floorThickness:  floorThickness_input.value,
+      floorResistance:  floorResistance_input.value,
+      truckCourt:  truckCourt_input.value,
+      crossdock:  crossdock_input.value,
+      sharedTruck:  sharedTruck_input.value,
+      buildingDimensions1:  buildingDimensions1_input.value,
+      buildingDimensions2:  buildingDimensions2_input.value,
+      baySize1:  baySize1_input.value,
+      baySize2:  baySize2_input.value,
+      columnsSpacing1:  columnsSpacing1_input.value,
+      columnsSpacing2:  columnsSpacing2_input.value,
+      knockoutsDocks:  knockoutsDocks_input.value,
+      parkingSpace:  parkingSpace_input.value,
+      availableMonth:  availableMonth_input.value,
+      availableYear:  availableYear_input.value,
+      minLease:  minLease_input.value,
+      maxLease:  maxLease_input.value,
+      leaseTermMonth: leaseTermMonth_input.value,
+      askingRateShell: askingRateShell_input.value,
+      closingRate: closingRate_input.value,
+      KVAS: KVAS_input.value,
+      closingQuarter: closingQuarter_input.value,
+      leaseUp: leaseUp_input.value,
+      month: month_input.value,
+      newConstruction: newConstruction_input.value,
+      startingConstruction: startingConstruction_input.value,
+      tenantId: tenantId_input.value,
+      industryId: industryId_input.value,
+      finalUseId: finalUseId_input.value,
+      shelterId: shelterId_input.value,
+      copanyTypeId: copanyTypeId_input.value,
+    };
+  };
 
-      // TABLA BUILDINGS
-      formData.append('builderStateId', builderStateId_input.value);
-      formData.append('buildingName', buildingName_input.value);
-      formData.append('classId', classId_input.value);
-      formData.append('buildingSizeSf', buildingSizeSf_input.value);
-      formData.append('expansionLand', expansionLand_input.value);
-      formData.append('statusId', statusId_input.value);
-      formData.append('industrialParkId', industrialParkId_input.value);
-      formData.append('typeId', typeId_input.value);
-      formData.append('ownerId', ownerId_input.value);
-      formData.append('developerId', developerId_input.value);
-      formData.append('builderId', builderId_input.value);
-      formData.append('regionId', regionId_input.value);
-      formData.append('marketId', marketId_input.value);
-      formData.append('subMarketId', subMarketId_input.value);
-      formData.append('dealId', dealId_input.value);
-      formData.append('currencyId', currencyId_input.value);
-      formData.append('salePriceUsd', salePriceUsd_input.value);
-      formData.append('tenancyId', tenancyId_input.value);
-      formData.append('latitud', latitud_input.value);
-      formData.append('longitud', longitud_input.value);
-      formData.append('yearBuilt', yearBuilt_input.value);
-      formData.append('clearHeight', clearHeight_input.value);
-      formData.append('officesSpace', officesSpace_input.value);
-      formData.append('crane', crane_input.value);
-      formData.append('hvac', hvac_input.value);
-      formData.append('railSpur', railSpur_input.value);
-      formData.append('sprinklers', sprinklers_input.value);
-      formData.append('office', office_input.value);
-      formData.append('leed', leed_input.value);
-      formData.append('totalLand', totalLand_input.value);
-      formData.append('hvacProductionArea', hvacProductionArea_input.value);
-      formData.append('status', status.value);
+defineExpose({
+  getFormData
+});
 
-      // TABLA FEATURES
-      formData.append('loadingDoorId', loadingDoorId_input.value);
-      formData.append('lighting', lighting_input.value);
-      formData.append('ventilation', ventilation_input.value);
-      formData.append('transformerCapacity', transformerCapacity_input.value);
-      formData.append('constructionType', constructionType_input.value);
-      formData.append('constructionState', constructionState_input.value);
-      formData.append('roofSystem', roofSystem_input.value);
-      formData.append('fireProtectionSystem', fireProtectionSystem_input.value);
-      formData.append('skylightsSf', skylightsSf_input.value);
-      formData.append('coverage', coverage_input.value);
-      
-      // TABLA AVAILABILITY
-      formData.append('availableSf', availableSf_input.value);
-      formData.append('minimumSpaceSf', minimumSpaceSf_input.value);
-      formData.append('expansionUpToSf', expansionUpToSf_input.value);
-      formData.append('dockDoors', dockDoors_input.value);
-      formData.append('driveInDoor', driveInDoor_input.value);
-      formData.append('floorThickness', floorThickness_input.value);
-      formData.append('floorResistance', floorResistance_input.value);
-      formData.append('truckCourt', truckCourt_input.value);
-      formData.append('crossdock', crossdock_input.value);
-      formData.append('sharedTruck', sharedTruck_input.value);
-      formData.append('buildingDimensions1', buildingDimensions1_input.value);
-      formData.append('buildingDimensions2', buildingDimensions2_input.value);
-      formData.append('baySize1', baySize1_input.value);
-      formData.append('baySize2', baySize2_input.value);
-      formData.append('columnsSpacing1', columnsSpacing1_input.value);
-      formData.append('columnsSpacing2', columnsSpacing2_input.value);
-      formData.append('knockoutsDocks', knockoutsDocks_input.value);
-      formData.append('parkingSpace', parkingSpace_input.value);
-      formData.append('availableMonth', availableMonth_input.value);
-      formData.append('availableYear', availableYear_input.value);
-      formData.append('minLease', minLease_input.value);
-      formData.append('maxLease', maxLease_input.value);
-
-      // TABLA Absoprtion
-      formData.append('leaseTermMonth', leaseTermMonth_input.value);
-      formData.append('askingRateShell', askingRateShell_input.value);
-      formData.append('closingRate', closingRate_input.value);
-      formData.append('KVAS', KVAS_input.value);
-      formData.append('closingQuarter', closingQuarter_input.value);
-      formData.append('leaseUp', leaseUp_input.value);
-      formData.append('month', month_input.value);
-      formData.append('newConstruction', newConstruction_input.value);
-      formData.append('startingConstruction', startingConstruction_input.value);
-      formData.append('tenantId', tenantId_input.value);
-      formData.append('industryId', industryId_input.value);
-      formData.append('finalUseId', finalUseId_input.value);
-      formData.append('shelterId', shelterId_input.value);
-      formData.append('copanyTypeId', copanyTypeId_input.value);
-
-      axios.post('http://localhost:8000/api/employees', formData).then(response => {
-        Swal.fire({
-          title: "Added!",
-          text: "Employee added successfully.",
-          icon: "success",
-          showConfirmButton: false,
-          timer: 3500
-        }).then(() => {
-          router.push({
-            name: 'Employees',
-            params: { id: Number(0) },
-          })
-        });
-
-      }).catch(error => {
-        Swal.fire({
-          title: "Error adding Employee.",
-          text: error.response.data.message,
-          icon: "error",
-          showConfirmButton: false,
-          timer: 3500
-        });
-      });
-    }
-  }
 </script>
 
 <template>
@@ -324,6 +344,7 @@ const copanyTypeId_input = ref(null);
                     :options="BuildingState"
                     @change="handleBuildingState"
                     optionsStyle="text"
+                    placeholder=""
                   >
                   </CMultiSelect>
                 </div>
@@ -331,11 +352,12 @@ const copanyTypeId_input = ref(null);
                 <div class="mt-2">
                   <CFormInput
                   type="text"
+                  v-model="buildingName_input"
                   class="no-spinner"
-                  placeholder="Building Name"
                   label="Building Name"
                   />
                 </div>
+                <!-- STATUS (ACTIVO/INACTIVO) -->
                 <div style="display: flex; justify-content: left; align-items: center;">
                   <label for="status">Status</label>
                   <div style="margin-left: .6rem; padding-top: .5rem;">
@@ -367,7 +389,9 @@ const copanyTypeId_input = ref(null);
                     label="Class"
                     :multiple="false"
                     :options="Class"
+                    @change="handleBuildingClass"
                     optionsStyle="text"
+                    placeholder=""
                   >
                   </CMultiSelect>
                 </div>
@@ -376,10 +400,10 @@ const copanyTypeId_input = ref(null);
                   <CFormInput 
                   type="number" 
                   class="no-spinner"
+                  v-model="buildingSizeSf_input"
                   @wheel.prevent
                   @touchstart.prevent
                   @touchmove.prevent
-                  placeholder="Building Size (SF)" 
                   label="Building Size (SF)"
                   />
                 </div>
@@ -390,10 +414,10 @@ const copanyTypeId_input = ref(null);
                   <CFormInput 
                   type="number" 
                   class="no-spinner"
+                  v-model="expansionLand_input"
                   @wheel.prevent
                   @touchstart.prevent
                   @touchmove.prevent
-                  placeholder="Expansion Land" 
                   label="Expansion Land"
                   />
                 </div>
@@ -405,6 +429,7 @@ const copanyTypeId_input = ref(null);
                     :multiple="false"
                     :options="Status"
                     optionsStyle="text"
+                    placeholder=""
                     @change="handleStatusSelect"
                   >
                     <template #options="{ option }" >
@@ -414,7 +439,7 @@ const copanyTypeId_input = ref(null);
                     </template>
                   </CMultiSelect>
                   <CInputGroup v-if="selectedStatus == '0'" class="mb-3 mt-2">
-                    <CFormInput placeholder="New status.." aria-label="New status.." aria-describedby="button-addon2"/>
+                    <CFormInput aria-label="New status.." aria-describedby="button-addon2"/>
                     <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
                   </CInputGroup>
                 </div>
@@ -422,11 +447,11 @@ const copanyTypeId_input = ref(null);
               <CCol :md="3">
                 <!-- YEAR BUILT -->
                 <div class="mt-2">
-                  <CDatePicker label="Year Built" locale="en-US" selectionType="year" />
+                  <CDatePicker label="Year Built" v-model="yearBuilt_input" locale="en-US" selectionType="year" placeholder=""/>
                 </div>
-                <!-- AVAILABLE SINCE (Available from) -->
+                <!-- ! ****AGREGAR a tabla AVAILABLE SINCE (Available from) -->
                 <div class="mt-2">
-                  <CDatePicker label="Available Since" locale="en-US" selectionType="month" />
+                  <CDatePicker label="Available Since" locale="en-US" selectionType="month" placeholder=""/>
                 </div>
               </CCol>
             </CRow>
@@ -448,6 +473,7 @@ const copanyTypeId_input = ref(null);
               :multiple="false"
               :options="Region"
               optionsStyle="text"
+              placeholder=""
               @change="handleRegionSelect"
             >
               <template #options="{ option }" >
@@ -457,7 +483,7 @@ const copanyTypeId_input = ref(null);
               </template>
             </CMultiSelect>
             <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-              <CFormInput placeholder="New Region.." aria-label="New Region.." aria-describedby="button-addon2"/>
+              <CFormInput aria-label="New Region.." aria-describedby="button-addon2"/>
               <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
             </CInputGroup>
           </div>
@@ -469,7 +495,8 @@ const copanyTypeId_input = ref(null);
               :multiple="false"
               :options="IndustrialPark"
               optionsStyle="text"
-              @change="handleIndustrialParkSelect  "
+              placeholder=""
+              @change="handleIndustrialParkSelect"
             >
               <template #options="{ option }" >
                 <div class="d-flex">
@@ -478,7 +505,7 @@ const copanyTypeId_input = ref(null);
               </template>
             </CMultiSelect>
             <CInputGroup v-if="SelectedIndustrialPark == '0'" class="mb-3 mt-2">
-              <CFormInput placeholder="New Industrial Park.." aria-label="New Industrial Park.." aria-describedby="button-addon2"/>
+              <CFormInput aria-label="New Industrial Park.." aria-describedby="button-addon2"/>
               <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
             </CInputGroup>
           </div>
@@ -492,6 +519,8 @@ const copanyTypeId_input = ref(null);
               :multiple="false"
               :options="marketsCbo"
               optionsStyle="text"
+              placeholder=""
+              @change="handleMarket"
             >
               <template #options="{ option }" >
                 <div class="d-flex">
@@ -500,7 +529,7 @@ const copanyTypeId_input = ref(null);
               </template>
             </CMultiSelect>
             <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-              <CFormInput placeholder="New Market.." aria-label="New Market.." aria-describedby="button-addon2"/>
+              <CFormInput aria-label="New Market.." aria-describedby="button-addon2"/>
               <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
             </CInputGroup>
           </div>
@@ -511,7 +540,8 @@ const copanyTypeId_input = ref(null);
               :multiple="false"
               :options="submarketCbo"
               optionsStyle="text"
-              @change="handleRegionSelect"
+              placeholder=""
+              @change="handleSubMarket"
             >
               <template #options="{ option }" >
                 <div class="d-flex">
@@ -520,7 +550,7 @@ const copanyTypeId_input = ref(null);
               </template>
             </CMultiSelect>
             <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-              <CFormInput placeholder="New Submarket.." aria-label="New Submarket.." aria-describedby="button-addon2"/>
+              <CFormInput aria-label="New Submarket.." aria-describedby="button-addon2"/>
               <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
             </CInputGroup>
           </div>
@@ -530,16 +560,16 @@ const copanyTypeId_input = ref(null);
           <div class="mt-2">
             <CFormInput
             type="text"
-            placeholder="Latitud"
             label="Latitud"
+            v-model="latitud_input"
             />
           </div>
           <!-- ALTITUD -->
           <div class="mt-2">
             <CFormInput
             type="text"
-            placeholder="Altitud"
             label="Altitud"
+            v-model="longitud_input"
             />
           </div>
         </CCol>
@@ -562,6 +592,7 @@ const copanyTypeId_input = ref(null);
                     :multiple="false"
                     :options="Owner"
                     optionsStyle="text"
+                    placeholder=""
                     @change="handleOwnerSelect"
                   >
                     <template #options="{ option }" >
@@ -571,7 +602,7 @@ const copanyTypeId_input = ref(null);
                     </template>
                   </CMultiSelect>
                   <CInputGroup v-if="SelectedOwner == '0'" class="mb-3 mt-2">
-                    <CFormInput placeholder="New Owner.." aria-label="New Owner.." aria-describedby="button-addon2"/>
+                    <CFormInput aria-label="New Owner.." aria-describedby="button-addon2"/>
                     <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
                   </CInputGroup>
                 </div>
@@ -585,6 +616,7 @@ const copanyTypeId_input = ref(null);
                     :multiple="false"
                     :options="Developer"
                     optionsStyle="text"
+                    placeholder=""
                     @change="handleDeveloperSelect"
                   >
                     <template #options="{ option }" >
@@ -594,7 +626,7 @@ const copanyTypeId_input = ref(null);
                     </template>
                   </CMultiSelect>
                   <CInputGroup v-if="SelectedDeveloper == '0'" class="mb-3 mt-2">
-                    <CFormInput placeholder="New Developer.." aria-label="New Developer.." aria-describedby="button-addon2"/>
+                    <CFormInput aria-label="New Developer.." aria-describedby="button-addon2"/>
                     <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
                   </CInputGroup>
                 </div>
@@ -608,6 +640,7 @@ const copanyTypeId_input = ref(null);
                     :multiple="false"
                     :options="Developer"
                     optionsStyle="text"
+                    placeholder=""
                     @change="handleBuilderSelect"
                   >
                     <template #options="{ option }" >
@@ -617,19 +650,21 @@ const copanyTypeId_input = ref(null);
                     </template>
                   </CMultiSelect>
                   <CInputGroup v-if="SelectedBuilder == '0'" class="mb-3 mt-2">
-                    <CFormInput placeholder="New Builder.." aria-label="New Builder.." aria-describedby="button-addon2"/>
+                    <CFormInput aria-label="New Builder.." aria-describedby="button-addon2"/>
                     <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
                   </CInputGroup>
                 </div>
               </CCol>
               <CCol :md="3">    
-                <!-- LISTING BROKER -->
+                <!-- ! **** VERIFICAR QUE ESTE MAPPEADO EN EL SERVICIO **** LISTING BROKER -->
                 <div class="mt-2">
                   <CMultiSelect
                     label="ListingBroker"
                     :multiple="false"
                     :options="ListingBroker"
                     optionsStyle="text"
+                    placeholder=""
+                    @change="handleListingBroker"
                   >
                   </CMultiSelect>
                 </div>       
@@ -654,6 +689,7 @@ const copanyTypeId_input = ref(null);
                       <CFormInput 
                         type="number" 
                         class="no-spinner"
+                        v-model="salePriceUsd_input"
                         @wheel.prevent
                         @touchstart.prevent
                         @touchmove.prevent 
@@ -670,6 +706,8 @@ const copanyTypeId_input = ref(null);
                     :multiple="false"
                     :options="Currency"
                     optionsStyle="text"
+                    @change="handleCurrency"
+                    placeholder=""
                   >
                   </CMultiSelect>
                 </div>
@@ -682,6 +720,8 @@ const copanyTypeId_input = ref(null);
                     :multiple="false"
                     :options="Tenancy"
                     optionsStyle="text"
+                    @change="handleTenancy"
+                    placeholder=""
                   >
                   </CMultiSelect>
                 </div>
@@ -694,6 +734,8 @@ const copanyTypeId_input = ref(null);
                     :multiple="false"
                     :options="Deal"
                     optionsStyle="text"
+                    @change="handleDeal"
+                    placeholder=""
                   >
                 </CMultiSelect>
                 </div>
@@ -718,6 +760,7 @@ const copanyTypeId_input = ref(null);
                       :multiple="false"
                       :options="Type"
                       optionsStyle="text"
+                      placeholder=""
                       @change="handleTypeSelect"
                     >
                       <template #options="{ option }" >
@@ -727,7 +770,7 @@ const copanyTypeId_input = ref(null);
                       </template>
                     </CMultiSelect>
                     <CInputGroup v-if="SelectedType == '0'" class="mb-3 mt-2">
-                      <CFormInput placeholder="New Type.." aria-label="New Type.." aria-describedby="button-addon2"/>
+                      <CFormInput aria-label="New Type.." aria-describedby="button-addon2"/>
                       <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
                     </CInputGroup>
                 </div>
@@ -736,10 +779,10 @@ const copanyTypeId_input = ref(null);
                   <CFormInput 
                   type="number" 
                   class="no-spinner"
+                  v-model="totalLand_input"
                   @wheel.prevent
                   @touchstart.prevent
                   @touchmove.prevent
-                  placeholder="Total Land" 
                   label="Total Land"
                   />
                 </div>
@@ -748,10 +791,10 @@ const copanyTypeId_input = ref(null);
                   <CFormInput 
                   type="number" 
                   class="no-spinner"
+                  v-model="clearHeight_input"
                   @wheel.prevent
                   @touchstart.prevent
                   @touchmove.prevent
-                  placeholder="Clear Height" 
                   label="Clear Height"
                   />
                 </div>
@@ -759,7 +802,7 @@ const copanyTypeId_input = ref(null);
                 <div class="mt-2">
                     <CFormInput
                     type="text"
-                    placeholder="Construction Type"
+                    v-model="constructionType_input"
                     label="Construction Type"
                     />
                 </div>
@@ -767,7 +810,7 @@ const copanyTypeId_input = ref(null);
                 <div class="mt-2">
                     <CFormInput
                     type="text"
-                    placeholder="Construction State"
+                    v-model="constructionState_input"
                     label="Construction State"
                     />
                 </div>
@@ -780,6 +823,7 @@ const copanyTypeId_input = ref(null);
                     :multiple="false"
                     :options="LoadingDoor"
                     optionsStyle="text"
+                    placeholder=""
                     @change="handleLoadingDoorSelect"
                     >
                     <template #options="{ option }" >
@@ -789,7 +833,7 @@ const copanyTypeId_input = ref(null);
                     </template>
                     </CMultiSelect>
                     <CInputGroup v-if="SelectedLoadingDoor == '0'" class="mb-3 mt-2">
-                    <CFormInput placeholder="New Loading Door.." aria-label="New Loading Door.." aria-describedby="button-addon2"/>
+                    <CFormInput aria-label="New Loading Door.." aria-describedby="button-addon2"/>
                     <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
                     </CInputGroup>
                 </div>  
@@ -798,48 +842,143 @@ const copanyTypeId_input = ref(null);
                   <div style="width: 5.3rem;">
                     <label>OFFICE</label>
                   </div>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioOFFICE" 
+                  id="RadioOFFICE_1" 
+                  value="true" 
+                  label="Yes" 
+                  :checked="office_input == 'true'"
+                  @change="updateOfficeBool('true')"/>
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioOFFICE" 
+                  id="RadioOFFICE_2" 
+                  value="false" 
+                  label="No" 
+                  :checked="office_input == 'false'"
+                  @change="updateOfficeBool('false')"      
+                  />
                 </div>
                 <!-- SPRINKLERS -->
                 <div class="mt-2 d-flex" style="justify-content: space-between;">
                   <div style="width: 5.3rem;">
                     <label>SPRINKLERS</label>
                   </div>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioSPRINKLERS" 
+                  id="RadioSPRINKLERS1" 
+                  value="true" 
+                  label="Yes"  
+                  :checked="sprinklers_input == 'true'"
+                  @change="updateSPRINKLERSBool('true')"     
+                  />
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioSPRINKLERS" 
+                  id="RadioSPRINKLERS2" 
+                  value="false" 
+                  label="No" 
+                  :checked="sprinklers_input == 'false'"
+                  @change="updateSPRINKLERSBool('false')"      
+                  />
                 </div>
                 <!-- CRANE -->
                 <div class="mt-2 d-flex" style="justify-content: space-between;">
                   <div style="width: 5.3rem;">
                     <label>CRANE</label>
                   </div>
-                  <CFormCheck type="radio" name="RadioCRANE" id="RadioCRANE1" label="Yes"/>
-                  <CFormCheck type="radio" name="RadioCRANE" id="RadioCRANE2" label="No" checked/>
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioCRANE" 
+                  id="RadioCRANE1" 
+                  value="true" 
+                  label="Yes"  
+                  :checked="crane_input == 'true'"
+                  @change="updateCRANEBool('true')"  
+                  />
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioCRANE" 
+                  id="RadioCRANE2" 
+                  value="false" 
+                  label="No" 
+                  :checked="crane_input == 'false'"
+                  @change="updateCRANEBool('false')"
+                  />
                 </div>
                 <!-- HVAC -->
                 <div class="mt-2 d-flex" style="justify-content: space-between;">
                   <div style="width: 5.3rem;">
                     <label>HVAC</label>
                   </div>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioHVAC" 
+                  id="RadioHVAC1" 
+                  value="true" 
+                  label="Yes" 
+                  :checked="hvac_input == 'true'"
+                  @change="updateHVACBool('true')"
+                  />
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioHVAC" 
+                  id="RadioHVAC2" 
+                  value="false" 
+                  label="No" 
+                  :checked="hvac_input == 'false'"
+                  @change="updateHVACBool('false')"
+                  />
                 </div>
                 <!-- LEED -->
                 <div class="mt-2 d-flex" style="justify-content: space-between;">
                   <div style="width: 5.3rem;">
                     <label>LEED</label>
                   </div>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioLEED" 
+                  id="RadioLEED1" 
+                  value="true" 
+                  label="Yes" 
+                  :checked="leed_input == 'true'"
+                  @change="updateLEEDBool('true')"
+                  />
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioLEED" 
+                  id="RadioLEED2" 
+                  value="false" 
+                  label="No" 
+                  :checked="leed_input == 'false'"
+                  @change="updateLEEDBool('false')"
+                  />
                 </div>
                 <!-- RAIL SPUR -->
                 <div class="mt-2 d-flex" style="justify-content: space-between;">
                   <div style="width: 5.3rem;">
                     <label>RAIL SPUR</label>
                   </div>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                  <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioRailSpur" 
+                  id="RadioRailSpur1" 
+                  value="true" 
+                  label="Yes" 
+                  :checked="railSpur_input == 'true'"
+                  @change="updateRailSpurBool('true')"
+                  />
+                  <CFormCheck 
+                  type="radio" 
+                  name="RadioRailSpur" 
+                  id="RadioRailSpur2" 
+                  value="false" 
+                  label="No" 
+                  :checked="railSpur_input == 'false'"
+                  @change="updateRailSpurBool('false')"
+                  />
                 </div>
               </CCol>
               <CCol :md="3">
@@ -848,10 +987,10 @@ const copanyTypeId_input = ref(null);
                   <CFormInput 
                   type="number" 
                   class="no-spinner"
+                  v-model="officesSpace_input"
                   @wheel.prevent
                   @touchstart.prevent
                   @touchmove.prevent
-                  placeholder="Office Space" 
                   label="Office Space"
                   />
                 </div>
@@ -859,7 +998,7 @@ const copanyTypeId_input = ref(null);
                 <div style="margin-top: .35rem;">
                   <CFormInput
                   type="text"
-                  placeholder="HVAC Production Area"
+                  v-model="hvacProductionArea_input"
                   label="HVAC Production Area"
                   />
                 </div>
@@ -867,7 +1006,7 @@ const copanyTypeId_input = ref(null);
                 <div class="mt-2">
                     <CFormInput
                     type="text"
-                    placeholder="Transformer Capacity"
+                    v-model="transformerCapacity_input"
                     label="Transformer Capacity"
                     />
                 </div>
@@ -875,7 +1014,7 @@ const copanyTypeId_input = ref(null);
                 <div class="mt-2">
                     <CFormInput
                     type="text"
-                    placeholder="Lighting"
+                    v-model="lighting_input"
                     label="Lighting"
                     />
                 </div>
@@ -885,7 +1024,7 @@ const copanyTypeId_input = ref(null);
                 <div class="mt-2">
                     <CFormInput
                     type="text"
-                    placeholder="Ventilation System"
+                    v-model="ventilation_input"
                     label="Ventilation System"
                     />
                 </div>
@@ -893,7 +1032,7 @@ const copanyTypeId_input = ref(null);
                 <div class="mt-2">
                     <CFormInput
                     type="text"
-                    placeholder="Roof System"
+                    v-model="roofSystem_input"
                     label="Roof System"
                     />
                 </div>
@@ -902,7 +1041,7 @@ const copanyTypeId_input = ref(null);
                     <CFormInput
                     type="text"
                     class="no-spinner"
-                    placeholder="Fire Protection System (FPS)"
+                    v-model="fireProtectionSystem_input"
                     label="Fire Protection System (FPS)"
                     />
                 </div>
@@ -911,10 +1050,10 @@ const copanyTypeId_input = ref(null);
                   <CFormInput 
                   type="number" 
                   class="no-spinner"
+                  v-model="skylightsSf_input"
                   @wheel.prevent
                   @touchstart.prevent
                   @touchmove.prevent
-                  placeholder="Skylight %"
                   label="Skylight %"
                   />
                 </div>
@@ -923,10 +1062,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="coverage_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Coverage %"
                     label="Coverage %"
                     />
                 </div>
@@ -935,7 +1074,7 @@ const copanyTypeId_input = ref(null);
           </CCardBody>
         </CCard>
 
-        <CRow v-if="selectedBuildingState == 1">
+        <CRow v-if="builderStateId_input == 1">
           <!-- *** AVAILABILITY *** -->
           <CCard class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
             <CCardBody class="card-body-customer-buildings">
@@ -951,10 +1090,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="availableSf_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Available (SF)" 
                     label="Available (SF)"
                     />
                   </div>
@@ -963,10 +1102,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="minimumSpaceSf_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Minimum Space (SF)" 
                     label="Minimum Space (SF)"
                     />
                   </div>
@@ -975,10 +1114,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="expansionUpToSf_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Expansion Up To (SF)" 
                     label="Expansion Up To (SF)"
                     />
                   </div>
@@ -987,10 +1126,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="dockDoors_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Doock Doors" 
                     label="Doock Doors"
                     />
                   </div>
@@ -999,10 +1138,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="driveInDoor_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Drive in Door" 
                     label="Drive in Door"
                     />
                   </div>
@@ -1011,10 +1150,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                       type="number" 
                       class="no-spinner"
+                      v-model="truckCourt_input"
                       @wheel.prevent
                       @touchstart.prevent
                       @touchmove.prevent
-                      placeholder="Truck Court"
                       label="Truck Court"
                       />
                   </div>
@@ -1025,10 +1164,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="buildingDimensions1_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Building Dimensions 1" 
                     label="Building Dimensions 1"
                     />
                   </div>
@@ -1037,10 +1176,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="buildingDimensions2_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Building Dimensions 2" 
                     label="Building Dimensions 2"
                     />
                   </div>
@@ -1049,10 +1188,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="baySize1_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Bay Size 1" 
                     label="Bay Size 1"
                     />
                   </div>
@@ -1061,10 +1200,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="baySize2_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Bay Size 2" 
                     label="Bay Size 2"
                     />
                   </div>
@@ -1073,10 +1212,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="columnsSpacing1_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Columns Spacing 1" 
                     label="Columns Spacing 1"
                     />
                   </div>
@@ -1085,10 +1224,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="columnsSpacing2_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Columns Spacing 2" 
                     label="Columns Spacing 2"
                     />
                   </div>
@@ -1099,10 +1238,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="minLease_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Min Lease (SF/Mo)" 
                     label="Min Lease (SF/Mo)"
                     />
                   </div>
@@ -1111,10 +1250,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="maxLease_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Max. Lease (SF/Mo)" 
                     label="Max. Lease (SF/Mo)"
                     />
                   </div>
@@ -1123,10 +1262,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="knockoutsDocks_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Knockouts Docks" 
                     label="Knockouts Docks"
                     />
                   </div>
@@ -1135,20 +1274,32 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="parkingSpace_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="parking Space" 
                     label="parking Space"
                     />
                   </div>
                   <!-- AVAILABLE MONTH -->
                   <div class="mt-2">
-                    <CDatePicker label="Available Month" locale="en-US" selectionType="month" />
+                    <CDatePicker 
+                    label="Available Month" 
+                    locale="en-US" 
+                    selectionType="month" 
+                    placeholder="" 
+                    v-model="availableMonth_input"
+                    />
                   </div>
                   <!-- AVAILABLE YEAR -->
                   <div class="mt-2">
-                    <CDatePicker label="Available Year" locale="en-US" selectionType="year" />
+                    <CDatePicker 
+                    label="Available Year" 
+                    locale="en-US" 
+                    selectionType="year" 
+                    placeholder="" 
+                    v-model="availableYear_input"
+                    />
                   </div>          
                 </CCol>
                 <CCol :md="3">
@@ -1157,10 +1308,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="floorThickness_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Floor Thickness" 
                     label="Floor Thickness"
                     />
                   </div>
@@ -1169,10 +1320,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                     type="number" 
                     class="no-spinner"
+                    v-model="floorResistance_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Floor Resistance" 
                     label="Floor Resistance"
                     />
                   </div>
@@ -1181,10 +1332,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput 
                       type="number" 
                       class="no-spinner"
+                      v-model="officesSpace_input"
                       @wheel.prevent
                       @touchstart.prevent
                       @touchmove.prevent
-                      placeholder="Offices (SF)" 
                       label="Offices (SF)"
                       />
                   </div>
@@ -1193,16 +1344,36 @@ const copanyTypeId_input = ref(null);
                     <div style="width: 5.3rem;">
                       <label>Crossdock</label>
                     </div>
-                    <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                    <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                    <CFormCheck 
+                    type="radio" 
+                    name="flexRadioDefault" 
+                    id="flexRadioDefault1" 
+                    label="Yes"
+                    />
+                    <CFormCheck 
+                    type="radio" 
+                    name="flexRadioDefault" 
+                    id="flexRadioDefault2" 
+                    label="No"
+                    />
                   </div>
                   <!-- SHARED TRUCK -->
                   <div class="mt-2 d-flex" style="justify-content: space-between;">
                     <div style="width: 5.3rem;">
                       <label>Shared Truck</label>
                     </div>
-                    <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                    <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                    <CFormCheck 
+                    type="radio" 
+                    name="flexRadioDefault" 
+                    id="flexRadioDefault1" 
+                    label="Yes"
+                    />
+                    <CFormCheck 
+                    type="radio" 
+                    name="flexRadioDefault" 
+                    id="flexRadioDefault2" 
+                    label="No"
+                    />
                   </div>
                 </CCol>
               <!-- </CRow>
@@ -1210,7 +1381,7 @@ const copanyTypeId_input = ref(null);
           </CCard> -->
         </CRow>
 
-        <CRow v-else-if="selectedBuildingState == 2">
+        <CRow v-else-if="builderStateId_input == 2">
           <!-- *** ABSORPTION *** -->
           <CCard class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
             <CCardBody class="card-body-customer-buildings">
@@ -1228,6 +1399,8 @@ const copanyTypeId_input = ref(null);
                       :multiple="false"
                       :options="BuildingState"
                       optionsStyle="text"
+                      @change="handleTenant"
+                      placeholder=""
                     >
                     </CMultiSelect>
                   </div>
@@ -1238,6 +1411,8 @@ const copanyTypeId_input = ref(null);
                       :multiple="false"
                       :options="BuildingState"
                       optionsStyle="text"
+                      @change="handleIndustry"
+                      placeholder=""
                     >
                     </CMultiSelect>
                   </div>
@@ -1248,6 +1423,8 @@ const copanyTypeId_input = ref(null);
                       :multiple="false"
                       :options="BuildingState"
                       optionsStyle="text"
+                      @change="handleFinalUse"
+                      placeholder=""
                     >
                     </CMultiSelect>
                   </div>
@@ -1274,10 +1451,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput
                     type="number"
                     class="no-spinner"
+                    v-model="leaseTermMonth_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Lease Term Month"
                     label="Lease Term Month"
                     />
                   </div>
@@ -1286,10 +1463,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput
                     type="number"
                     class="no-spinner"
+                    v-model="askingRateShell_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Asking Rate Shell"
                     label="Asking Rate Shell"
                     />
                   </div>
@@ -1298,7 +1475,7 @@ const copanyTypeId_input = ref(null);
                     <CFormInput
                     type="text"
                     class="no-spinner"
-                    placeholder="KVAS"
+                    v-model="KVAS_input"
                     label="KVAS"
                     />
                   </div>
@@ -1309,10 +1486,10 @@ const copanyTypeId_input = ref(null);
                     <CFormInput
                     type="number"
                     class="no-spinner"
+                    v-model="closingRate_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    placeholder="Closing Rate"
                     label="Closing Rate"
                     />
                   </div>
@@ -1321,7 +1498,7 @@ const copanyTypeId_input = ref(null);
                     <CFormInput
                     type="text"
                     class="no-spinner"
-                    placeholder="Closing Quarter"
+                    v-model="closingQuarter_input"
                     label="Closing Quarter"
                     />
                   </div>
@@ -1332,6 +1509,7 @@ const copanyTypeId_input = ref(null);
                       :multiple="false"
                       :options="BuildingState"
                       optionsStyle="text"
+                      placeholder=""
                     >
                     </CMultiSelect>
                   </div>
@@ -1344,6 +1522,7 @@ const copanyTypeId_input = ref(null);
                       :multiple="false"
                       :options="BuildingState"
                       optionsStyle="text"
+                      placeholder=""
                     >
                     </CMultiSelect>
                   </div>
@@ -1352,13 +1531,18 @@ const copanyTypeId_input = ref(null);
                     <CFormInput
                     type="text"
                     class="no-spinner"
-                    placeholder="Lease Up"
+                    v-model="leaseUp_input"
                     label="Lease Up"
                     />
                   </div>
                   <!-- MONTH -->
                   <div class="mt-2">
-                    <CDatePicker label="Month" locale="en-US" selectionType="month" />
+                    <CDatePicker 
+                    label="Month" 
+                    locale="en-US" 
+                    selectionType="month" 
+                    placeholder=""
+                    />
                   </div>
                 </CCol>
               <!-- </CRow>

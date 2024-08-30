@@ -14,41 +14,37 @@
         required: true
       },
   });
-  const usersCbo = ref([]);
-  const user = ref('');
- 
-  onMounted(() => {
-    if (props.id) {
-        fetchCompaniesCbo(props.id);
-      }
-  });
-  const fetchCompaniesCbo = async (userId) => {
-    try {
-      const [userResponse, companiesResponse] = await Promise.all([
-        axios.get(`http://localhost:8000/api/user/`),
-      ]);
 
-      const userInfo = userResponse.data;
+  const buildingDataRef = ref(null);
+  const buildingContactRef = ref(null);
+  const buildingImagesRef = ref(null);
 
-      // Mapeo de empresa seleccionada
-      usersCbo.value = userInfo.map(usr => ({
-        value: usr.id,
-        label: usr.name + " " + usr.lastName,
-        selected: usr.id === userInfo.companyId
-      }));
 
-      // user.value      = userInfo.va;
+const saveAllData = async () => {
+  try {
+    const buildingData = buildingDataRef.value?.getFormData();
+    const contactData = buildingContactRef.value?.getFormData();
+    const imagesData = buildingImagesRef.value?.getFormData();
 
-    } catch (error) {
-      console.error('Hubo un error obteniendo los datos:', error);
-    }
-  };
-  const handleCompanyChange = (value) => {
-    if (value != 0) {   
-      selectedCompany.value = value[0].value;
-      console.log("Selected company ID:", selectedCompany.value);
-    }
-  };
+    console.log("SAVEEEE", contactData);
+    
+
+    const allData = {
+      buildingData,
+      contactData,
+      imagesData,
+    };
+
+    // Aquí realizarías la llamada al API para guardar los datos
+    const response = await axios.post('http://localhost:8000/api/buildings', allData);
+    
+    console.log('Datos guardados exitosamente:', response.data);
+    // Aquí puedes agregar alguna notificación de éxito para el usuario
+  } catch (error) {
+    console.error('Error al guardar los datos:', error);
+    // Aquí puedes agregar alguna notificación de error para el usuario
+  }
+};
 </script>
 <template>
   <div>
@@ -56,7 +52,7 @@
     <CCard class="container-btn-flotante">
       <CCardBody>
         <div style="text-align: center;">
-          <CButton color="success mr-2" variant="outline">
+          <CButton color="success mr-2" variant="outline" @click="saveAllData">
             <CIcon :content="cilSave" size="sm" />
             Save
           </CButton>
@@ -77,18 +73,15 @@
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
-          <!-- <h2>User Details</h2> -->
-          <!-- Modulo de perfil -->
-          <BuildingData :id="Number(props.id)"/> 
+          <BuildingData :id="Number(props.id)" ref="buildingDataRef" />
         </CTabPanel>
-        <CTabPanel class="p-3" itemKey="ContactBuilding">  
-          <BuildingContact :id="Number(props.id)"/> 
+        <CTabPanel class="p-3" itemKey="ContactBuilding">
+          <BuildingContact :id="Number(props.id)" ref="buildingContactRef" />
         </CTabPanel>
-        <CTabPanel class="p-3" itemKey="Images">  
-          <BuildingImages :id="Number(props.id)"/> 
+        <CTabPanel class="p-3" itemKey="Images">
+          <BuildingImages :id="Number(props.id)" ref="buildingImagesRef" />
         </CTabPanel>
-      </CTabContent>
-    
+      </CTabContent>    
 
     </CTabs>
   </div>
