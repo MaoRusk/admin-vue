@@ -32,10 +32,16 @@ background: #15598a;
   -moz-appearance: textfield;
 }
 
+.card-header-customer-buildings 
+{
+  --cui-bg-opacity: 1;
+  background-color: rgb(29 34 43 / 5%) !important
+}
 .card-customer-buildings 
 {
   --cui-bg-opacity: 1;
   background-color: rgba(var(--cui-secondary-bg-rgb), var(--cui-bg-opacity)) !important;
+  // background-color: var(--cui-body-bg);
 }
 .card-body-customer-buildings 
 {

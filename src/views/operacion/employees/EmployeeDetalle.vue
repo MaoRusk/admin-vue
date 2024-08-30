@@ -466,27 +466,27 @@
             </CCol>
             <CCol>
                 <div style="display: flex; justify-content: left; align-items: center;">
-                <label for="status">Status</label>
-                <div style="margin-left: 1rem; padding-top: 1rem;">
-                  <CFormCheck 
-                    inline 
-                    type="radio" 
-                    name="inlineRadioOptions" 
-                    id="inlineCheckbox1" 
-                    value="Activo" 
-                    label="Activo"
-                    :checked="status === 'Activo'"
-                    @change="updateStatus('Activo')"                  />
-                  <CFormCheck 
-                    inline 
-                    type="radio" 
-                    name="inlineRadioOptions" 
-                    id="inlineCheckbox2" 
-                    value="Inactivo" 
-                    label="Inactivo"
-                    :checked="status === 'Inactivo'"
-                    @change="updateStatus('Inactivo')"                  />    
-                </div>
+                  <label for="status">Status</label>
+                  <div style="margin-left: 1rem; padding-top: 1rem;">
+                    <CFormCheck 
+                      inline 
+                      type="radio" 
+                      name="inlineRadioOptions" 
+                      id="inlineCheckbox1" 
+                      value="Activo" 
+                      label="Activo"
+                      :checked="status === 'Activo'"
+                      @change="updateStatus('Activo')"                  />
+                    <CFormCheck 
+                      inline 
+                      type="radio" 
+                      name="inlineRadioOptions" 
+                      id="inlineCheckbox2" 
+                      value="Inactivo" 
+                      label="Inactivo"
+                      :checked="status === 'Inactivo'"
+                      @change="updateStatus('Inactivo')"                  />    
+                  </div>
                 </div>
             </CCol>
             </CCol>

@@ -5,7 +5,6 @@
   import axios from 'axios';
   import BuildingData from './BuildingData.vue'
   import BuildingContact from './BuildingContact.vue';
-  import BuildingsExtra from './BuildingsExtra.vue';
   import BuildingImages from './BuildingsImages.vue';
 
   const router = useRouter()
@@ -73,7 +72,6 @@
     <CTabs activeItemKey="DataBuilding">
       <CTabList variant="tabs" style="margin-top: 1rem;">
         <CTab itemKey="DataBuilding">Data Building</CTab>
-        <CTab itemKey="Extra">Features</CTab>
         <CTab itemKey="ContactBuilding">Building Contact</CTab>
         <CTab itemKey="Images">Images</CTab>
       </CTabList>
@@ -85,9 +83,6 @@
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">  
           <BuildingContact :id="Number(props.id)"/> 
-        </CTabPanel>
-        <CTabPanel class="p-3" itemKey="Extra">  
-          <BuildingsExtra :id="Number(props.id)"/> 
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Images">  
           <BuildingImages :id="Number(props.id)"/> 
