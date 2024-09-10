@@ -317,7 +317,7 @@ const BuildingState = [
     },
     {
         value: 2,
-        label: 'Absoprtion',
+        label: 'Absorption',
     },
     {
         value: 3,

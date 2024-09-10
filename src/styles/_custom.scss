@@ -56,11 +56,13 @@ background: #15598a;
   right: 13.4rem;
   display: flex;
   // justify-content: flex-end;
-  width: fit-content;
+  width: 27rem;
   margin-left: auto;  
   z-index: 10;
   background-color: var(--cui-body-bg);
 }
+
+
 
 // Responsivo a Celular
 @media (max-width: 768px) and (max-width: 991px) { 
@@ -70,6 +72,9 @@ background: #15598a;
     left: 1rem;  /* Para centrar el contenido puedes usar left */
     width: auto;
   }
+  .btns-flotantes-customer-moviles{
+    margin-top: .5rem;
+  }
 }
 
 // CSS para Tablets (iPads) en Modo Horizontal:
@@ -77,12 +82,11 @@ background: #15598a;
   .container-btn-flotante {
     top: 3rem;
     right: 3.4rem;
-    width: auto;
   }
 }
 
 // Responsivo a Laptop
-@media (min-width: 1280px) and (max-width: 1366px) {
+@media (min-width: 1280px) {
   .container-btn-flotante {
     top: 5rem;
     right: 3.2rem;

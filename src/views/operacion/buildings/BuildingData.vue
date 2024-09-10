@@ -326,442 +326,97 @@ defineExpose({
 <template>
   <CContainer>
     <CRow>
-        <!-- *** GENERAL INFORMATION *** -->
-        <CCard class="card text-secondary mb-3 border-secondary card-header-customer-buildings " >
-          <CCardBody class="card-body-customer-buildings">
-            General information
-          </CCardBody>
-        </CCard>
-        <CCard class="card-customer-buildings">
-          <CCardBody>
-            <CRow>
-              <CCol :md="3">
-                <!-- BUILDING STATE -->
-                <div  class="mt-2">
-                  <CMultiSelect
-                    label="Building State"
-                    :multiple="false"
-                    :options="BuildingState"
-                    @change="handleBuildingState"
-                    optionsStyle="text"
-                    placeholder=""
-                  >
-                  </CMultiSelect>
-                </div>
-                <!-- BUILDING NAME (SF) -->
-                <div class="mt-2">
-                  <CFormInput
-                  type="text"
-                  v-model="buildingName_input"
-                  class="no-spinner"
-                  label="Building Name"
-                  />
-                </div>
-                <!-- STATUS (ACTIVO/INACTIVO) -->
-                <div style="display: flex; justify-content: left; align-items: center;">
-                  <label for="status">Status</label>
-                  <div style="margin-left: .6rem; padding-top: .5rem;">
-                    <CFormCheck 
-                      inline 
-                      type="radio" 
-                      name="inlineRadioOptions" 
-                      id="inlineCheckbox1" 
-                      value="Activo" 
-                      label="Activo"
-                      :checked="status === 'Activo'"
-                      @change="updateStatus('Activo')"                  />
-                    <CFormCheck 
-                      inline 
-                      type="radio" 
-                      name="inlineRadioOptions" 
-                      id="inlineCheckbox2" 
-                      value="Inactivo" 
-                      label="Inactivo"
-                      :checked="status === 'Inactivo'"
-                      @change="updateStatus('Inactivo')"                  />    
-                  </div>
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- CLASS -->
-                <div  class="mt-2">
-                  <CMultiSelect
-                    label="Class"
-                    :multiple="false"
-                    :options="Class"
-                    @change="handleBuildingClass"
-                    optionsStyle="text"
-                    placeholder=""
-                  >
-                  </CMultiSelect>
-                </div>
-                <!-- BUILDING SIZE (SF) -->
-                <div class="mt-2">
-                  <CFormInput 
-                  type="number" 
-                  class="no-spinner"
-                  v-model="buildingSizeSf_input"
-                  @wheel.prevent
-                  @touchstart.prevent
-                  @touchmove.prevent
-                  label="Building Size (SF)"
-                  />
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- EXPANSION LAND -->
-                <div class="mt-2">
-                  <CFormInput 
-                  type="number" 
-                  class="no-spinner"
-                  v-model="expansionLand_input"
-                  @wheel.prevent
-                  @touchstart.prevent
-                  @touchmove.prevent
-                  label="Expansion Land"
-                  />
-                </div>
-                <!-- STATUS -->
-                <div class="mt-2">
-                  <CMultiSelect
-                    label="Status"
-                    v-model="selectedStatus"
-                    :multiple="false"
-                    :options="Status"
-                    optionsStyle="text"
-                    placeholder=""
-                    @change="handleStatusSelect"
-                  >
-                    <template #options="{ option }" >
-                      <div class="d-flex">
-                        <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                      </div>
-                    </template>
-                  </CMultiSelect>
-                  <CInputGroup v-if="selectedStatus == '0'" class="mb-3 mt-2">
-                    <CFormInput aria-label="New status.." aria-describedby="button-addon2"/>
-                    <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                  </CInputGroup>
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- YEAR BUILT -->
-                <div class="mt-2">
-                  <CDatePicker label="Year Built" v-model="yearBuilt_input" locale="en-US" selectionType="year" placeholder=""/>
-                </div>
-                <!-- ! ****AGREGAR a tabla AVAILABLE SINCE (Available from) -->
-                <div class="mt-2">
-                  <CDatePicker label="Available Since" locale="en-US" selectionType="month" placeholder=""/>
-                </div>
-              </CCol>
-            </CRow>
-          </CCardBody>
-        </CCard>
-        
-        <!-- *** LOCATION *** -->
-        <CCard class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
-          <CCardBody class="card-body-customer-buildings">
-            Location
-          </CCardBody>
-        </CCard>
-        <CCol :md="4">
-          <!-- REGION -->
-          <div class="mt-2">
-            <CMultiSelect
-              label="Region"
-              v-model="Region"
-              :multiple="false"
-              :options="Region"
-              optionsStyle="text"
-              placeholder=""
-              @change="handleRegionSelect"
-            >
-              <template #options="{ option }" >
-                <div class="d-flex">
-                  <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                </div>
-              </template>
-            </CMultiSelect>
-            <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-              <CFormInput aria-label="New Region.." aria-describedby="button-addon2"/>
-              <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-            </CInputGroup>
-          </div>
-          <!-- INDUSTRIAL PARK -->
-          <div class="mt-2">
-            <CMultiSelect
-              label="Industrial Park"
-              v-model="IndustrialPark"
-              :multiple="false"
-              :options="IndustrialPark"
-              optionsStyle="text"
-              placeholder=""
-              @change="handleIndustrialParkSelect"
-            >
-              <template #options="{ option }" >
-                <div class="d-flex">
-                  <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                </div>
-              </template>
-            </CMultiSelect>
-            <CInputGroup v-if="SelectedIndustrialPark == '0'" class="mb-3 mt-2">
-              <CFormInput aria-label="New Industrial Park.." aria-describedby="button-addon2"/>
-              <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-            </CInputGroup>
-          </div>
-        </CCol>
-        <CCol :md="4">
-          <!-- MARKET -->
-          <div class="mt-2">
-            <CMultiSelect
-              label="Market"
-              v-model="marketsCbo"
-              :multiple="false"
-              :options="marketsCbo"
-              optionsStyle="text"
-              placeholder=""
-              @change="handleMarket"
-            >
-              <template #options="{ option }" >
-                <div class="d-flex">
-                  <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                </div>
-              </template>
-            </CMultiSelect>
-            <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-              <CFormInput aria-label="New Market.." aria-describedby="button-addon2"/>
-              <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-            </CInputGroup>
-          </div>
-          <!-- SUB MARKET -->
-          <div class="mt-2">
-            <CMultiSelect
-              label="Submarket"
-              :multiple="false"
-              :options="submarketCbo"
-              optionsStyle="text"
-              placeholder=""
-              @change="handleSubMarket"
-            >
-              <template #options="{ option }" >
-                <div class="d-flex">
-                  <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                </div>
-              </template>
-            </CMultiSelect>
-            <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-              <CFormInput aria-label="New Submarket.." aria-describedby="button-addon2"/>
-              <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-            </CInputGroup>
-          </div>
-        </CCol>
-        <CCol :md="4">    
-          <!-- LATITUD -->
-          <div class="mt-2">
-            <CFormInput
-            type="text"
-            label="Latitud"
-            v-model="latitud_input"
-            />
-          </div>
-          <!-- ALTITUD -->
-          <div class="mt-2">
-            <CFormInput
-            type="text"
-            label="Altitud"
-            v-model="longitud_input"
-            />
-          </div>
-        </CCol>
-        
-        <!-- *** PROPERTY DETAILS *** -->
-        <CCard class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
-          <CCardBody class="card-body-customer-buildings">
-            Property Details
-          </CCardBody>
-        </CCard>
-        <CCard class="card-customer-buildings">
-          <CCardBody>
-            <CRow>
-              <CCol :md="3">
-                <!-- OWNER -->
-                <div class="mt-2">
-                  <CMultiSelect
-                    label="Owner"
-                    v-model="Owner"
-                    :multiple="false"
-                    :options="Owner"
-                    optionsStyle="text"
-                    placeholder=""
-                    @change="handleOwnerSelect"
-                  >
-                    <template #options="{ option }" >
-                      <div class="d-flex">
-                        <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                      </div>
-                    </template>
-                  </CMultiSelect>
-                  <CInputGroup v-if="SelectedOwner == '0'" class="mb-3 mt-2">
-                    <CFormInput aria-label="New Owner.." aria-describedby="button-addon2"/>
-                    <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                  </CInputGroup>
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- DEVELOPER -->
-                <div class="mt-2">
-                  <CMultiSelect
-                    label="Developer"
-                    v-model="Developer"
-                    :multiple="false"
-                    :options="Developer"
-                    optionsStyle="text"
-                    placeholder=""
-                    @change="handleDeveloperSelect"
-                  >
-                    <template #options="{ option }" >
-                      <div class="d-flex">
-                        <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                      </div>
-                    </template>
-                  </CMultiSelect>
-                  <CInputGroup v-if="SelectedDeveloper == '0'" class="mb-3 mt-2">
-                    <CFormInput aria-label="New Developer.." aria-describedby="button-addon2"/>
-                    <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                  </CInputGroup>
-                </div>
-              </CCol>
-              <CCol :md="3">    
-                <!-- BUILDER -->
-                <div class="mt-2">
-                  <CMultiSelect
-                    label="Builder"
-                    v-model="Builder"
-                    :multiple="false"
-                    :options="Developer"
-                    optionsStyle="text"
-                    placeholder=""
-                    @change="handleBuilderSelect"
-                  >
-                    <template #options="{ option }" >
-                      <div class="d-flex">
-                        <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                      </div>
-                    </template>
-                  </CMultiSelect>
-                  <CInputGroup v-if="SelectedBuilder == '0'" class="mb-3 mt-2">
-                    <CFormInput aria-label="New Builder.." aria-describedby="button-addon2"/>
-                    <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                  </CInputGroup>
-                </div>
-              </CCol>
-              <CCol :md="3">    
-                <!-- ! **** VERIFICAR QUE ESTE MAPPEADO EN EL SERVICIO **** LISTING BROKER -->
-                <div class="mt-2">
-                  <CMultiSelect
-                    label="ListingBroker"
-                    :multiple="false"
-                    :options="ListingBroker"
-                    optionsStyle="text"
-                    placeholder=""
-                    @change="handleListingBroker"
-                  >
-                  </CMultiSelect>
-                </div>       
-              </CCol>
-            </CRow>
-          </CCardBody>
-        </CCard>
-
-        <!-- *** TRANSACTIONS AND AGREEMENTS *** -->
-        <CCard class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
-          <CCardBody class="card-body-customer-buildings">
-            Transactions and Agreements
-          </CCardBody>
-        </CCard>
-       
-              <CCol :md="3">
-                <!--   SALE PRICE (USD)  -->
-                <div class="mt-2">
-                  <label >Sale Price (USD) </label>
-                  <CInputGroup class="mb-3 mt-2">
-                    <CInputGroupText>$</CInputGroupText>
-                      <CFormInput 
-                        type="number" 
-                        class="no-spinner"
-                        v-model="salePriceUsd_input"
-                        @wheel.prevent
-                        @touchstart.prevent
-                        @touchmove.prevent 
-                        />
-                    <CInputGroupText>.00</CInputGroupText>
-                  </CInputGroup>
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- CURRENCY -->
-                <div class="mt-2">
-                  <CMultiSelect
-                    label="Currency"
-                    :multiple="false"
-                    :options="Currency"
-                    optionsStyle="text"
-                    @change="handleCurrency"
-                    placeholder=""
-                  >
-                  </CMultiSelect>
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- TENANCY -->
-                <div class="mt-2">
-                  <CMultiSelect
-                    label="Tenancy"
-                    :multiple="false"
-                    :options="Tenancy"
-                    optionsStyle="text"
-                    @change="handleTenancy"
-                    placeholder=""
-                  >
-                  </CMultiSelect>
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- DEAL -->
-                <div class="mt-2">
-                  <CMultiSelect
-                    label="Deal"
-                    :multiple="false"
-                    :options="Deal"
-                    optionsStyle="text"
-                    @change="handleDeal"
-                    placeholder=""
-                  >
-                </CMultiSelect>
-                </div>
-              </CCol>
-           
-
-        <!-- *** TECHNICAL SPECIFICATIONS *** -->
-        <CCard class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
-          <CCardBody class="card-body-customer-buildings">
-            Technical Specifications
-          </CCardBody>
-        </CCard>
-        <CCard class="card-customer-buildings">
-          <CCardBody>
-            <CRow>
-              <CCol :md="3">
-                <!-- TYPE -->
-                <div class="mt-2">
+      <CCol :md="9">
+        <CRow>
+          <!-- *** GENERAL INFORMATION *** -->
+          <CCard id="general-information" class="card text-secondary mb-3 border-secondary card-header-customer-buildings " >
+            <CCardBody class="card-body-customer-buildings">
+              General Information
+            </CCardBody>
+          </CCard>
+         
+          <CCard class="card-customer-buildings">
+            <CCardBody>
+              <CRow>
+                <CCol :md="3">
+                  <!-- BUILDING STATE -->
+                  <div  class="mt-2">
                     <CMultiSelect
-                      label="Type"
-                      v-model="Type"
+                      label="Building State"
                       :multiple="false"
-                      :options="Type"
+                      :options="BuildingState"
+                      @change="handleBuildingState"
                       optionsStyle="text"
+                      size="sm"
                       placeholder=""
-                      @change="handleTypeSelect"
+                    >
+                    </CMultiSelect>
+                  </div>
+                  <!-- BUILDING NAME (SF) -->
+                  <div class="mt-2">
+                    <CFormInput
+                    type="text"
+                    size="sm"
+                    v-model="buildingName_input"
+                    class="no-spinner"
+                    label="Building Name"
+                    />
+                  </div>
+                  
+                </CCol>
+                <CCol :md="3">
+                  <!-- CLASS -->
+                  <div  class="mt-2">
+                    <CMultiSelect
+                      label="Class"
+                      :multiple="false"
+                      :options="Class"
+                      @change="handleBuildingClass"
+                      optionsStyle="text"
+                      size="sm"
+                      placeholder=""
+                    >
+                    </CMultiSelect>
+                  </div>
+                  <!-- BUILDING SIZE (SF) -->
+                  <div class="mt-2">
+                    <CFormInput 
+                    type="number" 
+                    size="sm"
+                    class="no-spinner"
+                    v-model="buildingSizeSf_input"
+                    @wheel.prevent
+                    @touchstart.prevent
+                    @touchmove.prevent
+                    label="Building Size (SF)"
+                    />
+                  </div>
+                </CCol>
+                <CCol :md="3">
+                  <!-- EXPANSION LAND -->
+                  <div class="mt-2">
+                    <CFormInput 
+                    type="number" 
+                    size="sm"
+                    class="no-spinner"
+                    v-model="expansionLand_input"
+                    @wheel.prevent
+                    @touchstart.prevent
+                    @touchmove.prevent
+                    label="Expansion Land"
+                    />
+                  </div>
+                  <!-- STATUS -->
+                  <div class="mt-2">
+                    <CMultiSelect
+                      label="Status"
+                      v-model="selectedStatus"
+                      :multiple="false"
+                      :options="Status"
+                      optionsStyle="text"
+                      size="sm"
+                      placeholder=""
+                      @change="handleStatusSelect"
                     >
                       <template #options="{ option }" >
                         <div class="d-flex">
@@ -769,786 +424,1206 @@ defineExpose({
                         </div>
                       </template>
                     </CMultiSelect>
-                    <CInputGroup v-if="SelectedType == '0'" class="mb-3 mt-2">
-                      <CFormInput aria-label="New Type.." aria-describedby="button-addon2"/>
+                    <CInputGroup v-if="selectedStatus == '0'" class="mb-3 mt-2">
+                      <CFormInput aria-label="New status.." aria-describedby="button-addon2"/>
                       <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
                     </CInputGroup>
-                </div>
-                <!-- TOTAL LAND -->
-                <div class="mt-2">
-                  <CFormInput 
-                  type="number" 
-                  class="no-spinner"
-                  v-model="totalLand_input"
-                  @wheel.prevent
-                  @touchstart.prevent
-                  @touchmove.prevent
-                  label="Total Land"
-                  />
-                </div>
-                <!-- CLEAR HEIGHT -->
-                <div class="mt-2">
-                  <CFormInput 
-                  type="number" 
-                  class="no-spinner"
-                  v-model="clearHeight_input"
-                  @wheel.prevent
-                  @touchstart.prevent
-                  @touchmove.prevent
-                  label="Clear Height"
-                  />
-                </div>
-                <!-- CONSTRUCTION TYPE -->
-                <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    v-model="constructionType_input"
-                    label="Construction Type"
-                    />
-                </div>
-                <!-- CONSTRUCTION STATE -->
-                <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    v-model="constructionState_input"
-                    label="Construction State"
-                    />
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- LOADING DOOR -->
-                <div class="mt-2">
+                  </div>
+                </CCol>
+                <CCol :md="3">
+                  <!-- YEAR BUILT -->
+                  <div class="mt-2">
+                    <CDatePicker label="Year Built" v-model="yearBuilt_input" locale="en-US" size="sm" selectionType="year" placeholder=""/>
+                  </div>
+                  <!-- ! ****AGREGAR a tabla AVAILABLE SINCE (Available from) -->
+                  <div class="mt-2">
+                    <CDatePicker label="Available Since" locale="en-US" size="sm" selectionType="month" placeholder=""/>
+                  </div>
+                </CCol>
+                <CCol :md="12">
+                  <!-- STATUS (ACTIVO/INACTIVO) -->
+                  <div style="display: flex; justify-content: left; align-items: center;margin-top: .5rem;">
+                    <label for="status">Status</label>
+                    <div style="margin-left: .6rem; padding-top: .5rem;">
+                      <CFormCheck 
+                        inline 
+                        type="radio" 
+                        name="inlineRadioOptions" 
+                        id="inlineCheckbox1" 
+                        value="Activo" 
+                        label="Active"
+                        :checked="status === 'Activo'"
+                        @change="updateStatus('Activo')"                  />
+                      <CFormCheck 
+                        inline 
+                        type="radio" 
+                        name="inlineRadioOptions" 
+                        id="inlineCheckbox2" 
+                        value="Inactivo" 
+                        label="Inactive"
+                        :checked="status === 'Inactivo'"
+                        @change="updateStatus('Inactivo')"                  />    
+                    </div>
+                  </div>
+                </CCol>
+              </CRow>
+            </CCardBody>
+          </CCard>
+          
+          <!-- *** LOCATION *** -->
+          <CCard id="location" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
+            <CCardBody class="card-body-customer-buildings">
+              Location
+            </CCardBody>
+          </CCard>
+          <CCol :md="4">
+            <!-- REGION -->
+            <div class="mt-2">
+              <CMultiSelect
+                label="Region"
+                v-model="Region"
+                :multiple="false"
+                :options="Region"
+                optionsStyle="text"
+                size="sm"
+                placeholder=""
+                @change="handleRegionSelect"
+              >
+                <template #options="{ option }" >
+                  <div class="d-flex">
+                    <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                  </div>
+                </template>
+              </CMultiSelect>
+              <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
+                <CFormInput aria-label="New Region.." aria-describedby="button-addon2"/>
+                <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+              </CInputGroup>
+            </div>
+            <!-- INDUSTRIAL PARK -->
+            <div class="mt-2">
+              <CMultiSelect
+                label="Industrial Park"
+                v-model="IndustrialPark"
+                :multiple="false"
+                :options="IndustrialPark"
+                optionsStyle="text"
+                size="sm"
+                placeholder=""
+                @change="handleIndustrialParkSelect"
+              >
+                <template #options="{ option }" >
+                  <div class="d-flex">
+                    <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                  </div>
+                </template>
+              </CMultiSelect>
+              <CInputGroup v-if="SelectedIndustrialPark == '0'" class="mb-3 mt-2">
+                <CFormInput aria-label="New Industrial Park.." aria-describedby="button-addon2"/>
+                <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+              </CInputGroup>
+            </div>
+          </CCol>
+          <CCol :md="4">
+            <!-- MARKET -->
+            <div class="mt-2">
+              <CMultiSelect
+                label="Market"
+                v-model="marketsCbo"
+                :multiple="false"
+                :options="marketsCbo"
+                optionsStyle="text"
+                size="sm"
+                placeholder=""
+                @change="handleMarket"
+              >
+                <template #options="{ option }" >
+                  <div class="d-flex">
+                    <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                  </div>
+                </template>
+              </CMultiSelect>
+              <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
+                <CFormInput aria-label="New Market.." aria-describedby="button-addon2"/>
+                <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+              </CInputGroup>
+            </div>
+            <!-- SUB MARKET -->
+            <div class="mt-2">
+              <CMultiSelect
+                label="Submarket"
+                :multiple="false"
+                :options="submarketCbo"
+                optionsStyle="text"
+                size="sm"
+                placeholder=""
+                @change="handleSubMarket"
+              >
+                <template #options="{ option }" >
+                  <div class="d-flex">
+                    <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                  </div>
+                </template>
+              </CMultiSelect>
+              <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
+                <CFormInput aria-label="New Submarket.." aria-describedby="button-addon2"/>
+                <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+              </CInputGroup>
+            </div>
+          </CCol>
+          <CCol :md="4">    
+            <!-- LATITUD -->
+            <div class="mt-2">
+              <CFormInput
+              type="text"
+              size="sm"
+              label="Latitude"
+              v-model="latitud_input"
+              />
+            </div>
+            <!-- ALTITUD -->
+            <div class="mt-2">
+              <CFormInput
+              type="text"
+              size="sm"
+              label="Longitude"
+              v-model="longitud_input"
+              />
+            </div>
+          </CCol>
+          
+          <!-- *** PROPERTY DETAILS *** -->
+          <CCard id="property-details" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
+            <CCardBody class="card-body-customer-buildings">
+              Property Details
+            </CCardBody>
+          </CCard>
+          <CCard class="card-customer-buildings">
+            <CCardBody>
+              <CRow>
+                <CCol :md="3">
+                  <!-- OWNER -->
+                  <div class="mt-2">
                     <CMultiSelect
-                    label="Loading Door"
-                    :multiple="false"
-                    :options="LoadingDoor"
-                    optionsStyle="text"
-                    placeholder=""
-                    @change="handleLoadingDoorSelect"
+                      label="Owner"
+                      v-model="Owner"
+                      :multiple="false"
+                      :options="Owner"
+                      optionsStyle="text"
+                      size="sm"
+                      placeholder=""
+                      @change="handleOwnerSelect"
                     >
-                    <template #options="{ option }" >
+                      <template #options="{ option }" >
                         <div class="d-flex">
-                        <CIcon v-if="option == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                          <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
                         </div>
-                    </template>
+                      </template>
                     </CMultiSelect>
-                    <CInputGroup v-if="SelectedLoadingDoor == '0'" class="mb-3 mt-2">
-                    <CFormInput aria-label="New Loading Door.." aria-describedby="button-addon2"/>
-                    <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+                    <CInputGroup v-if="SelectedOwner == '0'" class="mb-3 mt-2">
+                      <CFormInput aria-label="New Owner.." aria-describedby="button-addon2"/>
+                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
                     </CInputGroup>
-                </div>  
-                <!-- OFFICE -->
-                <div class="mt-2 d-flex" style="justify-content: space-between;">
-                  <div style="width: 5.3rem;">
-                    <label>OFFICE</label>
                   </div>
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioOFFICE" 
-                  id="RadioOFFICE_1" 
-                  value="true" 
-                  label="Yes" 
-                  :checked="office_input == 'true'"
-                  @change="updateOfficeBool('true')"/>
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioOFFICE" 
-                  id="RadioOFFICE_2" 
-                  value="false" 
-                  label="No" 
-                  :checked="office_input == 'false'"
-                  @change="updateOfficeBool('false')"      
-                  />
-                </div>
-                <!-- SPRINKLERS -->
-                <div class="mt-2 d-flex" style="justify-content: space-between;">
-                  <div style="width: 5.3rem;">
-                    <label>SPRINKLERS</label>
+                </CCol>
+                <CCol :md="3">
+                  <!-- DEVELOPER -->
+                  <div class="mt-2">
+                    <CMultiSelect
+                      label="Developer"
+                      v-model="Developer"
+                      :multiple="false"
+                      :options="Developer"
+                      optionsStyle="text"
+                      size="sm"
+                      placeholder=""
+                      @change="handleDeveloperSelect"
+                    >
+                      <template #options="{ option }" >
+                        <div class="d-flex">
+                          <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                        </div>
+                      </template>
+                    </CMultiSelect>
+                    <CInputGroup v-if="SelectedDeveloper == '0'" class="mb-3 mt-2">
+                      <CFormInput aria-label="New Developer.." aria-describedby="button-addon2"/>
+                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+                    </CInputGroup>
                   </div>
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioSPRINKLERS" 
-                  id="RadioSPRINKLERS1" 
-                  value="true" 
-                  label="Yes"  
-                  :checked="sprinklers_input == 'true'"
-                  @change="updateSPRINKLERSBool('true')"     
-                  />
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioSPRINKLERS" 
-                  id="RadioSPRINKLERS2" 
-                  value="false" 
-                  label="No" 
-                  :checked="sprinklers_input == 'false'"
-                  @change="updateSPRINKLERSBool('false')"      
-                  />
-                </div>
-                <!-- CRANE -->
-                <div class="mt-2 d-flex" style="justify-content: space-between;">
-                  <div style="width: 5.3rem;">
-                    <label>CRANE</label>
+                </CCol>
+                <CCol :md="3">    
+                  <!-- BUILDER -->
+                  <div class="mt-2">
+                    <CMultiSelect
+                      label="Builder"
+                      v-model="Builder"
+                      :multiple="false"
+                      :options="Developer"
+                      optionsStyle="text"
+                      size="sm"
+                      placeholder=""
+                      @change="handleBuilderSelect"
+                    >
+                      <template #options="{ option }" >
+                        <div class="d-flex">
+                          <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                        </div>
+                      </template>
+                    </CMultiSelect>
+                    <CInputGroup v-if="SelectedBuilder == '0'" class="mb-3 mt-2">
+                      <CFormInput aria-label="New Builder.." aria-describedby="button-addon2"/>
+                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+                    </CInputGroup>
                   </div>
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioCRANE" 
-                  id="RadioCRANE1" 
-                  value="true" 
-                  label="Yes"  
-                  :checked="crane_input == 'true'"
-                  @change="updateCRANEBool('true')"  
-                  />
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioCRANE" 
-                  id="RadioCRANE2" 
-                  value="false" 
-                  label="No" 
-                  :checked="crane_input == 'false'"
-                  @change="updateCRANEBool('false')"
-                  />
-                </div>
-                <!-- HVAC -->
-                <div class="mt-2 d-flex" style="justify-content: space-between;">
-                  <div style="width: 5.3rem;">
-                    <label>HVAC</label>
-                  </div>
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioHVAC" 
-                  id="RadioHVAC1" 
-                  value="true" 
-                  label="Yes" 
-                  :checked="hvac_input == 'true'"
-                  @change="updateHVACBool('true')"
-                  />
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioHVAC" 
-                  id="RadioHVAC2" 
-                  value="false" 
-                  label="No" 
-                  :checked="hvac_input == 'false'"
-                  @change="updateHVACBool('false')"
-                  />
-                </div>
-                <!-- LEED -->
-                <div class="mt-2 d-flex" style="justify-content: space-between;">
-                  <div style="width: 5.3rem;">
-                    <label>LEED</label>
-                  </div>
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioLEED" 
-                  id="RadioLEED1" 
-                  value="true" 
-                  label="Yes" 
-                  :checked="leed_input == 'true'"
-                  @change="updateLEEDBool('true')"
-                  />
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioLEED" 
-                  id="RadioLEED2" 
-                  value="false" 
-                  label="No" 
-                  :checked="leed_input == 'false'"
-                  @change="updateLEEDBool('false')"
-                  />
-                </div>
-                <!-- RAIL SPUR -->
-                <div class="mt-2 d-flex" style="justify-content: space-between;">
-                  <div style="width: 5.3rem;">
-                    <label>RAIL SPUR</label>
-                  </div>
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioRailSpur" 
-                  id="RadioRailSpur1" 
-                  value="true" 
-                  label="Yes" 
-                  :checked="railSpur_input == 'true'"
-                  @change="updateRailSpurBool('true')"
-                  />
-                  <CFormCheck 
-                  type="radio" 
-                  name="RadioRailSpur" 
-                  id="RadioRailSpur2" 
-                  value="false" 
-                  label="No" 
-                  :checked="railSpur_input == 'false'"
-                  @change="updateRailSpurBool('false')"
-                  />
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- OFFICE SPACE -->
-                <div class="mt-2">
-                  <CFormInput 
-                  type="number" 
-                  class="no-spinner"
-                  v-model="officesSpace_input"
-                  @wheel.prevent
-                  @touchstart.prevent
-                  @touchmove.prevent
-                  label="Office Space"
-                  />
-                </div>
-                <!-- HVAC PRODUCTION AREA -->
-                <div style="margin-top: .35rem;">
-                  <CFormInput
-                  type="text"
-                  v-model="hvacProductionArea_input"
-                  label="HVAC Production Area"
-                  />
-                </div>
-                <!-- TRANSFORMER CAPACITY (Electric Substations) -->
-                <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    v-model="transformerCapacity_input"
-                    label="Transformer Capacity"
-                    />
-                </div>
-                <!-- LIGHTING -->
-                <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    v-model="lighting_input"
-                    label="Lighting"
-                    />
-                </div>
-              </CCol>
-              <CCol :md="3">
-                <!-- VENTILATION -->
-                <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    v-model="ventilation_input"
-                    label="Ventilation System"
-                    />
-                </div>
-                <!-- ROOF SYSTEM (Roofing) -->
-                <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    v-model="roofSystem_input"
-                    label="Roof System"
-                    />
-                </div>
-                <!-- FIRE PROTECTION SYSTEM (FPS) -->
-                <div class="mt-1">
-                    <CFormInput
-                    type="text"
-                    class="no-spinner"
-                    v-model="fireProtectionSystem_input"
-                    label="Fire Protection System (FPS)"
-                    />
-                </div>
-                <!-- SKYLIGHTS (SF) -->
-                <div class="mt-2">
-                  <CFormInput 
-                  type="number" 
-                  class="no-spinner"
-                  v-model="skylightsSf_input"
-                  @wheel.prevent
-                  @touchstart.prevent
-                  @touchmove.prevent
-                  label="Skylight %"
-                  />
-                </div>
-                <!-- COVERAGE (FRA%) -->
-                <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="coverage_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Coverage %"
-                    />
-                </div>
-              </CCol>
-            </CRow>
-          </CCardBody>
-        </CCard>
-
-        <CRow v-if="builderStateId_input == 1">
-          <!-- *** AVAILABILITY *** -->
-          <CCard class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
-            <CCardBody class="card-body-customer-buildings">
-              AVAILABILITY
+                </CCol>
+                <CCol :md="3">    
+                  <!-- ! **** VERIFICAR QUE ESTE MAPPEADO EN EL SERVICIO **** LISTING BROKER -->
+                  <div class="mt-2">
+                    <CMultiSelect
+                      label="Listing Broker"
+                      :multiple="false"
+                      :options="ListingBroker"
+                      optionsStyle="text"
+                      size="sm"
+                      placeholder=""
+                      @change="handleListingBroker"
+                    >
+                    </CMultiSelect>
+                  </div>       
+                </CCol>
+              </CRow>
             </CCardBody>
           </CCard>
-          <!-- <CCard class="card-customer-buildings">
+  
+          <!-- *** TRANSACTIONS AND AGREEMENTS *** -->
+          <CCard id="transactions-agreements" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
+            <CCardBody class="card-body-customer-buildings">
+              Transactions and Agreements
+            </CCardBody>
+          </CCard>
+         
+          <CCol :md="3">
+            <!--   SALE PRICE (USD)  -->
+            <div class="mt-2">
+              <label >Sale Price (USD) </label>
+              <CInputGroup class="mb-3 mt-2">
+                <CInputGroupText>$</CInputGroupText>
+                  <CFormInput 
+                    type="number" 
+                    size="sm"
+                    class="no-spinner"
+                    v-model="salePriceUsd_input"
+                    @wheel.prevent
+                    @touchstart.prevent
+                    @touchmove.prevent 
+                    />
+                <CInputGroupText>.00</CInputGroupText>
+              </CInputGroup>
+            </div>
+          </CCol>
+          <CCol :md="3">
+            <!-- CURRENCY -->
+            <div class="mt-2">
+              <CMultiSelect
+                label="Currency"
+                :multiple="false"
+                :options="Currency"
+                optionsStyle="text"
+                size="sm"
+                @change="handleCurrency"
+                placeholder=""
+              >
+              </CMultiSelect>
+            </div>
+          </CCol>
+          <CCol :md="3">
+            <!-- TENANCY -->
+            <div class="mt-2">
+              <CMultiSelect
+                label="Tenancy"
+                :multiple="false"
+                :options="Tenancy"
+                optionsStyle="text"
+                size="sm"
+                @change="handleTenancy"
+                placeholder=""
+              >
+              </CMultiSelect>
+            </div>
+          </CCol>
+          <CCol :md="3">
+            <!-- DEAL -->
+            <div class="mt-2">
+              <CMultiSelect
+                label="Deal"
+                :multiple="false"
+                :options="Deal"
+                optionsStyle="text"
+                size="sm"
+                @change="handleDeal"
+                placeholder=""
+              >
+            </CMultiSelect>
+            </div>
+          </CCol>
+             
+          <!-- *** TECHNICAL SPECIFICATIONS *** -->
+          <CCard id="technical-specifications" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
+            <CCardBody class="card-body-customer-buildings">
+              Technical Specifications
+            </CCardBody>
+          </CCard>
+          <CCard class="card-customer-buildings">
             <CCardBody>
-              <CRow> -->
+              <CRow>
                 <CCol :md="3">
-                  <!-- AVAILABLE (SF) -->
+                  <!-- TYPE -->
+                  <div class="mt-2">
+                      <CMultiSelect
+                        label="Type"
+                        v-model="Type"
+                        :multiple="false"
+                        :options="Type"
+                        optionsStyle="text"
+                        size="sm"
+                        placeholder=""
+                        @change="handleTypeSelect"
+                      >
+                        <template #options="{ option }" >
+                          <div class="d-flex">
+                            <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                          </div>
+                        </template>
+                      </CMultiSelect>
+                      <CInputGroup v-if="SelectedType == '0'" class="mb-3 mt-2">
+                        <CFormInput aria-label="New Type.." aria-describedby="button-addon2"/>
+                        <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+                      </CInputGroup>
+                  </div>
+                  <!-- TOTAL LAND -->
                   <div class="mt-2">
                     <CFormInput 
                     type="number" 
+                    size="sm"
                     class="no-spinner"
-                    v-model="availableSf_input"
+                    v-model="totalLand_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    label="Available (SF)"
+                    label="Total Land"
                     />
                   </div>
-                  <!-- MINIMUM SPACE (SF) -->
+                  <!-- CLEAR HEIGHT -->
                   <div class="mt-2">
                     <CFormInput 
                     type="number" 
+                    size="sm"
                     class="no-spinner"
-                    v-model="minimumSpaceSf_input"
+                    v-model="clearHeight_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    label="Minimum Space (SF)"
+                    label="Clear Height"
                     />
                   </div>
-                  <!-- EXPANSION UP TO (SF) -->
+                  <!-- CONSTRUCTION TYPE -->
                   <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="expansionUpToSf_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Expansion Up To (SF)"
-                    />
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="constructionType_input"
+                      label="Construction Type"
+                      />
                   </div>
-                  <!-- DOCK DOORS -->
+                  <!-- CONSTRUCTION STATE -->
                   <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="dockDoors_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Doock Doors"
-                    />
-                  </div>
-                  <!-- DRIVE IN DOOR -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="driveInDoor_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Drive in Door"
-                    />
-                  </div>
-                  <!-- TRUCK COURT -->
-                  <div class="mt-2">
-                    <CFormInput 
-                      type="number" 
-                      class="no-spinner"
-                      v-model="truckCourt_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Truck Court"
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="constructionState_input"
+                      label="Construction State"
                       />
                   </div>
                 </CCol>
                 <CCol :md="3">
-                  <!-- BUILDING DIMENSION 1 -->
+                  <!-- LOADING DOOR -->
                   <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="buildingDimensions1_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Building Dimensions 1"
+                      <CMultiSelect
+                      label="Loading Door"
+                      :multiple="false"
+                      :options="LoadingDoor"
+                      optionsStyle="text"
+                      size="sm"
+                      placeholder=""
+                      @change="handleLoadingDoorSelect"
+                      >
+                      <template #options="{ option }" >
+                          <div class="d-flex">
+                          <CIcon v-if="option == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
+                          </div>
+                      </template>
+                      </CMultiSelect>
+                      <CInputGroup v-if="SelectedLoadingDoor == '0'" class="mb-3 mt-2">
+                      <CFormInput aria-label="New Loading Door.." aria-describedby="button-addon2"/>
+                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
+                      </CInputGroup>
+                  </div>  
+                  <!-- OFFICE -->
+                  <div class="mt-2 d-flex" style="justify-content: space-between;">
+                    <div style="width: 5.3rem;">
+                      <label>OFFICE</label>
+                    </div>
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioOFFICE" 
+                    id="RadioOFFICE_1" 
+                    value="true" 
+                    label="Yes" 
+                    :checked="office_input == 'true'"
+                    @change="updateOfficeBool('true')"/>
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioOFFICE" 
+                    id="RadioOFFICE_2" 
+                    value="false" 
+                    label="No" 
+                    :checked="office_input == 'false'"
+                    @change="updateOfficeBool('false')"      
                     />
                   </div>
-                  <!-- BUILDING DIMENSION 2 -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="buildingDimensions2_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Building Dimensions 2"
+                  <!-- SPRINKLERS -->
+                  <div class="mt-2 d-flex" style="justify-content: space-between;">
+                    <div style="width: 5.3rem;">
+                      <label>SPRINKLERS</label>
+                    </div>
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioSPRINKLERS" 
+                    id="RadioSPRINKLERS1" 
+                    value="true" 
+                    label="Yes"  
+                    :checked="sprinklers_input == 'true'"
+                    @change="updateSPRINKLERSBool('true')"     
+                    />
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioSPRINKLERS" 
+                    id="RadioSPRINKLERS2" 
+                    value="false" 
+                    label="No" 
+                    :checked="sprinklers_input == 'false'"
+                    @change="updateSPRINKLERSBool('false')"      
                     />
                   </div>
-                  <!-- BAY SIZE 1 -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="baySize1_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Bay Size 1"
+                  <!-- CRANE -->
+                  <div class="mt-2 d-flex" style="justify-content: space-between;">
+                    <div style="width: 5.3rem;">
+                      <label>CRANE</label>
+                    </div>
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioCRANE" 
+                    id="RadioCRANE1" 
+                    value="true" 
+                    label="Yes"  
+                    :checked="crane_input == 'true'"
+                    @change="updateCRANEBool('true')"  
+                    />
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioCRANE" 
+                    id="RadioCRANE2" 
+                    value="false" 
+                    label="No" 
+                    :checked="crane_input == 'false'"
+                    @change="updateCRANEBool('false')"
                     />
                   </div>
-                  <!-- BAY SIZE 2 -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="baySize2_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Bay Size 2"
+                  <!-- HVAC -->
+                  <div class="mt-2 d-flex" style="justify-content: space-between;">
+                    <div style="width: 5.3rem;">
+                      <label>HVAC</label>
+                    </div>
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioHVAC" 
+                    id="RadioHVAC1" 
+                    value="true" 
+                    label="Yes" 
+                    :checked="hvac_input == 'true'"
+                    @change="updateHVACBool('true')"
+                    />
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioHVAC" 
+                    id="RadioHVAC2" 
+                    value="false" 
+                    label="No" 
+                    :checked="hvac_input == 'false'"
+                    @change="updateHVACBool('false')"
                     />
                   </div>
-                  <!-- COLUMNS SPACING 1 -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="columnsSpacing1_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Columns Spacing 1"
+                  <!-- LEED -->
+                  <div class="mt-2 d-flex" style="justify-content: space-between;">
+                    <div style="width: 5.3rem;">
+                      <label>LEED</label>
+                    </div>
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioLEED" 
+                    id="RadioLEED1" 
+                    value="true" 
+                    label="Yes" 
+                    :checked="leed_input == 'true'"
+                    @change="updateLEEDBool('true')"
+                    />
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioLEED" 
+                    id="RadioLEED2" 
+                    value="false" 
+                    label="No" 
+                    :checked="leed_input == 'false'"
+                    @change="updateLEEDBool('false')"
                     />
                   </div>
-                  <!-- COLUMNS SPACING 2 -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="columnsSpacing2_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Columns Spacing 2"
+                  <!-- RAIL SPUR -->
+                  <div class="mt-2 d-flex" style="justify-content: space-between;">
+                    <div style="width: 5.3rem;">
+                      <label>RAIL SPUR</label>
+                    </div>
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioRailSpur" 
+                    id="RadioRailSpur1" 
+                    value="true" 
+                    label="Yes" 
+                    :checked="railSpur_input == 'true'"
+                    @change="updateRailSpurBool('true')"
+                    />
+                    <CFormCheck 
+                    type="radio" 
+                    name="RadioRailSpur" 
+                    id="RadioRailSpur2" 
+                    value="false" 
+                    label="No" 
+                    :checked="railSpur_input == 'false'"
+                    @change="updateRailSpurBool('false')"
                     />
                   </div>
                 </CCol>
                 <CCol :md="3">
-                  <!--  MIN. LEASE (SF/Mo) -->
+                  <!-- OFFICE SPACE -->
                   <div class="mt-2">
                     <CFormInput 
                     type="number" 
+                    size="sm"
                     class="no-spinner"
-                    v-model="minLease_input"
+                    v-model="officesSpace_input"
                     @wheel.prevent
                     @touchstart.prevent
                     @touchmove.prevent
-                    label="Min Lease (SF/Mo)"
+                    label="Office Space"
                     />
                   </div>
-                  <!--  MAX. LEASE (SF/ Mo) -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="maxLease_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Max. Lease (SF/Mo)"
+                  <!-- HVAC PRODUCTION AREA -->
+                  <div style="margin-top: .35rem;">
+                    <CFormInput
+                    type="text"
+                    size="sm"
+                    v-model="hvacProductionArea_input"
+                    label="HVAC Production Area"
                     />
                   </div>
-                  <!-- KNOCKOUTS DOCKS -->
+                  <!-- TRANSFORMER CAPACITY (Electric Substations) -->
                   <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="knockoutsDocks_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Knockouts Docks"
-                    />
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="transformerCapacity_input"
+                      label="Transformer Capacity"
+                      />
                   </div>
-                  <!-- PARKING SPACE -->
+                  <!-- LIGHTING -->
                   <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="parkingSpace_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="parking Space"
-                    />
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="lighting_input"
+                      label="Lighting"
+                      />
                   </div>
-                  <!-- AVAILABLE MONTH -->
-                  <div class="mt-2">
-                    <CDatePicker 
-                    label="Available Month" 
-                    locale="en-US" 
-                    selectionType="month" 
-                    placeholder="" 
-                    v-model="availableMonth_input"
-                    />
-                  </div>
-                  <!-- AVAILABLE YEAR -->
-                  <div class="mt-2">
-                    <CDatePicker 
-                    label="Available Year" 
-                    locale="en-US" 
-                    selectionType="year" 
-                    placeholder="" 
-                    v-model="availableYear_input"
-                    />
-                  </div>          
                 </CCol>
                 <CCol :md="3">
-                  <!-- FLOOR THICKNESS -->
+                  <!-- VENTILATION -->
                   <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="floorThickness_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Floor Thickness"
-                    />
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="ventilation_input"
+                      label="Ventilation System"
+                      />
                   </div>
-                  <!-- FLOOR RESISTANCE -->
+                  <!-- ROOF SYSTEM (Roofing) -->
                   <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    class="no-spinner"
-                    v-model="floorResistance_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Floor Resistance"
-                    />
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="roofSystem_input"
+                      label="Roof System"
+                      />
                   </div>
-                  <!-- OFFICCES SPACE (SF) -->
-                  <div class="mt-2">
-                    <CFormInput 
-                      type="number" 
+                  <!-- FIRE PROTECTION SYSTEM (FPS) -->
+                  <div class="mt-1">
+                      <CFormInput
+                      type="text"
+                      size="sm"
                       class="no-spinner"
-                      v-model="officesSpace_input"
+                      v-model="fireProtectionSystem_input"
+                      label="Fire Protection System (FPS)"
+                      />
+                  </div>
+                  <!-- SKYLIGHTS (SF) -->
+                  <div class="mt-2">
+                    <CFormInput 
+                    type="number" 
+                    size="sm"
+                    class="no-spinner"
+                    v-model="skylightsSf_input"
+                    @wheel.prevent
+                    @touchstart.prevent
+                    @touchmove.prevent
+                    label="Skylight %"
+                    />
+                  </div>
+                  <!-- COVERAGE (FRA%) -->
+                  <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="coverage_input"
                       @wheel.prevent
                       @touchstart.prevent
                       @touchmove.prevent
-                      label="Offices (SF)"
+                      label="Coverage %"
                       />
                   </div>
-                  <!-- CROSSDOCK -->
-                  <div class="mt-2 d-flex" style="justify-content: space-between;">
-                    <div style="width: 5.3rem;">
-                      <label>Crossdock</label>
-                    </div>
-                    <CFormCheck 
-                    type="radio" 
-                    name="flexRadioDefault" 
-                    id="flexRadioDefault1" 
-                    label="Yes"
-                    />
-                    <CFormCheck 
-                    type="radio" 
-                    name="flexRadioDefault" 
-                    id="flexRadioDefault2" 
-                    label="No"
-                    />
-                  </div>
-                  <!-- SHARED TRUCK -->
-                  <div class="mt-2 d-flex" style="justify-content: space-between;">
-                    <div style="width: 5.3rem;">
-                      <label>Shared Truck</label>
-                    </div>
-                    <CFormCheck 
-                    type="radio" 
-                    name="flexRadioDefault" 
-                    id="flexRadioDefault1" 
-                    label="Yes"
-                    />
-                    <CFormCheck 
-                    type="radio" 
-                    name="flexRadioDefault" 
-                    id="flexRadioDefault2" 
-                    label="No"
-                    />
-                  </div>
                 </CCol>
-              <!-- </CRow>
-            </CCardBody>
-          </CCard> -->
-        </CRow>
-
-        <CRow v-else-if="builderStateId_input == 2">
-          <!-- *** ABSORPTION *** -->
-          <CCard class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
-            <CCardBody class="card-body-customer-buildings">
-              ABSORPTION
+              </CRow>
             </CCardBody>
           </CCard>
-          <!-- <CCard class="card-customer-buildings">
-            <CCardBody>
-              <CRow> -->
-                <CCol :md="3">
-                  <!-- TENANT -->
-                  <div  class="mt-2">
-                    <CMultiSelect
-                      label="Tenant"
-                      :multiple="false"
-                      :options="BuildingState"
-                      optionsStyle="text"
-                      @change="handleTenant"
-                      placeholder=""
-                    >
-                    </CMultiSelect>
-                  </div>
-                  <!-- INDUSTRY -->
-                  <div  class="mt-2">
-                    <CMultiSelect
-                      label="Industry"
-                      :multiple="false"
-                      :options="BuildingState"
-                      optionsStyle="text"
-                      @change="handleIndustry"
-                      placeholder=""
-                    >
-                    </CMultiSelect>
-                  </div>
-                  <!-- FINAL USE -->
-                  <div  class="mt-2">
-                    <CMultiSelect
-                      label="Final Use"
-                      :multiple="false"
-                      :options="BuildingState"
-                      optionsStyle="text"
-                      @change="handleFinalUse"
-                      placeholder=""
-                    >
-                    </CMultiSelect>
-                  </div>
-                  <!-- NEW CONSTRUCTION -->
-                  <div class="mt-3 d-flex" style="justify-content: space-between;">
-                    <div style="width: 8.765rem;">
-                      <label>New Construction</label>
+  
+          <CRow v-if="builderStateId_input == 1">
+            <!-- *** AVAILABILITY *** -->
+            <CCard id="availability" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
+              <CCardBody class="card-body-customer-buildings">
+                AVAILABILITY
+              </CCardBody>
+            </CCard>
+            <!-- <CCard class="card-customer-buildings">
+              <CCardBody>
+                <CRow> -->
+                  <CCol :md="3">
+                    <!-- AVAILABLE (SF) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="availableSf_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Available (SF)"
+                      />
                     </div>
-                    <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                    <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
-                  </div>
-                  <!-- STARTING CONSTRUCTION -->
-                  <div class="mt-1 d-flex" style="justify-content: space-between;">
-                    <div style="width: 8.765rem;">
-                      <label>Starting Construction</label>
+                    <!-- MINIMUM SPACE (SF) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="minimumSpaceSf_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Minimum Space (SF)"
+                      />
                     </div>
-                    <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                    <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
-                  </div>
-                </CCol>
-                <CCol :md="3">
-                  <!-- LEASE TERM MONTH -->
-                  <div class="mt-2">
-                    <CFormInput
-                    type="number"
-                    class="no-spinner"
-                    v-model="leaseTermMonth_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Lease Term Month"
-                    />
-                  </div>
-                  <!-- ASKING RATE SHELL -->
-                  <div class="mt-2">
-                    <CFormInput
-                    type="number"
-                    class="no-spinner"
-                    v-model="askingRateShell_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Asking Rate Shell"
-                    />
-                  </div>
-                  <!-- KVAS -->
-                  <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    class="no-spinner"
-                    v-model="KVAS_input"
-                    label="KVAS"
-                    />
-                  </div>
-                </CCol>
-                <CCol :md="3">
-                  <!-- CLOSING RATE -->
-                  <div class="mt-2">
-                    <CFormInput
-                    type="number"
-                    class="no-spinner"
-                    v-model="closingRate_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Closing Rate"
-                    />
-                  </div>
-                  <!-- CLOSING QUARTER -->
-                  <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    class="no-spinner"
-                    v-model="closingQuarter_input"
-                    label="Closing Quarter"
-                    />
-                  </div>
-                  <!-- SHELTER -->
-                  <div  class="mt-2">
-                    <CMultiSelect
-                      label="Shelter"
-                      :multiple="false"
-                      :options="BuildingState"
-                      optionsStyle="text"
+                    <!-- EXPANSION UP TO (SF) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="expansionUpToSf_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Expansion Up To (SF)"
+                      />
+                    </div>
+                    <!-- DOCK DOORS -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="dockDoors_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Dock Doors"
+                      />
+                    </div>
+                    <!-- DRIVE IN DOOR -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="driveInDoor_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Drive in Door"
+                      />
+                    </div>
+                    <!-- TRUCK COURT -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="truckCourt_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Truck Court"
+                        />
+                    </div>
+                  </CCol>
+                  <CCol :md="3">
+                    <!-- BUILDING DIMENSION 1 -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="buildingDimensions1_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Building Dimensions 1"
+                      />
+                    </div>
+                    <!-- BUILDING DIMENSION 2 -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="buildingDimensions2_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Building Dimensions 2"
+                      />
+                    </div>
+                    <!-- BAY SIZE 1 -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="baySize1_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Bay Size 1"
+                      />
+                    </div>
+                    <!-- BAY SIZE 2 -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="baySize2_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Bay Size 2"
+                      />
+                    </div>
+                    <!-- COLUMNS SPACING 1 -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="columnsSpacing1_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Columns Spacing 1"
+                      />
+                    </div>
+                    <!-- COLUMNS SPACING 2 -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="columnsSpacing2_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Columns Spacing 2"
+                      />
+                    </div>
+                  </CCol>
+                  <CCol :md="3">
+                    <!--  MIN. LEASE (SF/Mo) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="minLease_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Min. Lease (SF/Mo)"
+                      />
+                    </div>
+                    <!--  MAX. LEASE (SF/ Mo) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="maxLease_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Max. Lease (SF/Mo)"
+                      />
+                    </div>
+                    <!-- KNOCKOUTS DOCKS -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="knockoutsDocks_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Knockouts Docks"
+                      />
+                    </div>
+                    <!-- PARKING SPACE -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="parkingSpace_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Parking Space"
+                      />
+                    </div>
+                    <!-- AVAILABLE MONTH -->
+                    <div class="mt-2">
+                      <CDatePicker 
+                      label="Available Month" 
+                      locale="en-US" 
+                      selectionType="month" 
+                      placeholder="" 
+                      v-model="availableMonth_input"
+                      />
+                    </div>
+                    <!-- AVAILABLE YEAR -->
+                    <div class="mt-2">
+                      <CDatePicker 
+                      label="Available Year" 
+                      locale="en-US" 
+                      selectionType="year" 
+                      placeholder="" 
+                      v-model="availableYear_input"
+                      />
+                    </div>          
+                  </CCol>
+                  <CCol :md="3">
+                    <!-- FLOOR THICKNESS -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="floorThickness_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Floor Thickness"
+                      />
+                    </div>
+                    <!-- FLOOR RESISTANCE -->
+                    <div class="mt-2">
+                      <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="floorResistance_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Floor Resistance"
+                      />
+                    </div>
+                    <!-- OFFICCES SPACE (SF) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="officesSpace_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Offices (SF)"
+                        />
+                    </div>
+                    <!-- CROSSDOCK -->
+                    <div class="mt-2 d-flex" style="justify-content: space-between;">
+                      <div style="width: 5.3rem;">
+                        <label>Crossdock</label>
+                      </div>
+                      <CFormCheck 
+                      type="radio" 
+                      name="flexRadioDefault" 
+                      id="flexRadioDefault1" 
+                      label="Yes"
+                      />
+                      <CFormCheck 
+                      type="radio" 
+                      name="flexRadioDefault" 
+                      id="flexRadioDefault2" 
+                      label="No"
+                      />
+                    </div>
+                    <!-- SHARED TRUCK -->
+                    <div class="mt-2 d-flex" style="justify-content: space-between;">
+                      <div style="width: 5.3rem;">
+                        <label>Shared Truck</label>
+                      </div>
+                      <CFormCheck 
+                      type="radio" 
+                      name="flexRadioDefault" 
+                      id="flexRadioDefault1" 
+                      label="Yes"
+                      />
+                      <CFormCheck 
+                      type="radio" 
+                      name="flexRadioDefault" 
+                      id="flexRadioDefault2" 
+                      label="No"
+                      />
+                    </div>
+                  </CCol>
+                <!-- </CRow>
+              </CCardBody>
+            </CCard> -->
+          </CRow>
+  
+          <CRow v-else-if="builderStateId_input == 2">
+            <!-- *** ABSORPTION *** -->
+            <CCard id="absorption" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
+              <CCardBody class="card-body-customer-buildings">
+                ABSORPTION
+              </CCardBody>
+            </CCard>
+            <!-- <CCard class="card-customer-buildings">
+              <CCardBody>
+                <CRow> -->
+                  <CCol :md="3">
+                    <!-- TENANT -->
+                    <div  class="mt-2">
+                      <CMultiSelect
+                        label="Tenant"
+                        :multiple="false"
+                        :options="BuildingState"
+                        optionsStyle="text"
+                        size="sm"
+                        @change="handleTenant"
+                        placeholder=""
+                      >
+                      </CMultiSelect>
+                    </div>
+                    <!-- INDUSTRY -->
+                    <div  class="mt-2">
+                      <CMultiSelect
+                        label="Industry"
+                        :multiple="false"
+                        :options="BuildingState"
+                        optionsStyle="text"
+                        size="sm"
+                        @change="handleIndustry"
+                        placeholder=""
+                      >
+                      </CMultiSelect>
+                    </div>
+                    <!-- FINAL USE -->
+                    <div  class="mt-2">
+                      <CMultiSelect
+                        label="Final Use"
+                        :multiple="false"
+                        :options="BuildingState"
+                        optionsStyle="text"
+                        size="sm"
+                        @change="handleFinalUse"
+                        placeholder=""
+                      >
+                      </CMultiSelect>
+                    </div>
+                  </CCol>
+                  <CCol :md="3">
+                    <!-- LEASE TERM MONTH -->
+                    <div class="mt-2">
+                      <CFormInput
+                      type="number"
+                      size="sm"
+                      class="no-spinner"
+                      v-model="leaseTermMonth_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Lease Term Month"
+                      />
+                    </div>
+                    <!-- ASKING RATE SHELL -->
+                    <div class="mt-2">
+                      <CFormInput
+                      type="number"
+                      size="sm"
+                      class="no-spinner"
+                      v-model="askingRateShell_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Asking Rate Shell"
+                      />
+                    </div>
+                    <!-- KVAS -->
+                    <div class="mt-2">
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      class="no-spinner"
+                      v-model="KVAS_input"
+                      label="KVAS"
+                      />
+                    </div>
+                  </CCol>
+                  <CCol :md="3">
+                    <!-- CLOSING RATE -->
+                    <div class="mt-2">
+                      <CFormInput
+                      type="number"
+                      size="sm"
+                      class="no-spinner"
+                      v-model="closingRate_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Closing Rate"
+                      />
+                    </div>
+                    <!-- CLOSING QUARTER -->
+                    <div class="mt-2">
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      class="no-spinner"
+                      v-model="closingQuarter_input"
+                      label="Closing Quarter"
+                      />
+                    </div>
+                    <!-- SHELTER -->
+                    <div  class="mt-2">
+                      <CMultiSelect
+                        label="Shelter"
+                        :multiple="false"
+                        :options="BuildingState"
+                        optionsStyle="text"
+                        size="sm"
+                        placeholder=""
+                      >
+                      </CMultiSelect>
+                    </div>
+                  </CCol>
+                  <CCol :md="3">
+                    <!-- COMPANY TYPE -->
+                    <div  class="mt-2">
+                      <CMultiSelect
+                        label="Company Type"
+                        :multiple="false"
+                        :options="BuildingState"
+                        optionsStyle="text"
+                        size="sm"
+                        placeholder=""
+                      >
+                      </CMultiSelect>
+                    </div>
+                    <!-- LEASE UP -->
+                    <div class="mt-2">
+                      <CFormInput
+                      type="text"
+                      size="sm"
+                      class="no-spinner"
+                      v-model="leaseUp_input"
+                      label="Lease Up"
+                      />
+                    </div>
+                    <!-- MONTH -->
+                    <div class="mt-2">
+                      <CDatePicker 
+                      label="Month" 
+                      locale="en-US"
+                      size="sm"
+                      selectionType="month" 
                       placeholder=""
-                    >
-                    </CMultiSelect>
-                  </div>
-                </CCol>
-                <CCol :md="3">
-                  <!-- COMPANY TYPE -->
-                  <div  class="mt-2">
-                    <CMultiSelect
-                      label="Copany Type"
-                      :multiple="false"
-                      :options="BuildingState"
-                      optionsStyle="text"
-                      placeholder=""
-                    >
-                    </CMultiSelect>
-                  </div>
-                  <!-- LEASE UP -->
-                  <div class="mt-2">
-                    <CFormInput
-                    type="text"
-                    class="no-spinner"
-                    v-model="leaseUp_input"
-                    label="Lease Up"
-                    />
-                  </div>
-                  <!-- MONTH -->
-                  <div class="mt-2">
-                    <CDatePicker 
-                    label="Month" 
-                    locale="en-US" 
-                    selectionType="month" 
-                    placeholder=""
-                    />
-                  </div>
-                </CCol>
-              <!-- </CRow>
-            </CCardBody>
-          </CCard> -->
+                      />
+                    </div>
+                  </CCol>
+                  <CCol :md="4">
+                      <!-- NEW CONSTRUCTION -->
+                      <div class="mt-3 d-flex" style="justify-content: space-between;">
+                        <div style="width: 8.765rem;">
+                          <label>New Construction</label>
+                        </div>
+                        <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
+                        <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                      </div>
+                      <!-- STARTING CONSTRUCTION -->
+                      <div class="mt-1 d-flex" style="justify-content: space-between;">
+                        <div style="width: 8.765rem;">
+                          <label>Starting Construction</label>
+                        </div>
+                        <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
+                        <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                      </div>
+                    </CCol>
+                <!-- </CRow>
+              </CCardBody>
+            </CCard> -->
+          </CRow>
         </CRow>
+      </CCol>
     </CRow>
   </CContainer>
 </template>

@@ -28,7 +28,6 @@ const saveAllData = async () => {
 
     console.log("SAVEEEE", contactData);
     
-
     const allData = {
       buildingData,
       contactData,
@@ -45,6 +44,19 @@ const saveAllData = async () => {
     // Aquí puedes agregar alguna notificación de error para el usuario
   }
 };
+const scrollToSection = (sectionId) => {
+  const section = document.getElementById(sectionId);
+  if (section) {
+    const offset = 200; // Ajusta este valor según lo que necesites
+    const sectionPosition = section.getBoundingClientRect().top + window.pageYOffset - offset;
+
+    window.scrollTo({
+      top: sectionPosition,
+      behavior: 'smooth',
+    });
+  }
+};
+
 </script>
 <template>
   <div>
@@ -52,16 +64,52 @@ const saveAllData = async () => {
     <CCard class="container-btn-flotante">
       <CCardBody>
         <div style="text-align: center;">
-          <CButton color="success mr-2" variant="outline" @click="saveAllData">
-            <CIcon :content="cilSave" size="sm" />
-            Save
-          </CButton>
-          <router-link to="../buildings">
-            <CButton color="primary" variant="outline" style="margin-left: .7rem;">
-              <CIcon :content="cilArrowCircleLeft" size="sm" />
-              return
+        <CRow>
+          <CCol :md="6">
+            <CAccordion>
+              <CAccordionItem :item-key="1">
+                <CAccordionHeader>
+                  Index
+                </CAccordionHeader>
+                <CAccordionBody>
+                  <CCol :md="12">
+                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('general-information')">General information</CButton>
+                  </CCol>
+                  <CCol :md="12">
+                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('location')" style="margin-left: .7rem;">Location</CButton>
+                  </CCol>
+                  <CCol :md="12">
+                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('property-details')" style="margin-left: .7rem;">Property Details</CButton>
+                  </CCol>
+                  <CCol :md="12">
+                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('transactions-agreements')" style="margin-left: .7rem;">Transactions and Agreements</CButton>
+                  </CCol>
+                  <CCol :md="12">
+                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('technical-specifications')" style="margin-left: .7rem;">Technical Specifications</CButton>
+                  </CCol>
+                  <CCol :md="12">
+                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('availability')" style="margin-left: .7rem;">Availabbility</CButton>
+                  </CCol>
+                  <CCol :md="12">
+                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('absorption')" style="margin-left: .7rem;">Absorption</CButton>
+                  </CCol>
+                </CAccordionBody>
+              </CAccordionItem>
+            </CAccordion>
+          </CCol>
+          <CCol :md="6" class="btns-flotantes-customer-moviles">
+            <CButton color="success mr-2" variant="outline" style="margin-left: .7rem;" @click="saveAllData">
+              <CIcon :content="cilSave" size="sm" />
+              Save
             </CButton>
-          </router-link>
+            <router-link to="../buildings">
+              <CButton color="primary" variant="outline" style="margin-left: .7rem;">
+                <CIcon :content="cilArrowCircleLeft" size="sm" />
+                Return
+              </CButton>
+            </router-link>
+          </CCol>
+        </CRow>
         </div>
       </CCardBody>
     </CCard>
