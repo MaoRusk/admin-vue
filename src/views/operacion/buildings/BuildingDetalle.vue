@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, onMounted, computed } from 'vue';
+  import { ref, onMounted, computed, registerRuntimeCompiler } from 'vue';
   import { useRouter } from 'vue-router'
   import { cilArrowCircleLeft, cilBasket, cilSave } from '@coreui/icons'
   import axios from 'axios';
@@ -22,18 +22,15 @@
 
 const saveAllData = async () => {
   try {
-    const buildingData = buildingDataRef.value?.getFormData();
-    const contactData = buildingContactRef.value?.getFormData();
-    const imagesData = buildingImagesRef.value?.getFormData();
-
-    console.log("SAVEEEE", contactData);
+    // const buildingData = buildingDataRef.value?.getFormData();
+    // const contactData = buildingContactRef.value?.getFormData();
+    // const imagesData = buildingImagesRef.value?.getFormData();
+    const buildingData = buildingDataRef.value.getFormData();
+    const contactData = buildingContactRef.value.getFormData();
     
-    const allData = {
-      buildingData,
-      contactData,
-      imagesData,
-    };
-
+    const allData = new FormData(); // Creas un nuevo FormData
+    allData.append('buildingData', JSON.stringify(buildingData)); // Añades los datos al FormData
+    allData.append('contactData', JSON.stringify(contactData));
     // Aquí realizarías la llamada al API para guardar los datos
     const response = await axios.post('http://localhost:8000/api/buildings', allData);
     

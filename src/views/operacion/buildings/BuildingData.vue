@@ -67,28 +67,28 @@ const skylightsSf_input = ref(null);
 const coverage_input = ref(null);
 
 // VARIABLES TABLA BUILDINGS AVAILABILITY
-const  availableSf_input = ref(null);
-const  minimumSpaceSf_input = ref(null);
-const  expansionUpToSf_input = ref(null);
-const  dockDoors_input = ref(null);
-const  driveInDoor_input = ref(null);
-const  floorThickness_input = ref(null);
-const  floorResistance_input = ref(null);
-const  truckCourt_input = ref(null);
-const  crossdock_input = ref(null);
-const  sharedTruck_input = ref(null);
-const  buildingDimensions1_input = ref(null);
-const  buildingDimensions2_input = ref(null);
-const  baySize1_input = ref(null);
-const  baySize2_input = ref(null);
-const  columnsSpacing1_input = ref(null);
-const  columnsSpacing2_input = ref(null);
-const  knockoutsDocks_input = ref(null);
-const  parkingSpace_input = ref(null);
-const  availableMonth_input = ref(null);
-const  availableYear_input = ref(null);
-const  minLease_input = ref(null);
-const  maxLease_input = ref(null);
+const availableSf_input = ref(null);
+const minimumSpaceSf_input = ref(null);
+const expansionUpToSf_input = ref(null);
+const dockDoors_input = ref(null);
+const driveInDoor_input = ref(null);
+const floorThickness_input = ref(null);
+const floorResistance_input = ref(null);
+const truckCourt_input = ref(null);
+const crossdock_input = ref(null);
+const sharedTruck_input = ref(null);
+const buildingDimensions1_input = ref(null);
+const buildingDimensions2_input = ref(null);
+const baySize1_input = ref(null);
+const baySize2_input = ref(null);
+const columnsSpacing1_input = ref(null);
+const columnsSpacing2_input = ref(null);
+const knockoutsDocks_input = ref(null);
+const parkingSpace_input = ref(null);
+const availableMonth_input = ref();
+const availableYear_input = ref(null);
+const minLease_input = ref(null);
+const maxLease_input = ref(null);
 
 // VARIABLES TABLA ABSORPTION
 
@@ -201,7 +201,6 @@ const copanyTypeId_input = ref(null);
   }
   const updateLEEDBool = (newStatus) => {
     leed_input.value = newStatus;
-    
   }
   const updateRailSpurBool = (newStatus) => {
     railSpur_input.value = newStatus;
@@ -433,7 +432,7 @@ defineExpose({
                 <CCol :md="3">
                   <!-- YEAR BUILT -->
                   <div class="mt-2">
-                    <CDatePicker label="Year Built" v-model="yearBuilt_input" locale="en-US" size="sm" selectionType="year" placeholder=""/>
+                    <CDatePicker label="Year Built" v-model:date="yearBuilt_input" locale="en-US" size="sm" selectionType="year" placeholder=""/>
                   </div>
                   <!-- ! ****AGREGAR a tabla AVAILABLE SINCE (Available from) -->
                   <div class="mt-2">
@@ -1344,7 +1343,7 @@ defineExpose({
                       locale="en-US" 
                       selectionType="month" 
                       placeholder="" 
-                      v-model="availableMonth_input"
+                      v-model:date="availableMonth_input"
                       />
                     </div>
                     <!-- AVAILABLE YEAR -->
@@ -1354,7 +1353,7 @@ defineExpose({
                       locale="en-US" 
                       selectionType="year" 
                       placeholder="" 
-                      v-model="availableYear_input"
+                      v-model:date="availableYear_input"
                       />
                     </div>          
                   </CCol>

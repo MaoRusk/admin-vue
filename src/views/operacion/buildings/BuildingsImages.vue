@@ -25,7 +25,7 @@ const uploadFiles = () => {
     formData.append('photoTypes[]', file);
   });
 
-  axios.post(`http://localhost:8000/api/buildings/docs/1`, formData, {
+  axios.post(`http://localhost:8000/api/buildings/docs/5`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
