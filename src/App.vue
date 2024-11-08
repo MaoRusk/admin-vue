@@ -9,6 +9,7 @@ const { isColorModeSet, setColorMode } = useColorModes(
 )
 const currentTheme = useThemeStore()
 
+
 onBeforeMount(() => {
   const urlParams = new URLSearchParams(window.location.href.split('?')[1])
   let theme = urlParams.get('theme')
