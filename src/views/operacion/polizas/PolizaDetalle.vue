@@ -25,7 +25,7 @@
   const fetchCompaniesCbo = async (userId) => {
     try {
       const [userResponse, companiesResponse] = await Promise.all([
-        axios.get(`http://localhost:8000/api/user/`),
+        axios.get(`https://laravel-back-production-9320.up.railway.app/api/user/`),
       ]);
 
       const userInfo = userResponse.data;

@@ -32,7 +32,7 @@ const saveAllData = async () => {
     allData.append('buildingData', JSON.stringify(buildingData)); // Añades los datos al FormData
     allData.append('contactData', JSON.stringify(contactData));
     // Aquí realizarías la llamada al API para guardar los datos
-    const response = await axios.post('http://localhost:8000/api/buildings', allData);
+    const response = await axios.post('https://laravel-back-production-9320.up.railway.app/api/buildings', allData);
     
     console.log('Datos guardados exitosamente:', response.data);
     // Aquí puedes agregar alguna notificación de éxito para el usuario

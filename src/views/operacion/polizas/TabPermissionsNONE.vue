@@ -59,9 +59,9 @@ const props = defineProps({
   const fetchData = async () => {
     try {
       const [modulesResponse, marketsResponse, submarketResponse] = await Promise.all([
-        axios.get('http://localhost:8000/api/modules'),
-        axios.get('http://localhost:8000/api/market'),
-        axios.get('http://localhost:8000/api/submarket'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/modules'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/submarket'),
       ]);
 
       modulesCbo.value = modulesResponse.data.map(module => ({
@@ -157,7 +157,7 @@ console.log(ModulesSelectedString);
           formPermissions.append('submarkets', selectedSubMarkets.value);
           formPermissions.append('modules', ModulesSelectedString.value);
                 
-          axios.post(`http://localhost:8000/api/permission/${props.id}`, formPermissions).then(response => {
+          axios.post(`https://laravel-back-production-9320.up.railway.app/api/permission/${props.id}`, formPermissions).then(response => {
            
             const formDataUnique = new FormData();
             formDataUnique.append('userId', props.id);
@@ -166,7 +166,7 @@ console.log(ModulesSelectedString);
             formDataUnique.append('fibrasPermission', fibrasPermission.value);
             formDataUnique.append('biChartsPermission', biChartsPermission.value);
             formDataUnique.append('status', "Activo");
-              axios.post('http://localhost:8000/api/unique', formDataUnique)
+              axios.post('https://laravel-back-production-9320.up.railway.app/api/unique', formDataUnique)
               .then(segundaRespuesta => {
                 Swal.fire({
                   title: "Added!",

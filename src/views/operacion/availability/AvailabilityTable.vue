@@ -56,7 +56,7 @@
 
       fetchAvailability() {
 
-        axios.get('http://localhost:8000/api/excel-data').then(response => {
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/excel-data').then(response => {
 
           this.availability = response.data;
 

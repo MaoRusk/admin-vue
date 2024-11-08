@@ -14,6 +14,7 @@
       },
   });
 
+  
   const companiesCbo = ref([]);
   const name = ref('');
   const lastName = ref('');
@@ -55,7 +56,7 @@
 
   const fetchCompanies = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/companies');
+      const response = await axios.get('https://laravel-back-production-9320.up.railway.app/api/companies');
       companiesCbo.value = response.data.map(company => ({
         value: company.id,
         label: company.nameCompany,
@@ -70,9 +71,9 @@
     try {
       // Llamado de apis en paralelo
       const [userResponse, companiesResponse] = await Promise.all([
-        axios.get(`http://localhost:8000/api/user/${userId}`),
-        axios.get('http://localhost:8000/api/companies'),
-        // axios.get(`http://localhost:8000/api/user-details/${userId}`),
+        axios.get(`https://laravel-back-production-9320.up.railway.app/api/user/${userId}`),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/companies'),
+        // axios.get(`https://laravel-back-production-9320.up.railway.app/api/user-details/${userId}`),
       ]);
 
       const userInfo = userResponse.data;
@@ -175,7 +176,7 @@ watch(() => props.company, (newVal) => {
           formData.append('totalScreens', totalScreens.value);
           formData.append('status', status.value);
   
-          axios.post('http://localhost:8000/api/user', formData).then(response => {
+          axios.post('https://laravel-back-production-9320.up.railway.app/api/user', formData).then(response => {
             Swal.fire({
               title: "Added!",
               text: "User added successfully.",
@@ -225,7 +226,7 @@ watch(() => props.company, (newVal) => {
         formData.append('status', status.value);
         formData.append('_method', "put");
 
-      axios.post(`http://localhost:8000/api/user/${props.id}`, formData).then(response => {
+      axios.post(`https://laravel-back-production-9320.up.railway.app/api/user/${props.id}`, formData).then(response => {
         Swal.fire({
           title: "Updated!",
           text: "User updated successfully.",
@@ -262,7 +263,7 @@ watch(() => props.company, (newVal) => {
       confirmButtonText: "Yes, delete it!"
     }).then((result) => {
       if (result.isConfirmed) {
-        axios.put(`http://localhost:8000/api/user/${props.id}/delete`).then(response => {
+        axios.put(`https://laravel-back-production-9320.up.railway.app/api/user/${props.id}/delete`).then(response => {
           Swal.fire({
             title: "Deleted!",
             text: "Company deleted successfully.",

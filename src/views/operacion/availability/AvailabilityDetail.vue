@@ -37,7 +37,7 @@
       fetchCompanyDetails() {
 
         if (this.id != 0) {
-          axios.get(`http://localhost:8000/api/companies/${this.id}`).then(response => {
+          axios.get(`https://laravel-back-production-9320.up.railway.app/api/companies/${this.id}`).then(response => {
             this.company = response.data;
           }).catch(error => {
               Swal.fire({
@@ -86,7 +86,7 @@
         formData.append('state', this.company.state);
         formData.append('country', this.company.country);
 
-        axios.post('http://localhost:8000/api/companies', formData).then(response => {
+        axios.post('https://laravel-back-production-9320.up.railway.app/api/companies', formData).then(response => {
           Swal.fire({
             title: "Added!",
             text: "Company added successfully.",
@@ -128,7 +128,7 @@
           formData.append('logoUrl', this.company.image);
         }
 
-        axios.post(`http://localhost:8000/api/companies/${this.id}`, formData).then(response => {
+        axios.post(`https://laravel-back-production-9320.up.railway.app/api/companies/${this.id}`, formData).then(response => {
           Swal.fire({
             title: "Updated!",
             text: "Company updated successfully.",
@@ -161,7 +161,7 @@
           confirmButtonText: "Yes, delete it!"
         }).then((result) => {
           if (result.isConfirmed) {
-            axios.put(`http://localhost:8000/api/companies/${this.id}/delete`).then(response => {
+            axios.put(`https://laravel-back-production-9320.up.railway.app/api/companies/${this.id}/delete`).then(response => {
               Swal.fire({
                 title: "Deleted!",
                 text: "Company deleted successfully.",

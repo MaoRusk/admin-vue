@@ -41,9 +41,9 @@ const props = defineProps({
   const fetchData = async () => { 
     try {
       const [modulesResponse, marketsResponse, submarketResponse] = await Promise.all([
-        axios.get('http://localhost:8000/api/modules'),
-        axios.get('http://localhost:8000/api/market'),
-        axios.get('http://localhost:8000/api/submarket'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/modules'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/submarket'),
       ]);
 
       modulesCbo.value = modulesResponse.data.map(module => ({
@@ -232,7 +232,7 @@ const GetFunction = async () => {
       formPermissions.append('year', SelectedYearsCbo.value);
       formPermissions.append('quarter', SelectedQuartersCbo.value);
       
-      const response = await axios.post(`http://localhost:8000/api/permissions/${props.id}`, formPermissions);
+      const response = await axios.post(`https://laravel-back-production-9320.up.railway.app/api/permissions/${props.id}`, formPermissions);
       const markets = response.data.markets;
   
       console.log("ORIGINAL GET MARKETS: ", markets);
@@ -288,7 +288,7 @@ const updateFunction = async () => {
   formPermissions.append('quartersCbo', SelectedQuartersCbo.value);
   formPermissions.append('marketsArray', JSON.stringify(selectedSubMarkets.value));
       
-  axios.post(`http://localhost:8000/api/permissions/update/${props.id}`, formPermissions).then(response => {
+  axios.post(`https://laravel-back-production-9320.up.railway.app/api/permissions/update/${props.id}`, formPermissions).then(response => {
     Swal.fire({
       title: "Update!",
       text: "Permissions update successfully.",

@@ -45,7 +45,7 @@ const addUserFunction = () => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/employees');
+    const response = await axios.get('https://laravel-back-production-9320.up.railway.app/api/employees');
     employees.value = response.data;
   } catch (error) {
     console.error('Error fetching employees:', error);

@@ -212,8 +212,8 @@ const copanyTypeId_input = ref(null);
   const fetchData = async () => {
     try {
       const [ marketsResponse, submarketResponse] = await Promise.all([
-        axios.get('http://localhost:8000/api/market'),
-        axios.get('http://localhost:8000/api/submarket'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/submarket'),
       ]);
 
 

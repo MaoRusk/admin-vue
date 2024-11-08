@@ -54,7 +54,7 @@ async function getUserCombo(){
   formData.append('multpleUsersId', JSON.stringify(selected.value));
   
   try {            
-      axios.post(`http://localhost:8000/api/user/combo`, formData).then(response => {
+      axios.post(`https://laravel-back-production-9320.up.railway.app/api/user/combo`, formData).then(response => {
 
         usersCbo.value = response.data.map(user => ({
           value: user.id,
@@ -85,7 +85,7 @@ async function getUserCombo(){
 
 async function fetchUsers() {
   try {
-    const response = await axios.get('http://localhost:8000/api/user');
+    const response = await axios.get('https://laravel-back-production-9320.up.railway.app/api/user');
     usersData.value = response.data;
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -148,7 +148,7 @@ const heredarPermisos = () => {
   formData.append('userClones', selected.value);
 
   try {            
-      axios.post(`http://localhost:8000/api/permissions/clone/multiple/${selectedCompany.value}`, formData).then(response => {
+      axios.post(`https://laravel-back-production-9320.up.railway.app/api/permissions/clone/multiple/${selectedCompany.value}`, formData).then(response => {
 
         
         Swal.fire({
@@ -182,9 +182,9 @@ const heredarPermisos = () => {
 async function fetchData() {
     try {
       const [modulesResponse, marketsResponse, submarketResponse] = await Promise.all([
-        axios.get('http://localhost:8000/api/modules'),
-        axios.get('http://localhost:8000/api/market'),
-        axios.get('http://localhost:8000/api/submarket'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/modules'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/submarket'),
       ]);
 
       modulesCbo.value = modulesResponse.data.map(module => ({

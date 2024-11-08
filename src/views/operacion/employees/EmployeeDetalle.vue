@@ -50,7 +50,7 @@
   
   const fetchUserTypes = async () => { //Cargar todos los user Types para nuevo empleado
     try {
-      const response = await axios.get(`http://localhost:8000/api/user-types`);
+      const response = await axios.get(`https://laravel-back-production-9320.up.railway.app/api/user-types`);
       const modifiedUserTypes = response.data;
 
         userTypesCbo.value = [
@@ -66,7 +66,7 @@
   const fetchMarkets = async () => {
     try {
       if (props.id == 0 && selectedUserType.value == 5) { 
-        const response = await axios.get('http://localhost:8000/api/market');
+        const response = await axios.get('https://laravel-back-production-9320.up.railway.app/api/market');
         marketsCbo.value = response.data.map(company => ({
           value: company.id,
           label: company.marketName,
@@ -82,9 +82,9 @@
     try {
       // Llamado de apis en paralelo
       const [employeeResponse,userTypesResponse,marketsResponse] = await Promise.all([
-        axios.get(`http://localhost:8000/api/employees/${userId}`),
-        axios.get(`http://localhost:8000/api/user-types`),
-        axios.get('http://localhost:8000/api/market'),
+        axios.get(`https://laravel-back-production-9320.up.railway.app/api/employees/${userId}`),
+        axios.get(`https://laravel-back-production-9320.up.railway.app/api/user-types`),
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
       ]);
       const employeeInfo = employeeResponse.data;
       // const userInfoDetails = userDetailsResponse.data;      
@@ -173,7 +173,7 @@
   formData.append('status', 'Activo');
 
   try {
-    await axios.post('http://localhost:8000/api/user-types', formData);
+    await axios.post('https://laravel-back-production-9320.up.railway.app/api/user-types', formData);
     await Swal.fire({
       title: "Added!",
       text: "Position added successfully.",
@@ -227,7 +227,7 @@
       formData.append('totalScreens', 0);
       formData.append('status', status.value);
   
-          axios.post('http://localhost:8000/api/employees', formData).then(response => {
+          axios.post('https://laravel-back-production-9320.up.railway.app/api/employees', formData).then(response => {
             Swal.fire({
               title: "Added!",
               text: "Employee added successfully.",
@@ -278,7 +278,7 @@
       // formData.append('_method', "put");
 
       
-      axios.post(`http://localhost:8000/api/employees/update/${props.id}`, formData).then(response => {
+      axios.post(`https://laravel-back-production-9320.up.railway.app/api/employees/update/${props.id}`, formData).then(response => {
         Swal.fire({
           title: "Updated!",
           text: "User updated successfully.",
@@ -315,7 +315,7 @@
       confirmButtonText: "Yes, delete it!"
     }).then((result) => {
       if (result.isConfirmed) {
-        axios.put(`http://localhost:8000/api/user/${props.id}/delete`).then(response => {
+        axios.put(`https://laravel-back-production-9320.up.railway.app/api/user/${props.id}/delete`).then(response => {
           Swal.fire({
             title: "Deleted!",
             text: "Company deleted successfully.",

@@ -36,7 +36,7 @@
 
       fetchCompanies() {
 
-        axios.get('http://localhost:8000/api/companies').then(response => {
+        axios.get('https://laravel-back-production-9320.up.railway.app/api/companies').then(response => {
           this.companies = response.data;
 
         }).catch(error => {
