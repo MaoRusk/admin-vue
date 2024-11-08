@@ -67,7 +67,7 @@ export default {
       this.errorMessage = ""
 
       try {
-        const response = await axios.post('http://localhost:8000/api/login', {
+        const response = await axios.post('https://laravel-back-production-9320.up.railway.app/api/login', {
           userName: this.userName,
           password: this.password,
         });
