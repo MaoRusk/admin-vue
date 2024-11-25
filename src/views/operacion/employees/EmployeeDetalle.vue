@@ -1,6 +1,7 @@
 <script setup>
   import { ref, onMounted, computed, watch } from 'vue';
   import Swal from 'sweetalert2';
+  import { cilArrowCircleLeft, cilBasket } from '@coreui/icons'
   import { cilPlus, cilTrash, cilPencil } from '@coreui/icons'
   import axios from 'axios';
   import { useRouter } from 'vue-router'
@@ -342,6 +343,18 @@
 </script>
 <template>
     <CContainer>
+
+      <div style="display: flex; justify-content: right;">
+        <div>
+          <router-link to="../employees">
+            <CButton color="primary" variant="outline">
+              <CIcon :content="cilArrowCircleLeft" size="sm" />
+              return
+            </CButton>
+          </router-link>
+        </div>
+      </div>
+
         <CRow>
             <CCol :md="6">
             <CCol>
