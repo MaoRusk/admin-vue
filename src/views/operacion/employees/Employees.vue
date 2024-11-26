@@ -57,7 +57,7 @@ onMounted(async () => {
   <div class="d-flex justify-content-end mb-3">
     <CButton color="success" @click="addUserFunction()">
       <CIcon :content="cilPlus" size="sm" />
-      New Building
+      Add Employee
     </CButton>
   </div>
 
