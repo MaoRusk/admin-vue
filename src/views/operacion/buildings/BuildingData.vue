@@ -214,108 +214,109 @@ const copanyTypeId_input = ref(null);
       const buildingId = route.params.id;
       const response = await axios.get(`https://laravel-back-production-9320.up.railway.app/api/buildings/${buildingId}`);
       
-      // Log the response to see its structure
-      console.log('API Response:', response.data);
-
-      // Destructure the response data correctly
-      const { buildingData, contactData, images } = response.data;
+      // Solo extraemos buildingData del response
+      const { buildingData } = response.data;
 
       if (!buildingData) {
         throw new Error('Building data not found in response');
       }
 
-      // Populate form fields with building data, using optional chaining and default values
-      builderStateId_input.value = buildingData?.builderStateId ?? null;
-      buildingName_input.value = buildingData?.buildingName ?? '';
-      classId_input.value = buildingData?.classId ?? null;
-      buildingSizeSf_input.value = buildingData?.buildingSizeSf ?? null;
-      expansionLand_input.value = buildingData?.expansionLand ?? null;
-      statusId_input.value = buildingData?.statusId ?? null;
-      industrialParkId_input.value = buildingData?.industrialParkId ?? null;
-      typeId_input.value = buildingData?.typeId ?? null;
-      ownerId_input.value = buildingData?.ownerId ?? null;
-      developerId_input.value = buildingData?.developerId ?? null;
-      builderId_input.value = buildingData?.builderId ?? null;
-      regionId_input.value = buildingData?.regionId ?? null;
-      marketId_input.value = buildingData?.marketId ?? null;
-      subMarketId_input.value = buildingData?.subMarketId ?? null;
-      dealId_input.value = buildingData?.dealId ?? null;
-      currencyId_input.value = buildingData?.currencyId ?? null;
-      salePriceUsd_input.value = buildingData?.salePriceUsd ?? null;
-      tenancyId_input.value = buildingData?.tenancyId ?? null;
+      // Populate form fields with building data
+      builderStateId_input.value = buildingData?.builder_state_id ?? null; // Nota: cambiado a snake_case
+      buildingName_input.value = buildingData?.building_name ?? '';
+      classId_input.value = buildingData?.class_id ?? null;
+      buildingSizeSf_input.value = buildingData?.building_size_sf ?? null;
+      expansionLand_input.value = buildingData?.expansion_land ?? null;
+      statusId_input.value = buildingData?.status_id ?? null;
+      industrialParkId_input.value = buildingData?.industrial_park_id ?? null;
+      typeId_input.value = buildingData?.type_id ?? null;
+      ownerId_input.value = buildingData?.owner_id ?? null;
+      developerId_input.value = buildingData?.developer_id ?? null;
+      builderId_input.value = buildingData?.builder_id ?? null;
+      regionId_input.value = buildingData?.region_id ?? null;
+      marketId_input.value = buildingData?.market_id ?? null;
+      subMarketId_input.value = buildingData?.sub_market_id ?? null;
+      dealId_input.value = buildingData?.deal_id ?? null;
+      currencyId_input.value = buildingData?.currency_id ?? null;
+      salePriceUsd_input.value = buildingData?.sale_price_usd ?? null;
+      tenancyId_input.value = buildingData?.tenancy_id ?? null;
       latitud_input.value = buildingData?.latitud ?? null;
       longitud_input.value = buildingData?.longitud ?? null;
-      yearBuilt_input.value = buildingData?.yearBuilt ?? null;
-      clearHeight_input.value = buildingData?.clearHeight ?? null;
-      officesSpace_input.value = buildingData?.officesSpace ?? null;
+      yearBuilt_input.value = buildingData?.year_built ?? null;
+      clearHeight_input.value = buildingData?.clear_height ?? null;
+      officesSpace_input.value = buildingData?.offices_space ?? null;
       
-      // Convert boolean values to strings with default values
+      // Convert boolean values to strings
       crane_input.value = (buildingData?.crane ?? true).toString();
       hvac_input.value = (buildingData?.hvac ?? true).toString();
-      railSpur_input.value = (buildingData?.railSpur ?? true).toString();
+      railSpur_input.value = (buildingData?.rail_spur ?? true).toString();
       sprinklers_input.value = (buildingData?.sprinklers ?? true).toString();
       office_input.value = (buildingData?.office ?? true).toString();
       leed_input.value = (buildingData?.leed ?? true).toString();
       
-      totalLand_input.value = buildingData?.totalLand ?? null;
-      hvacProductionArea_input.value = buildingData?.hvacProductionArea ?? null;
+      totalLand_input.value = buildingData?.total_land ?? null;
+      hvacProductionArea_input.value = buildingData?.hvac_production_area ?? null;
 
       // Building Features
-      loadingDoorId_input.value = buildingData?.loadingDoorId ?? null;
-      lighting_input.value = buildingData?.lighting ?? null;
-      ventilation_input.value = buildingData?.ventilation ?? null;
-      transformerCapacity_input.value = buildingData?.transformerCapacity ?? null;
-      constructionType_input.value = buildingData?.constructionType ?? null;
-      constructionState_input.value = buildingData?.constructionState ?? null;
-      roofSystem_input.value = buildingData?.roofSystem ?? null;
-      fireProtectionSystem_input.value = buildingData?.fireProtectionSystem ?? null;
-      skylightsSf_input.value = buildingData?.skylightsSf ?? null;
-      coverage_input.value = buildingData?.coverage ?? null;
+      if (buildingData.buildingFeatures) {
+        const features = buildingData.buildingFeatures;
+        loadingDoorId_input.value = features?.loading_door_id ?? null;
+        lighting_input.value = features?.lighting ?? null;
+        ventilation_input.value = features?.ventilation ?? null;
+        transformerCapacity_input.value = features?.transformer_capacity ?? null;
+        constructionType_input.value = features?.construction_type ?? null;
+        constructionState_input.value = features?.construction_state ?? null;
+        roofSystem_input.value = features?.roof_system ?? null;
+        fireProtectionSystem_input.value = features?.fire_protection_system ?? null;
+        skylightsSf_input.value = features?.skylights_sf ?? null;
+        coverage_input.value = features?.coverage ?? null;
+      }
 
       // Conditional population based on builder state
-      if (buildingData?.builderStateId === 1) {
-        // Availability data
-        availableSf_input.value = buildingData?.availableSf ?? null;
-        minimumSpaceSf_input.value = buildingData?.minimumSpaceSf ?? null;
-        expansionUpToSf_input.value = buildingData?.expansionUpToSf ?? null;
-        dockDoors_input.value = buildingData?.dockDoors ?? null;
-        driveInDoor_input.value = buildingData?.driveInDoor ?? null;
-        floorThickness_input.value = buildingData?.floorThickness ?? null;
-        floorResistance_input.value = buildingData?.floorResistance ?? null;
-        truckCourt_input.value = buildingData?.truckCourt ?? null;
-        crossdock_input.value = buildingData?.crossdock ?? false;
-        sharedTruck_input.value = buildingData?.sharedTruck ?? false;
-        buildingDimensions1_input.value = buildingData?.buildingDimensions1 ?? null;
-        buildingDimensions2_input.value = buildingData?.buildingDimensions2 ?? null;
-        baySize1_input.value = buildingData?.baySize1 ?? null;
-        baySize2_input.value = buildingData?.baySize2 ?? null;
-        columnsSpacing1_input.value = buildingData?.columnsSpacing1 ?? null;
-        columnsSpacing2_input.value = buildingData?.columnsSpacing2 ?? null;
-        knockoutsDocks_input.value = buildingData?.knockoutsDocks ?? null;
-        parkingSpace_input.value = buildingData?.parkingSpace ?? null;
+      if (buildingData?.builder_state_id === 1 && buildingData.buildingAvailable) {
+        const available = buildingData.buildingAvailable;
+        availableSf_input.value = available?.available_sf ?? null;
+        minimumSpaceSf_input.value = available?.minimum_space_sf ?? null;
+        expansionUpToSf_input.value = available?.expansion_up_to_sf ?? null;
+        dockDoors_input.value = available?.dock_doors ?? null;
+        driveInDoor_input.value = available?.drive_in_door ?? null;
+        floorThickness_input.value = available?.floor_thickness ?? null;
+        floorResistance_input.value = available?.floor_resistance ?? null;
+        truckCourt_input.value = available?.truck_court ?? null;
+        crossdock_input.value = available?.crossdock ?? false;
+        sharedTruck_input.value = available?.shared_truck ?? false;
+        buildingDimensions1_input.value = available?.building_dimensions_1 ?? null;
+        buildingDimensions2_input.value = available?.building_dimensions_2 ?? null;
+        baySize1_input.value = available?.bay_size_1 ?? null;
+        baySize2_input.value = available?.bay_size_2 ?? null;
+        columnsSpacing1_input.value = available?.columns_spacing_1 ?? null;
+        columnsSpacing2_input.value = available?.columns_spacing_2 ?? null;
+        knockoutsDocks_input.value = available?.knockouts_docks ?? null;
+        parkingSpace_input.value = available?.parking_space ?? null;
         
-        if (buildingData?.availableMonth) {
-          availableMonth_input.value = new Date(buildingData.availableMonth);
+        if (available?.available_month) {
+          availableMonth_input.value = new Date(`2024-${available.available_month}-01`);
         }
-        availableYear_input.value = buildingData?.availableYear ?? null;
-        minLease_input.value = buildingData?.minLease ?? null;
-        maxLease_input.value = buildingData?.maxLease ?? null;
-      } else if (buildingData?.builderStateId === 2) {
-        // Absorption data
-        leaseTermMonth_input.value = buildingData?.leaseTermMonth ?? null;
-        askingRateShell_input.value = buildingData?.askingRateShell ?? null;
-        closingRate_input.value = buildingData?.closingRate ?? null;
-        KVAS_input.value = buildingData?.KVAS ?? null;
-        closingQuarter_input.value = buildingData?.closingQuarter ?? null;
-        leaseUp_input.value = buildingData?.leaseUp ?? null;
-        month_input.value = buildingData?.month ?? null;
-        newConstruction_input.value = buildingData?.newConstruction ?? false;
-        startingConstruction_input.value = buildingData?.startingConstruction ?? false;
-        tenantId_input.value = buildingData?.tenantId ?? null;
-        industryId_input.value = buildingData?.industryId ?? null;
-        finalUseId_input.value = buildingData?.finalUseId ?? null;
-        shelterId_input.value = buildingData?.shelterId ?? null;
-        copanyTypeId_input.value = buildingData?.copanyTypeId ?? null;
+        availableYear_input.value = available?.available_year ?? null;
+        minLease_input.value = available?.min_lease ?? null;
+        maxLease_input.value = available?.max_lease ?? null;
+
+      } else if (buildingData?.builder_state_id === 2 && buildingData.buildingAbsorption) {
+        const absorption = buildingData.buildingAbsorption;
+        leaseTermMonth_input.value = absorption?.lease_term_month ?? null;
+        askingRateShell_input.value = absorption?.asking_rate_shell ?? null;
+        closingRate_input.value = absorption?.closing_rate ?? null;
+        KVAS_input.value = absorption?.kvas ?? null;
+        closingQuarter_input.value = absorption?.closing_quarter ?? null;
+        leaseUp_input.value = absorption?.lease_up ?? null;
+        month_input.value = absorption?.month ?? null;
+        newConstruction_input.value = absorption?.new_construction ?? false;
+        startingConstruction_input.value = absorption?.starting_construction ?? false;
+        tenantId_input.value = absorption?.tenant_id ?? null;
+        industryId_input.value = absorption?.industry_id ?? null;
+        finalUseId_input.value = absorption?.final_use_id ?? null;
+        shelterId_input.value = absorption?.shelter_id ?? null;
+        copanyTypeId_input.value = absorption?.copany_type_id ?? null;
       }
 
     } catch (error) {
