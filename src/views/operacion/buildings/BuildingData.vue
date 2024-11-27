@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import Swal from 'sweetalert2';
 import { cilX, cilPlus } from '@coreui/icons'
 import axios from 'axios';
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { Class, IndustrialPark, Status, Owner, Developer, Type, Region, LoadingDoor, Deal, Currency, Tenancy, ListingBroker, BuildingState } from '../../../assets/json/loadCats'
 import { CRow } from '@coreui/vue-pro';
 
@@ -205,8 +205,118 @@ const copanyTypeId_input = ref(null);
   const updateRailSpurBool = (newStatus) => {
     railSpur_input.value = newStatus;
   }
+
+  const route = useRoute();
+
+  // Function to fetch building data
+  const fetchBuildingData = async () => {
+    try {
+      const buildingId = route.params.id; // Assuming the building ID is passed as a route parameter
+      const response = await axios.get(`https://laravel-back-production-9320.up.railway.app/api/buildings/${buildingId}`);
+      const { buildingData } = response.data;
+
+      // Populate form fields with building data
+      builderStateId_input.value = buildingData.builderStateId;
+      buildingName_input.value = buildingData.buildingName;
+      classId_input.value = buildingData.classId;
+      buildingSizeSf_input.value = buildingData.buildingSizeSf;
+      expansionLand_input.value = buildingData.expansionLand;
+      statusId_input.value = buildingData.statusId;
+      industrialParkId_input.value = buildingData.industrialParkId;
+      typeId_input.value = buildingData.typeId;
+      ownerId_input.value = buildingData.ownerId;
+      developerId_input.value = buildingData.developerId;
+      builderId_input.value = buildingData.builderId;
+      regionId_input.value = buildingData.regionId;
+      marketId_input.value = buildingData.marketId;
+      subMarketId_input.value = buildingData.subMarketId;
+      dealId_input.value = buildingData.dealId;
+      currencyId_input.value = buildingData.currencyId;
+      salePriceUsd_input.value = buildingData.salePriceUsd;
+      tenancyId_input.value = buildingData.tenancyId;
+      latitud_input.value = buildingData.latitud;
+      longitud_input.value = buildingData.longitud;
+      yearBuilt_input.value = buildingData.yearBuilt;
+      clearHeight_input.value = buildingData.clearHeight;
+      officesSpace_input.value = buildingData.officesSpace;
+      crane_input.value = buildingData.crane.toString();
+      hvac_input.value = buildingData.hvac.toString();
+      railSpur_input.value = buildingData.railSpur.toString();
+      sprinklers_input.value = buildingData.sprinklers.toString();
+      office_input.value = buildingData.office.toString();
+      leed_input.value = buildingData.leed.toString();
+      totalLand_input.value = buildingData.totalLand;
+      hvacProductionArea_input.value = buildingData.hvacProductionArea;
+
+      // Building Features
+      loadingDoorId_input.value = buildingData.loadingDoorId;
+      lighting_input.value = buildingData.lighting;
+      ventilation_input.value = buildingData.ventilation;
+      transformerCapacity_input.value = buildingData.transformerCapacity;
+      constructionType_input.value = buildingData.constructionType;
+      constructionState_input.value = buildingData.constructionState;
+      roofSystem_input.value = buildingData.roofSystem;
+      fireProtectionSystem_input.value = buildingData.fireProtectionSystem;
+      skylightsSf_input.value = buildingData.skylightsSf;
+      coverage_input.value = buildingData.coverage;
+
+      // Conditional population based on builder state
+      if (buildingData.builderStateId === 1) {
+        // Availability data
+        availableSf_input.value = buildingData.availableSf;
+        minimumSpaceSf_input.value = buildingData.minimumSpaceSf;
+        expansionUpToSf_input.value = buildingData.expansionUpToSf;
+        dockDoors_input.value = buildingData.dockDoors;
+        driveInDoor_input.value = buildingData.driveInDoor;
+        floorThickness_input.value = buildingData.floorThickness;
+        floorResistance_input.value = buildingData.floorResistance;
+        truckCourt_input.value = buildingData.truckCourt;
+        crossdock_input.value = buildingData.crossdock;
+        sharedTruck_input.value = buildingData.sharedTruck;
+        buildingDimensions1_input.value = buildingData.buildingDimensions1;
+        buildingDimensions2_input.value = buildingData.buildingDimensions2;
+        baySize1_input.value = buildingData.baySize1;
+        baySize2_input.value = buildingData.baySize2;
+        columnsSpacing1_input.value = buildingData.columnsSpacing1;
+        columnsSpacing2_input.value = buildingData.columnsSpacing2;
+        knockoutsDocks_input.value = buildingData.knockoutsDocks;
+        parkingSpace_input.value = buildingData.parkingSpace;
+        availableMonth_input.value = new Date(buildingData.availableMonth);
+        availableYear_input.value = buildingData.availableYear;
+        minLease_input.value = buildingData.minLease;
+        maxLease_input.value = buildingData.maxLease;
+      } else if (buildingData.builderStateId === 2) {
+        // Absorption data
+        leaseTermMonth_input.value = buildingData.leaseTermMonth;
+        askingRateShell_input.value = buildingData.askingRateShell;
+        closingRate_input.value = buildingData.closingRate;
+        KVAS_input.value = buildingData.KVAS;
+        closingQuarter_input.value = buildingData.closingQuarter;
+        leaseUp_input.value = buildingData.leaseUp;
+        month_input.value = buildingData.month;
+        newConstruction_input.value = buildingData.newConstruction;
+        startingConstruction_input.value = buildingData.startingConstruction;
+        tenantId_input.value = buildingData.tenantId;
+        industryId_input.value = buildingData.industryId;
+        finalUseId_input.value = buildingData.finalUseId;
+        shelterId_input.value = buildingData.shelterId;
+        copanyTypeId_input.value = buildingData.copanyTypeId;
+      }
+
+    } catch (error) {
+      console.error('Error fetching building data:', error);
+      // You might want to show an error message to the user
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to load building data',
+      });
+    }
+  };
+
   onMounted(() => {
     fetchData();
+    fetchBuildingData();
   });
 
   const fetchData = async () => {
