@@ -21,7 +21,7 @@
   const activeAccordionKey = ref(null);
   const accordion = ref(null);
   const isAccordionVisible = ref(true);
-  const isMenuOpen = ref(true)
+  const isMenuOpen = ref(false)
   const availableSections = ref([]);
 
   const sections = [
@@ -65,7 +65,7 @@ const saveAllData = async () => {
 const scrollToSection = (sectionId) => {
   const section = document.getElementById(sectionId);
   if (section) {
-    const offset = 200;
+    const offset = 480;
     const sectionPosition = section.getBoundingClientRect().top + window.pageYOffset - offset;
     
     window.scrollTo({
