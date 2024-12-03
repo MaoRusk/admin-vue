@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, onMounted, computed, registerRuntimeCompiler } from 'vue';
+  import { ref, onMounted, computed, registerRuntimeCompiler, nextTick } from 'vue';
   import { useRouter } from 'vue-router'
   import { cilArrowCircleLeft, cilBasket, cilSave } from '@coreui/icons'
   import axios from 'axios';
@@ -18,7 +18,28 @@
   const buildingDataRef = ref(null);
   const buildingContactRef = ref(null);
   const buildingImagesRef = ref(null);
+  const activeAccordionKey = ref(null);
+  const accordion = ref(null);
+  const isAccordionVisible = ref(true);
+  const isMenuOpen = ref(true)
+  const availableSections = ref([]);
 
+  const sections = [
+    { id: 'general-information', label: 'General information' },
+    { id: 'location', label: 'Location' },
+    { id: 'property-details', label: 'Property Details' },
+    { id: 'transactions-agreements', label: 'Transactions and Agreements' },
+    { id: 'technical-specifications', label: 'Technical Specifications' },
+    { id: 'availability', label: 'Availability' },
+    { id: 'absorption', label: 'Absorption' }
+  ];
+
+  onMounted(() => {
+    // Verificar qué secciones existen en el DOM
+    availableSections.value = sections.filter(section => 
+      document.getElementById(section.id) !== null
+    );
+  });
 
 const saveAllData = async () => {
   try {
@@ -44,15 +65,22 @@ const saveAllData = async () => {
 const scrollToSection = (sectionId) => {
   const section = document.getElementById(sectionId);
   if (section) {
-    const offset = 200; // Ajusta este valor según lo que necesites
+    const offset = 200;
     const sectionPosition = section.getBoundingClientRect().top + window.pageYOffset - offset;
-
+    
     window.scrollTo({
       top: sectionPosition,
-      behavior: 'smooth',
+      behavior: 'smooth'
     });
+    
+    // Cerrar el menú
+    isMenuOpen.value = false;
   }
 };
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+}
 
 </script>
 <template>
@@ -63,36 +91,25 @@ const scrollToSection = (sectionId) => {
         <div style="text-align: center;">
         <CRow>
           <CCol :md="6">
-            <CAccordion>
-              <CAccordionItem :item-key="1">
-                <CAccordionHeader>
-                  Index
-                </CAccordionHeader>
-                <CAccordionBody>
-                  <CCol :md="12">
-                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('general-information')">General information</CButton>
-                  </CCol>
-                  <CCol :md="12">
-                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('location')" style="margin-left: .7rem;">Location</CButton>
-                  </CCol>
-                  <CCol :md="12">
-                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('property-details')" style="margin-left: .7rem;">Property Details</CButton>
-                  </CCol>
-                  <CCol :md="12">
-                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('transactions-agreements')" style="margin-left: .7rem;">Transactions and Agreements</CButton>
-                  </CCol>
-                  <CCol :md="12">
-                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('technical-specifications')" style="margin-left: .7rem;">Technical Specifications</CButton>
-                  </CCol>
-                  <CCol :md="12">
-                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('availability')" style="margin-left: .7rem;">Availabbility</CButton>
-                  </CCol>
-                  <CCol :md="12">
-                    <CButton size="sm" color="link" shape="rounded-pill" @click="scrollToSection('absorption')" style="margin-left: .7rem;">Absorption</CButton>
-                  </CCol>
-                </CAccordionBody>
-              </CAccordionItem>
-            </CAccordion>
+            <CCard>
+              <CCardHeader @click="toggleMenu" style="cursor: pointer;">
+                <strong>Index</strong>
+              </CCardHeader>
+              <CCollapse :visible="isMenuOpen">
+                <CCardBody>
+                  <CNav vertical>
+                    <template v-for="section in availableSections" :key="section.id">
+                      <CNavItem 
+                        href="#" 
+                        @click="scrollToSection(section.id)"
+                      >
+                        {{ section.label }}
+                      </CNavItem>
+                    </template>
+                  </CNav>
+                </CCardBody>
+              </CCollapse>
+            </CCard>
           </CCol>
           <CCol :md="6" class="btns-flotantes-customer-moviles">
             <CButton color="success mr-2" variant="outline" style="margin-left: .7rem;" @click="saveAllData">
@@ -131,3 +148,19 @@ const scrollToSection = (sectionId) => {
     </CTabs>
   </div>
 </template>
+
+<style scoped>
+.nav-item {
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: background-color 0.2s;
+}
+
+.nav-item:hover {
+  background-color: #f8f9fa;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+}
+</style>
