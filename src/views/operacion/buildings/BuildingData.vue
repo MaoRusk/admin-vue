@@ -451,7 +451,7 @@ watch(builderStateId_input, (newValue) => {
 </script>
 
 <template>
-  <CContainer>
+  <!-- <CContainer> -->
     <CRow>
       <CCol :md="9">
         <CRow>
@@ -1753,5 +1753,5 @@ watch(builderStateId_input, (newValue) => {
         </CRow>
       </CCol>
     </CRow>
-  </CContainer>
+  <!-- </CContainer> -->
 </template>
