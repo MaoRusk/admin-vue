@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, nextTick } from 'vue';
 import Swal from 'sweetalert2';
 import { cilX, cilPlus } from '@coreui/icons'
 import axios from 'axios';
@@ -176,9 +176,19 @@ const copanyTypeId_input = ref(null);
     loadingDoorId_input.value = inputValue.value.map(item => item.value).join(',');
   };
   const handleBuildingState = (newValue) => {
-      inputValue.value = newValue;
-      builderStateId_input.value = inputValue.value.map(item => item.value).join(',');    
-  }
+    selectedBuildingState.value = newValue;
+    builderStateId_input.value = newValue?.value ?? null;
+    
+    nextTick(() => {
+      if (newValue?.value === 1) {
+        leaseTermMonth_input.value = null;
+        askingRateShell_input.value = null;
+      } else if (newValue?.value === 2) {
+        availableSf_input.value = null;
+        minimumSpaceSf_input.value = null;
+      }
+    });
+  };
   const handleBuildingClass = (newValue) => {
       inputValue.value = newValue;
       classId_input.value = inputValue.value.map(item => item.value).join(',');    
@@ -212,111 +222,97 @@ const copanyTypeId_input = ref(null);
   const fetchBuildingData = async () => {
     try {
       const buildingId = route.params.id;
-      const response = await axios.get(`https://laravel-back-production-9320.up.railway.app/api/buildings/${buildingId}`);
+      // const response = await axios.get(`https://laravel-back-production-9320.up.railway.app/api/buildings/${buildingId}`);
+      const response = await axios.get(`http://127.0.0.1:8000/api/buildings/${buildingId}`);
       
-      // Solo extraemos buildingData del response
       const { buildingData } = response.data;
+      console.log('Building Data:', buildingData);
 
       if (!buildingData) {
         throw new Error('Building data not found in response');
       }
 
-      // Populate form fields with building data
-      builderStateId_input.value = buildingData?.builder_state_id ?? null; // Nota: cambiado a snake_case
-      buildingName_input.value = buildingData?.building_name ?? '';
-      classId_input.value = buildingData?.class_id ?? null;
-      buildingSizeSf_input.value = buildingData?.building_size_sf ?? null;
-      expansionLand_input.value = buildingData?.expansion_land ?? null;
-      statusId_input.value = buildingData?.status_id ?? null;
-      industrialParkId_input.value = buildingData?.industrial_park_id ?? null;
-      typeId_input.value = buildingData?.type_id ?? null;
-      ownerId_input.value = buildingData?.owner_id ?? null;
-      developerId_input.value = buildingData?.developer_id ?? null;
-      builderId_input.value = buildingData?.builder_id ?? null;
-      regionId_input.value = buildingData?.region_id ?? null;
-      marketId_input.value = buildingData?.market_id ?? null;
-      subMarketId_input.value = buildingData?.sub_market_id ?? null;
-      dealId_input.value = buildingData?.deal_id ?? null;
-      currencyId_input.value = buildingData?.currency_id ?? null;
-      salePriceUsd_input.value = buildingData?.sale_price_usd ?? null;
-      tenancyId_input.value = buildingData?.tenancy_id ?? null;
-      latitud_input.value = buildingData?.latitud ?? null;
-      longitud_input.value = buildingData?.longitud ?? null;
-      yearBuilt_input.value = buildingData?.year_built ?? null;
-      clearHeight_input.value = buildingData?.clear_height ?? null;
-      officesSpace_input.value = buildingData?.offices_space ?? null;
-      
-      // Convert boolean values to strings
-      crane_input.value = (buildingData?.crane ?? true).toString();
-      hvac_input.value = (buildingData?.hvac ?? true).toString();
-      railSpur_input.value = (buildingData?.rail_spur ?? true).toString();
-      sprinklers_input.value = (buildingData?.sprinklers ?? true).toString();
-      office_input.value = (buildingData?.office ?? true).toString();
-      leed_input.value = (buildingData?.leed ?? true).toString();
-      
-      totalLand_input.value = buildingData?.total_land ?? null;
-      hvacProductionArea_input.value = buildingData?.hvac_production_area ?? null;
-
-      // Building Features
-      if (buildingData.buildingFeatures) {
-        const features = buildingData.buildingFeatures;
-        loadingDoorId_input.value = features?.loading_door_id ?? null;
-        lighting_input.value = features?.lighting ?? null;
-        ventilation_input.value = features?.ventilation ?? null;
-        transformerCapacity_input.value = features?.transformer_capacity ?? null;
-        constructionType_input.value = features?.construction_type ?? null;
-        constructionState_input.value = features?.construction_state ?? null;
-        roofSystem_input.value = features?.roof_system ?? null;
-        fireProtectionSystem_input.value = features?.fire_protection_system ?? null;
-        skylightsSf_input.value = features?.skylights_sf ?? null;
-        coverage_input.value = features?.coverage ?? null;
+      // Actualizar el BuildingState selector
+      const buildingStateOption = BuildingState.find(item => item.value === buildingData.builderStateId);
+      if (buildingStateOption) {
+        selectedBuildingState.value = buildingStateOption;
+        builderStateId_input.value = buildingStateOption.value;
       }
 
-      // Conditional population based on builder state
-      if (buildingData?.builder_state_id === 1 && buildingData.buildingAvailable) {
-        const available = buildingData.buildingAvailable;
-        availableSf_input.value = available?.available_sf ?? null;
-        minimumSpaceSf_input.value = available?.minimum_space_sf ?? null;
-        expansionUpToSf_input.value = available?.expansion_up_to_sf ?? null;
-        dockDoors_input.value = available?.dock_doors ?? null;
-        driveInDoor_input.value = available?.drive_in_door ?? null;
-        floorThickness_input.value = available?.floor_thickness ?? null;
-        floorResistance_input.value = available?.floor_resistance ?? null;
-        truckCourt_input.value = available?.truck_court ?? null;
-        crossdock_input.value = available?.crossdock ?? false;
-        sharedTruck_input.value = available?.shared_truck ?? false;
-        buildingDimensions1_input.value = available?.building_dimensions_1 ?? null;
-        buildingDimensions2_input.value = available?.building_dimensions_2 ?? null;
-        baySize1_input.value = available?.bay_size_1 ?? null;
-        baySize2_input.value = available?.bay_size_2 ?? null;
-        columnsSpacing1_input.value = available?.columns_spacing_1 ?? null;
-        columnsSpacing2_input.value = available?.columns_spacing_2 ?? null;
-        knockoutsDocks_input.value = available?.knockouts_docks ?? null;
-        parkingSpace_input.value = available?.parking_space ?? null;
-        
-        if (available?.available_month) {
-          availableMonth_input.value = new Date(`2024-${available.available_month}-01`);
-        }
-        availableYear_input.value = available?.available_year ?? null;
-        minLease_input.value = available?.min_lease ?? null;
-        maxLease_input.value = available?.max_lease ?? null;
+      // Resto de las asignaciones...
+      buildingName_input.value = buildingData.buildingName;
 
-      } else if (buildingData?.builder_state_id === 2 && buildingData.buildingAbsorption) {
-        const absorption = buildingData.buildingAbsorption;
-        leaseTermMonth_input.value = absorption?.lease_term_month ?? null;
-        askingRateShell_input.value = absorption?.asking_rate_shell ?? null;
-        closingRate_input.value = absorption?.closing_rate ?? null;
-        KVAS_input.value = absorption?.kvas ?? null;
-        closingQuarter_input.value = absorption?.closing_quarter ?? null;
-        leaseUp_input.value = absorption?.lease_up ?? null;
-        month_input.value = absorption?.month ?? null;
-        newConstruction_input.value = absorption?.new_construction ?? false;
-        startingConstruction_input.value = absorption?.starting_construction ?? false;
-        tenantId_input.value = absorption?.tenant_id ?? null;
-        industryId_input.value = absorption?.industry_id ?? null;
-        finalUseId_input.value = absorption?.final_use_id ?? null;
-        shelterId_input.value = absorption?.shelter_id ?? null;
-        copanyTypeId_input.value = absorption?.copany_type_id ?? null;
+      classId_input.value = buildingData.classId;
+      buildingSizeSf_input.value = buildingData.buildingSizeSf;
+      expansionLand_input.value = buildingData.expansionLand;
+      statusId_input.value = buildingData.statusId;
+      industrialParkId_input.value = buildingData.industrialParkId;
+      typeId_input.value = buildingData.typeId;
+      ownerId_input.value = buildingData.ownerId;
+      developerId_input.value = buildingData.developerId;
+      builderId_input.value = buildingData.builderId;
+      regionId_input.value = buildingData.regionId;
+      marketId_input.value = buildingData.marketId;
+      subMarketId_input.value = buildingData.subMarketId;
+      dealId_input.value = buildingData.dealId;
+      currencyId_input.value = buildingData.currencyId;
+      salePriceUsd_input.value = buildingData.salePriceUsd;
+      tenancyId_input.value = buildingData.tenancyId;
+      latitud_input.value = buildingData.latitud;
+      longitud_input.value = buildingData.longitud;
+      yearBuilt_input.value = buildingData.yearBuilt;
+      clearHeight_input.value = buildingData.clearHeight;
+      officesSpace_input.value = buildingData.officesSpace;
+      
+      // Valores booleanos
+      crane_input.value = buildingData.crane.toString();
+      hvac_input.value = buildingData.hvac.toString();
+      railSpur_input.value = buildingData.railSpur.toString();
+      sprinklers_input.value = buildingData.sprinklers.toString();
+      office_input.value = buildingData.office.toString();
+      leed_input.value = buildingData.leed.toString();
+      
+      // Resto de campos
+      totalLand_input.value = buildingData.totalLand;
+      hvacProductionArea_input.value = buildingData.hvacProductionArea;
+      loadingDoorId_input.value = buildingData.loadingDoorId;
+      lighting_input.value = buildingData.lighting;
+      ventilation_input.value = buildingData.ventilation;
+      transformerCapacity_input.value = buildingData.transformerCapacity;
+      constructionType_input.value = buildingData.constructionType;
+      constructionState_input.value = buildingData.constructionState;
+      roofSystem_input.value = buildingData.roofSystem;
+      fireProtectionSystem_input.value = buildingData.fireProtectionSystem;
+      skylightsSf_input.value = buildingData.skylightsSf;
+      coverage_input.value = buildingData.coverage;
+
+      // Datos de disponibilidad (si builderStateId es 1)
+      if (buildingData.builderStateId === 1) {
+        availableSf_input.value = buildingData.availableSf;
+        minimumSpaceSf_input.value = buildingData.minimumSpaceSf;
+        expansionUpToSf_input.value = buildingData.expansionUpToSf;
+        dockDoors_input.value = buildingData.dockDoors;
+        driveInDoor_input.value = buildingData.driveInDoor;
+        floorThickness_input.value = buildingData.floorThickness;
+        floorResistance_input.value = buildingData.floorResistance;
+        truckCourt_input.value = buildingData.truckCourt;
+        crossdock_input.value = buildingData.crossdock;
+        sharedTruck_input.value = buildingData.sharedTruck;
+        buildingDimensions1_input.value = buildingData.buildingDimensions1;
+        buildingDimensions2_input.value = buildingData.buildingDimensions2;
+        baySize1_input.value = buildingData.baySize1;
+        baySize2_input.value = buildingData.baySize2;
+        columnsSpacing1_input.value = buildingData.columnsSpacing1;
+        columnsSpacing2_input.value = buildingData.columnsSpacing2;
+        knockoutsDocks_input.value = buildingData.knockoutsDocks;
+        parkingSpace_input.value = buildingData.parkingSpace;
+        
+        if (buildingData.availableMonth) {
+          availableMonth_input.value = new Date(buildingData.availableMonth);
+        }
+        availableYear_input.value = buildingData.availableYear;
+        minLease_input.value = buildingData.minLease;
+        maxLease_input.value = buildingData.maxLease;
       }
 
     } catch (error) {
@@ -329,16 +325,18 @@ const copanyTypeId_input = ref(null);
     }
   };
 
-  onMounted(() => {
-    fetchData();
-    fetchBuildingData();
+  onMounted(async () => {
+    await fetchData();
+    await fetchBuildingData();
   });
 
   const fetchData = async () => {
     try {
       const [ marketsResponse, submarketResponse] = await Promise.all([
-        axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
-        axios.get('https://laravel-back-production-9320.up.railway.app/api/submarket'),
+        // axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
+        // axios.get('https://laravel-back-production-9320.up.railway.app/api/submarket'),
+        axios.get('http://127.0.0.1:8000/api/market'),
+        axios.get('http://127.0.0.1:8000/api/submarket'),
       ]);
 
 
@@ -445,6 +443,11 @@ defineExpose({
   getFormData
 });
 
+// Asegurarse de que builderStateId_input sea reactivo
+watch(builderStateId_input, (newValue) => {
+  console.log('builderStateId_input changed:', newValue);
+});
+
 </script>
 
 <template>
@@ -469,6 +472,7 @@ defineExpose({
                       label="Building State"
                       :multiple="false"
                       :options="BuildingState"
+                      v-model="selectedBuildingState"
                       @change="handleBuildingState"
                       optionsStyle="text"
                       size="sm"
@@ -780,7 +784,7 @@ defineExpose({
                   <div class="mt-2">
                     <CMultiSelect
                       label="Builder"
-                      v-model="Builder"
+                      v-model="SelectedBuilder"
                       :multiple="false"
                       :options="Developer"
                       optionsStyle="text"
@@ -1238,7 +1242,7 @@ defineExpose({
             </CCardBody>
           </CCard>
   
-          <CRow v-if="builderStateId_input == 1">
+          <CRow v-if="builderStateId_input === 1">
             <!-- *** AVAILABILITY *** -->
             <CCard id="availability" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
               <CCardBody class="card-body-customer-buildings">
@@ -1564,7 +1568,7 @@ defineExpose({
             </CCard> -->
           </CRow>
   
-          <CRow v-else-if="builderStateId_input == 2">
+          <CRow v-else-if="builderStateId_input === 2">
             <!-- *** ABSORPTION *** -->
             <CCard id="absorption" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
               <CCardBody class="card-body-customer-buildings">
