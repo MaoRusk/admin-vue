@@ -25,8 +25,8 @@ const uploadFiles = () => {
     formData.append('photoTypes[]', file);
   });
 
-  // axios.post(`https://laravel-back-production-9320.up.railway.app/api/buildings/docs/5`, formData, {
-  axios.post(`http://127.0.0.1:8000/api/buildings/docs/5`, formData, {
+  axios.post(`https://laravel-back-production-9320.up.railway.app/api/buildings/docs/5`, formData, {
+  // axios.post(`http://127.0.0.1:8000/api/buildings/docs/5`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
