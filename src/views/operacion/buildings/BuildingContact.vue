@@ -31,7 +31,7 @@ defineExpose({
 </script>
 
 <template>
-  <CContainer>
+  <!-- <CContainer> -->
     <CRow>
       <CCol :md="6">
        <!-- Name -->
@@ -74,5 +74,5 @@ defineExpose({
         </div>
       </CCol>
     </CRow>
-  </CContainer>
+  <!-- </CContainer> -->
 </template>
