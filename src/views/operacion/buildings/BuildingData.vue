@@ -54,6 +54,7 @@ const office_input = ref('true');
 const leed_input = ref('true');
 const totalLand_input = ref(null);
 const hvacProductionArea_input = ref(null);
+const hvacProductionArea2_input = ref(null);
 const status = ref('Activo');
 
 // VARIABLES TABLA buildings_features
@@ -383,6 +384,97 @@ const copanyTypeId_input = ref(null);
     }
   };
 
+<<<<<<< HEAD
+=======
+  const getFormData = () => {
+    return {
+      builderStateId: builderStateId_input.value,
+      buildingName: buildingName_input.value,
+      classId: classId_input.value,
+      buildingSizeSf: buildingSizeSf_input.value,
+      expansionLand: expansionLand_input.value,
+      statusId: statusId_input.value,
+      industrialParkId: industrialParkId_input.value,
+      typeId: typeId_input.value,
+      ownerId: ownerId_input.value,
+      developerId: developerId_input.value,
+      builderId: builderId_input.value,
+      regionId: regionId_input.value,
+      marketId: marketId_input.value,
+      subMarketId: subMarketId_input.value,
+      dealId: dealId_input.value,
+      currencyId: currencyId_input.value,
+      salePriceUsd: salePriceUsd_input.value,
+      tenancyId: tenancyId_input.value,
+      latitud: latitud_input.value,
+      longitud: longitud_input.value,
+      yearBuilt: yearBuilt_input.value,
+      clearHeight: clearHeight_input.value,
+      officesSpace: officesSpace_input.value,
+      crane: crane_input.value,
+      hvac: hvac_input.value,
+      railSpur: railSpur_input.value,
+      sprinklers: sprinklers_input.value,
+      office: office_input.value,
+      leed: leed_input.value,
+      totalLand: totalLand_input.value,
+      hvacProductionArea: hvacProductionArea_input.value ? 
+        `${hvacProductionArea_input.value}@${hvacProductionArea2_input.value}` : null,
+      status: status.value,
+      loadingDoorId: loadingDoorId_input.value,
+      lighting: lighting_input.value,
+      ventilation: ventilation_input.value,
+      transformerCapacity: transformerCapacity_input.value,
+      constructionType: constructionType_input.value,
+      constructionState: constructionState_input.value,
+      roofSystem: roofSystem_input.value,
+      fireProtectionSystem: fireProtectionSystem_input.value,
+      skylightsSf: skylightsSf_input.value,
+      coverage: coverage_input.value,
+      availableSf:  availableSf_input.value,
+      minimumSpaceSf:  minimumSpaceSf_input.value,
+      expansionUpToSf:  expansionUpToSf_input.value,
+      dockDoors:  dockDoors_input.value,
+      driveInDoor:  driveInDoor_input.value,
+      floorThickness:  floorThickness_input.value,
+      floorResistance:  floorResistance_input.value,
+      truckCourt:  truckCourt_input.value,
+      crossdock:  crossdock_input.value,
+      sharedTruck:  sharedTruck_input.value,
+      buildingDimensions1:  buildingDimensions1_input.value,
+      buildingDimensions2:  buildingDimensions2_input.value,
+      baySize1:  baySize1_input.value,
+      baySize2:  baySize2_input.value,
+      columnsSpacing1:  columnsSpacing1_input.value,
+      columnsSpacing2:  columnsSpacing2_input.value,
+      knockoutsDocks:  knockoutsDocks_input.value,
+      parkingSpace:  parkingSpace_input.value,
+      availableMonth:  availableMonth_input.value,
+      availableYear:  availableYear_input.value,
+      minLease:  minLease_input.value,
+      maxLease:  maxLease_input.value,
+      leaseTermMonth: leaseTermMonth_input.value,
+      askingRateShell: askingRateShell_input.value,
+      closingRate: closingRate_input.value,
+      KVAS: KVAS_input.value,
+      closingQuarter: closingQuarter_input.value,
+      leaseUp: leaseUp_input.value,
+      month: month_input.value,
+      newConstruction: newConstruction_input.value,
+      startingConstruction: startingConstruction_input.value,
+      tenantId: tenantId_input.value,
+      industryId: industryId_input.value,
+      finalUseId: finalUseId_input.value,
+      shelterId: shelterId_input.value,
+      copanyTypeId: copanyTypeId_input.value,
+    };
+  };
+
+defineExpose({
+  getFormData
+});
+
+>>>>>>> 9d0c716a89c326d45e615a98663982327c6ff506
 // Asegurarse de que builderStateId_input sea reactivo
 watch(builderStateId_input, (newValue) => {
   console.log('builderStateId_input changed:', newValue);
@@ -1106,13 +1198,33 @@ watch(Class, (newOptions) => {
                     />
                   </div>
                   <!-- HVAC PRODUCTION AREA -->
-                  <div style="margin-top: .35rem;">
-                    <CFormInput
-                    type="text"
-                    size="sm"
-                    v-model="hvacProductionArea_input"
-                    label="HVAC Production Area"
-                    />
+                  <div class="mt-2">
+                    <label>HVAC Production Area</label>
+                    <CInputGroup class="mb-3">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="hvacProductionArea_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        placeholder="Production"
+                        aria-label="Production"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        size="sm"
+                        class="no-spinner"
+                        v-model="hvacProductionArea2_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        placeholder="Area"
+                        aria-label="Area"
+                      />
+                    </CInputGroup>
                   </div>
                   <!-- TRANSFORMER CAPACITY (Electric Substations) -->
                   <div class="mt-2">

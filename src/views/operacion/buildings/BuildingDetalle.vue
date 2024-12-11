@@ -26,7 +26,7 @@
 
   const sections = [
     { id: 'general-information', label: 'General information' },
-    { id: 'location', label: 'Location' },
+    { id: 'location', label: ' Location ' },
     { id: 'property-details', label: 'Property Details' },
     { id: 'transactions-agreements', label: 'Transactions and Agreements' },
     { id: 'technical-specifications', label: 'Technical Specifications' },
@@ -88,7 +88,7 @@ const toggleMenu = () => {
   <div>
     <!-- <div class="movil-response"></div> -->
     <CCard class="container-btn-flotante">
-      <CCardBody>
+      <CCardBody style="padding: 8px 16px;">
         <div style="text-align: center;">
         <CRow>
           <CCol :md="6">
