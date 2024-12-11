@@ -52,6 +52,7 @@ const office_input = ref('true');
 const leed_input = ref('true');
 const totalLand_input = ref(null);
 const hvacProductionArea_input = ref(null);
+const hvacProductionArea2_input = ref(null);
 const status = ref('Activo');
 
 // VARIABLES TABLA buildings_features
@@ -388,7 +389,8 @@ const copanyTypeId_input = ref(null);
       office: office_input.value,
       leed: leed_input.value,
       totalLand: totalLand_input.value,
-      hvacProductionArea: hvacProductionArea_input.value,
+      hvacProductionArea: hvacProductionArea_input.value ? 
+        `${hvacProductionArea_input.value}@${hvacProductionArea2_input.value}` : null,
       status: status.value,
       loadingDoorId: loadingDoorId_input.value,
       lighting: lighting_input.value,
@@ -1155,13 +1157,33 @@ watch(builderStateId_input, (newValue) => {
                     />
                   </div>
                   <!-- HVAC PRODUCTION AREA -->
-                  <div style="margin-top: .35rem;">
-                    <CFormInput
-                    type="text"
-                    size="sm"
-                    v-model="hvacProductionArea_input"
-                    label="HVAC Production Area"
-                    />
+                  <div class="mt-2">
+                    <label>HVAC Production Area</label>
+                    <CInputGroup class="mb-3">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="hvacProductionArea_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        placeholder="Production"
+                        aria-label="Production"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        size="sm"
+                        class="no-spinner"
+                        v-model="hvacProductionArea2_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        placeholder="Area"
+                        aria-label="Area"
+                      />
+                    </CInputGroup>
                   </div>
                   <!-- TRANSFORMER CAPACITY (Electric Substations) -->
                   <div class="mt-2">
