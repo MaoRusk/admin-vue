@@ -990,89 +990,166 @@ watch(Class, (newOptions) => {
           <CCard class="card-customer-buildings">
             <CCardBody>
               <CRow>
+                <!-- Primera columna: Dimensiones y características principales -->
                 <CCol :md="3">
                   <!-- TYPE -->
                   <div class="mt-2">
-                      <CMultiSelect
-                        label="Type"
-                        v-model="Type"
-                        :multiple="false"
-                        :options="Type"
-                        optionsStyle="text"
-                        size="sm"
-                        placeholder=""
-                        @change="handleTypeSelect"
-                      >
-                        <template #options="{ option }" >
-                          <div class="d-flex">
-                            <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                          </div>
-                        </template>
-                      </CMultiSelect>
-                      <CInputGroup v-if="SelectedType == '0'" class="mb-3 mt-2">
-                        <CFormInput aria-label="New Type.." aria-describedby="button-addon2"/>
-                        <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                      </CInputGroup>
-                  </div>
-                  <!-- TOTAL LAND -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    size="sm"
-                    class="no-spinner"
-                    v-model="totalLand_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Total Land"
+                    <CMultiSelect
+                      label="Type"
+                      v-model="Type"
+                      :multiple="false"
+                      :options="Type"
+                      optionsStyle="text"
+                      size="sm"
+                      placeholder=""
+                      @change="handleTypeSelect"
                     />
                   </div>
                   <!-- CLEAR HEIGHT -->
                   <div class="mt-2">
                     <CFormInput 
-                    type="number" 
-                    size="sm"
-                    class="no-spinner"
-                    v-model="clearHeight_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Clear Height"
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="clearHeight_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Clear Height"
                     />
                   </div>
+                  <!-- TOTAL LAND -->
+                  <div class="mt-2">
+                    <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="totalLand_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Total Land"
+                    />
+                  </div>
+                  <!-- COVERAGE -->
+                  <div class="mt-2">
+                    <CFormInput 
+                      type="number" 
+                      size="sm"
+                      class="no-spinner"
+                      v-model="coverage_input"
+                      @wheel.prevent
+                      @touchstart.prevent
+                      @touchmove.prevent
+                      label="Coverage %"
+                    />
+                  </div>
+                </CCol>
+
+                <!-- Segunda columna: Sistemas y características técnicas -->
+                <CCol :md="3">
                   <!-- CONSTRUCTION TYPE -->
                   <div class="mt-2">
-                      <CFormInput
+                    <CFormInput
                       type="text"
                       size="sm"
                       v-model="constructionType_input"
                       label="Construction Type"
-                      />
+                    />
                   </div>
                   <!-- CONSTRUCTION STATE -->
                   <div class="mt-2">
-                      <CFormInput
+                    <CFormInput
                       type="text"
                       size="sm"
                       v-model="constructionState_input"
                       label="Construction State"
-                      />
+                    />
+                  </div>
+                  <!-- ROOF SYSTEM -->
+                  <div class="mt-2">
+                    <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="roofSystem_input"
+                      label="Roof System"
+                    />
+                  </div>
+                  <!-- FIRE PROTECTION SYSTEM -->
+                  <div class="mt-2">
+                    <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="fireProtectionSystem_input"
+                      label="Fire Protection System (FPS)"
+                    />
                   </div>
                 </CCol>
+
+                <!-- Tercera columna: Sistemas eléctricos y ambientales -->
                 <CCol :md="3">
-                  <!-- LOADING DOOR -->
+                  <!-- TRANSFORMER CAPACITY -->
                   <div class="mt-2">
-                    <CMultiSelect
-                      label="Loading Door"
-                      :multiple="false"
-                      :options="LoadingDoor"
-                      optionsStyle="text"
+                    <CFormInput
+                      type="text"
                       size="sm"
-                      placeholder=""
-                      @change="handleLoadingDoorSelect"
-                    >
-                    </CMultiSelect>
-                  </div>  
+                      v-model="transformerCapacity_input"
+                      label="Transformer Capacity"
+                    />
+                  </div>
+                  <!-- LIGHTING -->
+                  <div class="mt-2">
+                    <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="lighting_input"
+                      label="Lighting"
+                    />
+                  </div>
+                  <!-- VENTILATION -->
+                  <div class="mt-2">
+                    <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="ventilation_input"
+                      label="Ventilation System"
+                    />
+                  </div>
+                  <!-- HVAC PRODUCTION AREA -->
+                  <div class="mt-2">
+                    <label>HVAC Production Area</label>
+                    <CInputGroup class="mb-3">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="hvacProductionArea_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        placeholder="Production"
+                        aria-label="Production"
+                        @blur="validateHvacRange"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        size="sm"
+                        class="no-spinner"
+                        v-model="hvacProductionArea2_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        placeholder="Area"
+                        aria-label="Area"
+                        @blur="validateHvacRange"
+                      />
+                    </CInputGroup>
+                  </div>
+                </CCol>
+
+                <!-- Cuarta columna: Switches de características -->
+                <CCol :md="3">
                   <!-- OFFICE -->
                   <div class="mt-2 d-flex align-items-center">
                     <label class="me-3">Office</label>
@@ -1144,126 +1221,6 @@ watch(Class, (newOptions) => {
                       :checked="sharedTruck_input === 'true'"
                       @change="sharedTruck_input = $event.target.checked ? 'true' : 'false'"
                     />
-                  </div>
-                </CCol>
-                <CCol :md="3">
-                  <!-- OFFICE SPACE -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    size="sm"
-                    class="no-spinner"
-                    v-model="officesSpace_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Office Space"
-                    />
-                  </div>
-                  <!-- HVAC PRODUCTION AREA -->
-                  <div class="mt-2">
-                    <label>HVAC Production Area</label>
-                    <CInputGroup class="mb-3">
-                      <CFormInput 
-                        type="number" 
-                        size="sm"
-                        class="no-spinner"
-                        v-model="hvacProductionArea_input"
-                        @wheel.prevent
-                        @touchstart.prevent
-                        @touchmove.prevent
-                        placeholder="Production"
-                        aria-label="Production"
-                        @blur="validateHvacRange"
-                      />
-                      <CInputGroupText>@</CInputGroupText>
-                      <CFormInput 
-                        type="number"
-                        size="sm"
-                        class="no-spinner"
-                        v-model="hvacProductionArea2_input"
-                        @wheel.prevent
-                        @touchstart.prevent
-                        @touchmove.prevent
-                        placeholder="Area"
-                        aria-label="Area"
-                        @blur="validateHvacRange"
-                      />
-                    </CInputGroup>
-                  </div>
-                  <!-- TRANSFORMER CAPACITY (Electric Substations) -->
-                  <div class="mt-2">
-                      <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="transformerCapacity_input"
-                      label="Transformer Capacity"
-                      />
-                  </div>
-                  <!-- LIGHTING -->
-                  <div class="mt-2">
-                      <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="lighting_input"
-                      label="Lighting"
-                      />
-                  </div>
-                </CCol>
-                <CCol :md="3">
-                  <!-- VENTILATION -->
-                  <div class="mt-2">
-                      <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="ventilation_input"
-                      label="Ventilation System"
-                      />
-                  </div>
-                  <!-- ROOF SYSTEM (Roofing) -->
-                  <div class="mt-2">
-                      <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="roofSystem_input"
-                      label="Roof System"
-                      />
-                  </div>
-                  <!-- FIRE PROTECTION SYSTEM (FPS) -->
-                  <div class="mt-1">
-                      <CFormInput
-                      type="text"
-                      size="sm"
-                      class="no-spinner"
-                      v-model="fireProtectionSystem_input"
-                      label="Fire Protection System (FPS)"
-                      />
-                  </div>
-                  <!-- SKYLIGHTS (SF) -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    size="sm"
-                    class="no-spinner"
-                    v-model="skylightsSf_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Skylight %"
-                    />
-                  </div>
-                  <!-- COVERAGE (FRA%) -->
-                  <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="coverage_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Coverage %"
-                      />
                   </div>
                 </CCol>
               </CRow>
