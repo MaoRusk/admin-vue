@@ -1062,7 +1062,7 @@ watch(Class, (newOptions) => {
                 <CCol :md="3">
                   <!-- LOADING DOOR -->
                   <div class="mt-2">
-                      <CMultiSelect
+                    <CMultiSelect
                       label="Loading Door"
                       :multiple="false"
                       :options="LoadingDoor"
@@ -1070,159 +1070,79 @@ watch(Class, (newOptions) => {
                       size="sm"
                       placeholder=""
                       @change="handleLoadingDoorSelect"
-                      >
-                      <template #options="{ option }" >
-                          <div class="d-flex">
-                          <CIcon v-if="option == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                          </div>
-                      </template>
-                      </CMultiSelect>
-                      <CInputGroup v-if="SelectedLoadingDoor == '0'" class="mb-3 mt-2">
-                      <CFormInput aria-label="New Loading Door.." aria-describedby="button-addon2"/>
-                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                      </CInputGroup>
+                    >
+                    </CMultiSelect>
                   </div>  
                   <!-- OFFICE -->
-                  <div class="mt-2 d-flex" style="justify-content: space-between;">
-                    <div style="width: 5.3rem;">
-                      <label>OFFICE</label>
-                    </div>
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioOFFICE" 
-                    id="RadioOFFICE_1" 
-                    value="true" 
-                    label="Yes" 
-                    :checked="office_input == 'true'"
-                    @change="updateOfficeBool('true')"/>
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioOFFICE" 
-                    id="RadioOFFICE_2" 
-                    value="false" 
-                    label="No" 
-                    :checked="office_input == 'false'"
-                    @change="updateOfficeBool('false')"      
+                  <div class="mt-2 d-flex align-items-center">
+                    <label class="me-3">Office</label>
+                    <CFormSwitch 
+                      size="lg"
+                      :checked="office_input === 'true'"
+                      @change="updateOfficeBool($event.target.checked ? 'true' : 'false')"
                     />
                   </div>
                   <!-- SPRINKLERS -->
-                  <div class="mt-2 d-flex" style="justify-content: space-between;">
-                    <div style="width: 5.3rem;">
-                      <label>SPRINKLERS</label>
-                    </div>
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioSPRINKLERS" 
-                    id="RadioSPRINKLERS1" 
-                    value="true" 
-                    label="Yes"  
-                    :checked="sprinklers_input == 'true'"
-                    @change="updateSPRINKLERSBool('true')"     
-                    />
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioSPRINKLERS" 
-                    id="RadioSPRINKLERS2" 
-                    value="false" 
-                    label="No" 
-                    :checked="sprinklers_input == 'false'"
-                    @change="updateSPRINKLERSBool('false')"      
+                  <div class="mt-2 d-flex align-items-center">
+                    <label class="me-3">Sprinklers</label>
+                    <CFormSwitch 
+                      size="lg"
+                      :checked="sprinklers_input === 'true'"
+                      @change="updateSPRINKLERSBool($event.target.checked ? 'true' : 'false')"
                     />
                   </div>
                   <!-- CRANE -->
-                  <div class="mt-2 d-flex" style="justify-content: space-between;">
-                    <div style="width: 5.3rem;">
-                      <label>CRANE</label>
-                    </div>
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioCRANE" 
-                    id="RadioCRANE1" 
-                    value="true" 
-                    label="Yes"  
-                    :checked="crane_input == 'true'"
-                    @change="updateCRANEBool('true')"  
-                    />
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioCRANE" 
-                    id="RadioCRANE2" 
-                    value="false" 
-                    label="No" 
-                    :checked="crane_input == 'false'"
-                    @change="updateCRANEBool('false')"
+                  <div class="mt-2 d-flex align-items-center">
+                    <label class="me-3">Crane</label>
+                    <CFormSwitch 
+                      size="lg"
+                      :checked="crane_input === 'true'"
+                      @change="updateCRANEBool($event.target.checked ? 'true' : 'false')"
                     />
                   </div>
                   <!-- HVAC -->
-                  <div class="mt-2 d-flex" style="justify-content: space-between;">
-                    <div style="width: 5.3rem;">
-                      <label>HVAC</label>
-                    </div>
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioHVAC" 
-                    id="RadioHVAC1" 
-                    value="true" 
-                    label="Yes" 
-                    :checked="hvac_input == 'true'"
-                    @change="updateHVACBool('true')"
-                    />
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioHVAC" 
-                    id="RadioHVAC2" 
-                    value="false" 
-                    label="No" 
-                    :checked="hvac_input == 'false'"
-                    @change="updateHVACBool('false')"
+                  <div class="mt-2 d-flex align-items-center">
+                    <label class="me-3">HVAC</label>
+                    <CFormSwitch 
+                      size="lg"
+                      :checked="hvac_input === 'true'"
+                      @change="updateHVACBool($event.target.checked ? 'true' : 'false')"
                     />
                   </div>
                   <!-- LEED -->
-                  <div class="mt-2 d-flex" style="justify-content: space-between;">
-                    <div style="width: 5.3rem;">
-                      <label>LEED</label>
-                    </div>
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioLEED" 
-                    id="RadioLEED1" 
-                    value="true" 
-                    label="Yes" 
-                    :checked="leed_input == 'true'"
-                    @change="updateLEEDBool('true')"
-                    />
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioLEED" 
-                    id="RadioLEED2" 
-                    value="false" 
-                    label="No" 
-                    :checked="leed_input == 'false'"
-                    @change="updateLEEDBool('false')"
+                  <div class="mt-2 d-flex align-items-center">
+                    <label class="me-3">LEED</label>
+                    <CFormSwitch 
+                      size="lg"
+                      :checked="leed_input === 'true'"
+                      @change="updateLEEDBool($event.target.checked ? 'true' : 'false')"
                     />
                   </div>
                   <!-- RAIL SPUR -->
-                  <div class="mt-2 d-flex" style="justify-content: space-between;">
-                    <div style="width: 5.3rem;">
-                      <label>RAIL SPUR</label>
-                    </div>
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioRailSpur" 
-                    id="RadioRailSpur1" 
-                    value="true" 
-                    label="Yes" 
-                    :checked="railSpur_input == 'true'"
-                    @change="updateRailSpurBool('true')"
+                  <div class="mt-2 d-flex align-items-center">
+                    <label class="me-3">Rail Spur</label>
+                    <CFormSwitch 
+                      size="lg"
+                      :checked="railSpur_input === 'true'"
+                      @change="updateRailSpurBool($event.target.checked ? 'true' : 'false')"
                     />
-                    <CFormCheck 
-                    type="radio" 
-                    name="RadioRailSpur" 
-                    id="RadioRailSpur2" 
-                    value="false" 
-                    label="No" 
-                    :checked="railSpur_input == 'false'"
-                    @change="updateRailSpurBool('false')"
+                  </div>
+                  <!-- CROSSDOCK -->
+                  <div class="mt-2 d-flex align-items-center">
+                    <label class="me-3">Crossdock</label>
+                    <CFormSwitch 
+                      size="lg"
+                      :checked="crossdock_input === 'true'"
+                      @change="crossdock_input = $event.target.checked ? 'true' : 'false'"
+                    />
+                  </div>
+                  <!-- SHARED TRUCK -->
+                  <div class="mt-2 d-flex align-items-center">
+                    <label class="me-3">Shared Truck</label>
+                    <CFormSwitch 
+                      size="lg"
+                      :checked="sharedTruck_input === 'true'"
+                      @change="sharedTruck_input = $event.target.checked ? 'true' : 'false'"
                     />
                   </div>
                 </CCol>
@@ -1618,42 +1538,6 @@ watch(Class, (newOptions) => {
                         label="Offices (SF)"
                         />
                     </div>
-                    <!-- CROSSDOCK -->
-                    <div class="mt-2 d-flex" style="justify-content: space-between;">
-                      <div style="width: 5.3rem;">
-                        <label>Crossdock</label>
-                      </div>
-                      <CFormCheck 
-                      type="radio" 
-                      name="flexRadioDefault" 
-                      id="flexRadioDefault1" 
-                      label="Yes"
-                      />
-                      <CFormCheck 
-                      type="radio" 
-                      name="flexRadioDefault" 
-                      id="flexRadioDefault2" 
-                      label="No"
-                      />
-                    </div>
-                    <!-- SHARED TRUCK -->
-                    <div class="mt-2 d-flex" style="justify-content: space-between;">
-                      <div style="width: 5.3rem;">
-                        <label>Shared Truck</label>
-                      </div>
-                      <CFormCheck 
-                      type="radio" 
-                      name="flexRadioDefault" 
-                      id="flexRadioDefault1" 
-                      label="Yes"
-                      />
-                      <CFormCheck 
-                      type="radio" 
-                      name="flexRadioDefault" 
-                      id="flexRadioDefault2" 
-                      label="No"
-                      />
-                    </div>
                   </CCol>
                 <!-- </CRow>
               </CCardBody>
@@ -1822,20 +1706,22 @@ watch(Class, (newOptions) => {
                   </CCol>
                   <CCol :md="4">
                       <!-- NEW CONSTRUCTION -->
-                      <div class="mt-3 d-flex" style="justify-content: space-between;">
-                        <div style="width: 8.765rem;">
-                          <label>New Construction</label>
-                        </div>
-                        <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                        <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                      <div class="mt-2 d-flex align-items-center">
+                        <label class="me-3">New Construction</label>
+                        <CFormSwitch 
+                          size="lg"
+                          :checked="newConstruction_input === 'true'"
+                          @change="newConstruction_input = $event.target.checked ? 'true' : 'false'"
+                        />
                       </div>
                       <!-- STARTING CONSTRUCTION -->
-                      <div class="mt-1 d-flex" style="justify-content: space-between;">
-                        <div style="width: 8.765rem;">
-                          <label>Starting Construction</label>
-                        </div>
-                        <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault1" label="Yes"/>
-                        <CFormCheck type="radio" name="flexRadioDefault" id="flexRadioDefault2" label="No" checked/>
+                      <div class="mt-2 d-flex align-items-center">
+                        <label class="me-3">Starting Construction</label>
+                        <CFormSwitch 
+                          size="lg"
+                          :checked="startingConstruction_input === 'true'"
+                          @change="startingConstruction_input = $event.target.checked ? 'true' : 'false'"
+                        />
                       </div>
                     </CCol>
                 <!-- </CRow>
