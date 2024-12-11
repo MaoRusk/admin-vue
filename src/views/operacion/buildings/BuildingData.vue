@@ -110,6 +110,52 @@ const finalUseId_input = ref(null);
 const shelterId_input = ref(null);
 const copanyTypeId_input = ref(null);
 
+const validateRangeInputs = (value1, value2, field1Ref, field2Ref, fieldName) => {
+  if (value1 && value2 && Number(value1) > Number(value2)) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Range',
+      text: `The first ${fieldName} value cannot be greater than the second value`,
+    });
+    
+    // Reset the values
+    field1Ref.value = null;
+    field2Ref.value = null;
+    return false;
+  }
+  return true;
+};
+
+const validateHvacRange = () => {
+  validateRangeInputs(
+    hvacProductionArea_input.value,
+    hvacProductionArea2_input.value,
+    hvacProductionArea_input,
+    hvacProductionArea2_input,
+    'HVAC Production Area'
+  );
+};
+
+const validateBuildingDimensions = () => {
+  validateRangeInputs(
+    buildingDimensions1_input.value, 
+    buildingDimensions2_input.value,
+    buildingDimensions1_input,
+    buildingDimensions2_input,
+    'Building Dimensions'
+  );
+};
+
+const validateBaySize = () => {
+  validateRangeInputs(
+    baySize1_input.value,
+    baySize2_input.value, 
+    baySize1_input,
+    baySize2_input,
+    'Bay Size'
+  );
+};
+
   const handleFinalUse = (newValue) => {
     inputValue.value = newValue;
     finalUseId_input.value = inputValue.value.map(item => item.value).join(',');
@@ -1208,6 +1254,7 @@ watch(Class, (newOptions) => {
                         @touchmove.prevent
                         placeholder="Production"
                         aria-label="Production"
+                        @blur="validateHvacRange"
                       />
                       <CInputGroupText>@</CInputGroupText>
                       <CFormInput 
@@ -1220,6 +1267,7 @@ watch(Class, (newOptions) => {
                         @touchmove.prevent
                         placeholder="Area"
                         aria-label="Area"
+                        @blur="validateHvacRange"
                       />
                     </CInputGroup>
                   </div>
@@ -1404,6 +1452,7 @@ watch(Class, (newOptions) => {
                       @touchstart.prevent
                       @touchmove.prevent
                       label="Building Dimensions 1"
+                      @blur="validateBuildingDimensions"
                       />
                     </div>
                     <!-- BUILDING DIMENSION 2 -->
@@ -1417,6 +1466,7 @@ watch(Class, (newOptions) => {
                       @touchstart.prevent
                       @touchmove.prevent
                       label="Building Dimensions 2"
+                      @blur="validateBuildingDimensions"
                       />
                     </div>
                     <!-- BAY SIZE 1 -->
@@ -1430,6 +1480,7 @@ watch(Class, (newOptions) => {
                       @touchstart.prevent
                       @touchmove.prevent
                       label="Bay Size 1"
+                      @blur="validateBaySize"
                       />
                     </div>
                     <!-- BAY SIZE 2 -->
@@ -1443,6 +1494,7 @@ watch(Class, (newOptions) => {
                       @touchstart.prevent
                       @touchmove.prevent
                       label="Bay Size 2"
+                      @blur="validateBaySize"
                       />
                     </div>
                     <!-- COLUMNS SPACING 1 -->
@@ -1456,6 +1508,7 @@ watch(Class, (newOptions) => {
                       @touchstart.prevent
                       @touchmove.prevent
                       label="Columns Spacing 1"
+                      @blur="validateBuildingDimensions"
                       />
                     </div>
                     <!-- COLUMNS SPACING 2 -->
@@ -1469,6 +1522,7 @@ watch(Class, (newOptions) => {
                       @touchstart.prevent
                       @touchmove.prevent
                       label="Columns Spacing 2"
+                      @blur="validateBuildingDimensions"
                       />
                     </div>
                   </CCol>
