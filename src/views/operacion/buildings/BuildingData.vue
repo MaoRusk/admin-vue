@@ -384,8 +384,6 @@ const copanyTypeId_input = ref(null);
     }
   };
 
-<<<<<<< HEAD
-=======
   const getFormData = () => {
     return {
       builderStateId: builderStateId_input.value,
@@ -474,7 +472,6 @@ defineExpose({
   getFormData
 });
 
->>>>>>> 9d0c716a89c326d45e615a98663982327c6ff506
 // Asegurarse de que builderStateId_input sea reactivo
 watch(builderStateId_input, (newValue) => {
   console.log('builderStateId_input changed:', newValue);
