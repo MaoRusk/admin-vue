@@ -3,21 +3,20 @@
   import axios from 'axios';
   import { useRouter } from 'vue-router';
   import { cilPlus } from '@coreui/icons'
-  import data from './_data'
 
   const router = useRouter();
-  const users = ref(data);
+  const users = ref([]);
 
   const selectedStatus = ref('All');
 
-const statusOptions = computed(() => ['All', ...new Set(users.value.map(user => user.status))]);
+  const statusOptions = computed(() => ['All', ...new Set(users.value.map(user => user.status))]);
 
-const filteredUsers = computed(() => {
-  if (selectedStatus.value === 'All') {
-    return users.value;
-  }
-  return users.value.filter(user => user.status === selectedStatus.value);
-});
+  const filteredUsers = computed(() => {
+    if (selectedStatus.value === 'All') {
+      return users.value;
+    }
+    return users.value.filter(user => user.status === selectedStatus.value);
+  });
 
   const columns = [
     { key: 'status', label: 'status' },
@@ -32,7 +31,7 @@ const filteredUsers = computed(() => {
   
 const getBadge = (status) => {
   switch (status) {
-    case 'Available':
+    case 'Availability':
       return 'success'
     case 'Absorption':
       return 'danger'
@@ -49,18 +48,41 @@ const getBadge = (status) => {
       params: { id: Number(item.id) },
     })
   }
-  const addUserFunction = () => {
+  const addBuildingFunction = () => {
     router.push({
       name: 'BuildingDetalle',
       params: { id: 0 },
     })
   }
+
+  const fetchBuildings = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/buildings/table');
+      users.value = response.data.map(building => ({
+        id: building.id || '',
+        status: building.status || '',
+        name1: building.name1 || '',
+        market: building.market || '',
+        subMarket: building.subMarket || '',
+        industrialPark: building.industrialPark || '',
+        registered: building.registered || '',
+        typeName: building.typeName || ''
+      }));
+    } catch (error) {
+      console.error('Error fetching buildings:', error);
+      users.value = [];
+    }
+  };
+
+  onMounted(async () => {
+    await fetchBuildings();
+  });
 </script>
 
 <template>
   <!-- Botón para agregar usuario -->
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="addUserFunction()">
+    <CButton color="success" @click="addBuildingFunction()">
       <CIcon :content="cilPlus" size="sm" />
       New Building
     </CButton>

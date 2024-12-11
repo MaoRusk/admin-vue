@@ -7,6 +7,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { Class, IndustrialPark, Status, Owner, Developer, Type, Region, LoadingDoor, Deal, Currency, Tenancy, ListingBroker, BuildingState } from '../../../assets/json/loadCats'
 import { CRow } from '@coreui/vue-pro';
 
+// * MultiSelect
+const selectedClass = ref([]);
 const inputValue = ref(null)
 const selectedStatus = ref(null)
 const SelectedIndustrialPark = ref(null)
@@ -18,7 +20,7 @@ const SelectedRegion = ref(null)
 const marketsCbo = ref([]);
 const submarketCbo = ref([]);
 const SelectedLoadingDoor = ref(null)
-const selectedBuildingState = ref('1');
+const selectedBuildingState = ref('null');
 
 // VARIABLES TABLA BUILDINGS
 const builderStateId_input = ref(null);
@@ -189,10 +191,13 @@ const copanyTypeId_input = ref(null);
       }
     });
   };
-  const handleBuildingClass = (newValue) => {
-      inputValue.value = newValue;
-      classId_input.value = inputValue.value.map(item => item.value).join(',');    
-  }
+  
+    const handleBuildingClass = (newValue) => {
+      // inputValue.value = newValue;
+      // classId_input.value = inputValue.value.map(item => item.value).join(',');
+      selectedClass.value = newValue;
+      classId_input.value = newValue?.value;
+    }
   // Validaciones RADIO
   const updateStatus = (newStatus) => {
     status.value = newStatus;
@@ -222,27 +227,39 @@ const copanyTypeId_input = ref(null);
   const fetchBuildingData = async () => {
     try {
       const buildingId = route.params.id;
-      // const response = await axios.get(`https://laravel-back-production-9320.up.railway.app/api/buildings/${buildingId}`);
+
+      if (buildingId == 0 ) {
+        return;
+      }
+
       const response = await axios.get(`http://127.0.0.1:8000/api/buildings/${buildingId}`);
       
       const { buildingData } = response.data;
-      console.log('Building Data:', buildingData);
 
       if (!buildingData) {
         throw new Error('Building data not found in response');
       }
 
       // Actualizar el BuildingState selector
-      const buildingStateOption = BuildingState.find(item => item.value === buildingData.builderStateId);
-      if (buildingStateOption) {
-        selectedBuildingState.value = buildingStateOption;
-        builderStateId_input.value = buildingStateOption.value;
+      if (buildingData.builderStateId) {
+        const buildingStateOption = BuildingState.find(item => item.value === buildingData.builderStateId);
+        if (buildingStateOption) {
+          selectedBuildingState.value = buildingStateOption;
+          builderStateId_input.value = buildingStateOption.value;
+        }
       }
 
       // Resto de las asignaciones...
       buildingName_input.value = buildingData.buildingName;
 
       classId_input.value = buildingData.classId;
+
+      const findClass = Class.find(item => item.value === buildingData.classId);
+
+      if (findClass) {
+        findClass.selected = true;
+      }
+      
       buildingSizeSf_input.value = buildingData.buildingSizeSf;
       expansionLand_input.value = buildingData.expansionLand;
       statusId_input.value = buildingData.statusId;
@@ -315,6 +332,14 @@ const copanyTypeId_input = ref(null);
         maxLease_input.value = buildingData.maxLease;
       }
 
+      if (buildingData.classId) {
+        const classOption = Class.find(item => item.value === buildingData.classId);
+        if (classOption) {
+          selectedClass.value = classOption;
+          classId_input.value = classOption.value;
+        }
+      }
+
     } catch (error) {
       console.error('Error fetching building data:', error);
       Swal.fire({
@@ -327,7 +352,9 @@ const copanyTypeId_input = ref(null);
 
   onMounted(async () => {
     await fetchData();
-    await fetchBuildingData();
+    setTimeout(() => {
+      fetchBuildingData();
+    }, 500);
   });
 
   const fetchData = async () => {
@@ -356,97 +383,20 @@ const copanyTypeId_input = ref(null);
     }
   };
 
-  const getFormData = () => {
-    return {
-      builderStateId: builderStateId_input.value,
-      buildingName: buildingName_input.value,
-      classId: classId_input.value,
-      buildingSizeSf: buildingSizeSf_input.value,
-      expansionLand: expansionLand_input.value,
-      statusId: statusId_input.value,
-      industrialParkId: industrialParkId_input.value,
-      typeId: typeId_input.value,
-      ownerId: ownerId_input.value,
-      developerId: developerId_input.value,
-      builderId: builderId_input.value,
-      regionId: regionId_input.value,
-      marketId: marketId_input.value,
-      subMarketId: subMarketId_input.value,
-      dealId: dealId_input.value,
-      currencyId: currencyId_input.value,
-      salePriceUsd: salePriceUsd_input.value,
-      tenancyId: tenancyId_input.value,
-      latitud: latitud_input.value,
-      longitud: longitud_input.value,
-      yearBuilt: yearBuilt_input.value,
-      clearHeight: clearHeight_input.value,
-      officesSpace: officesSpace_input.value,
-      crane: crane_input.value,
-      hvac: hvac_input.value,
-      railSpur: railSpur_input.value,
-      sprinklers: sprinklers_input.value,
-      office: office_input.value,
-      leed: leed_input.value,
-      totalLand: totalLand_input.value,
-      hvacProductionArea: hvacProductionArea_input.value,
-      status: status.value,
-      loadingDoorId: loadingDoorId_input.value,
-      lighting: lighting_input.value,
-      ventilation: ventilation_input.value,
-      transformerCapacity: transformerCapacity_input.value,
-      constructionType: constructionType_input.value,
-      constructionState: constructionState_input.value,
-      roofSystem: roofSystem_input.value,
-      fireProtectionSystem: fireProtectionSystem_input.value,
-      skylightsSf: skylightsSf_input.value,
-      coverage: coverage_input.value,
-      availableSf:  availableSf_input.value,
-      minimumSpaceSf:  minimumSpaceSf_input.value,
-      expansionUpToSf:  expansionUpToSf_input.value,
-      dockDoors:  dockDoors_input.value,
-      driveInDoor:  driveInDoor_input.value,
-      floorThickness:  floorThickness_input.value,
-      floorResistance:  floorResistance_input.value,
-      truckCourt:  truckCourt_input.value,
-      crossdock:  crossdock_input.value,
-      sharedTruck:  sharedTruck_input.value,
-      buildingDimensions1:  buildingDimensions1_input.value,
-      buildingDimensions2:  buildingDimensions2_input.value,
-      baySize1:  baySize1_input.value,
-      baySize2:  baySize2_input.value,
-      columnsSpacing1:  columnsSpacing1_input.value,
-      columnsSpacing2:  columnsSpacing2_input.value,
-      knockoutsDocks:  knockoutsDocks_input.value,
-      parkingSpace:  parkingSpace_input.value,
-      availableMonth:  availableMonth_input.value,
-      availableYear:  availableYear_input.value,
-      minLease:  minLease_input.value,
-      maxLease:  maxLease_input.value,
-      leaseTermMonth: leaseTermMonth_input.value,
-      askingRateShell: askingRateShell_input.value,
-      closingRate: closingRate_input.value,
-      KVAS: KVAS_input.value,
-      closingQuarter: closingQuarter_input.value,
-      leaseUp: leaseUp_input.value,
-      month: month_input.value,
-      newConstruction: newConstruction_input.value,
-      startingConstruction: startingConstruction_input.value,
-      tenantId: tenantId_input.value,
-      industryId: industryId_input.value,
-      finalUseId: finalUseId_input.value,
-      shelterId: shelterId_input.value,
-      copanyTypeId: copanyTypeId_input.value,
-    };
-  };
-
-defineExpose({
-  getFormData
-});
-
 // Asegurarse de que builderStateId_input sea reactivo
 watch(builderStateId_input, (newValue) => {
   console.log('builderStateId_input changed:', newValue);
 });
+
+// Asumiendo que Class es reactivo
+watch(Class, (newOptions) => {
+    if (newOptions && classId_input.value) {
+        const classOption = newOptions.find(item => item.value === classId_input.value);
+        if (classOption) {
+            selectedClass.value = classOption;
+        }
+    }
+}, { immediate: true });
 
 </script>
 
@@ -472,8 +422,8 @@ watch(builderStateId_input, (newValue) => {
                       label="Building State"
                       :multiple="false"
                       :options="BuildingState"
-                      v-model="selectedBuildingState"
-                      @change="handleBuildingState"
+                      :modelValue="selectedBuildingState"
+                      @update:modelValue="handleBuildingState"
                       optionsStyle="text"
                       size="sm"
                       placeholder=""
@@ -499,7 +449,8 @@ watch(builderStateId_input, (newValue) => {
                       label="Class"
                       :multiple="false"
                       :options="Class"
-                      @change="handleBuildingClass"
+                      :modelValue="selectedClass"
+                      @update:modelValue="handleBuildingClass"
                       optionsStyle="text"
                       size="sm"
                       placeholder=""
