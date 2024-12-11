@@ -538,7 +538,7 @@ watch(Class, (newOptions) => {
 <template>
   <!-- <CContainer> -->
     <CRow>
-      <CCol :md="9">
+      <CCol :md="12">
         <CRow>
           <!-- *** GENERAL INFORMATION *** -->
           <CCard id="general-information" class="card text-secondary mb-3 border-secondary card-header-customer-buildings " >
@@ -1441,89 +1441,67 @@ watch(Class, (newOptions) => {
                     </div>
                   </CCol>
                   <CCol :md="3">
-                    <!-- BUILDING DIMENSION 1 -->
+                    <!-- BUILDING DIMENSIONS -->
                     <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="buildingDimensions1_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Building Dimensions 1"
-                      @blur="validateBuildingDimensions"
-                      />
+                      <label>Building Dimensions</label>
+                      <CInputGroup class="mb-3">
+                        <CFormInput 
+                          type="number" 
+                          size="sm"
+                          class="no-spinner"
+                          v-model="buildingDimensions1_input"
+                          @wheel.prevent
+                          @touchstart.prevent
+                          @touchmove.prevent
+                          placeholder="Dimension 1"
+                          aria-label="Dimension 1"
+                          @blur="validateBuildingDimensions"
+                        />
+                        <CInputGroupText>@</CInputGroupText>
+                        <CFormInput 
+                          type="number"
+                          size="sm"
+                          class="no-spinner"
+                          v-model="buildingDimensions2_input"
+                          @wheel.prevent
+                          @touchstart.prevent
+                          @touchmove.prevent
+                          placeholder="Dimension 2"
+                          aria-label="Dimension 2"
+                          @blur="validateBuildingDimensions"
+                        />
+                      </CInputGroup>
                     </div>
-                    <!-- BUILDING DIMENSION 2 -->
+                    <!-- BAY SIZE -->
                     <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="buildingDimensions2_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Building Dimensions 2"
-                      @blur="validateBuildingDimensions"
-                      />
-                    </div>
-                    <!-- BAY SIZE 1 -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="baySize1_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Bay Size 1"
-                      @blur="validateBaySize"
-                      />
-                    </div>
-                    <!-- BAY SIZE 2 -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="baySize2_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Bay Size 2"
-                      @blur="validateBaySize"
-                      />
-                    </div>
-                    <!-- COLUMNS SPACING 1 -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="columnsSpacing1_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Columns Spacing 1"
-                      @blur="validateBuildingDimensions"
-                      />
-                    </div>
-                    <!-- COLUMNS SPACING 2 -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="columnsSpacing2_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Columns Spacing 2"
-                      @blur="validateBuildingDimensions"
-                      />
+                      <label>Bay Size</label>
+                      <CInputGroup class="mb-3">
+                        <CFormInput 
+                          type="number" 
+                          size="sm"
+                          class="no-spinner"
+                          v-model="baySize1_input"
+                          @wheel.prevent
+                          @touchstart.prevent
+                          @touchmove.prevent
+                          placeholder="Bay Size 1"
+                          aria-label="Bay Size 1"
+                          @blur="validateBaySize"
+                        />
+                        <CInputGroupText>@</CInputGroupText>
+                        <CFormInput 
+                          type="number"
+                          size="sm"
+                          class="no-spinner"
+                          v-model="baySize2_input"
+                          @wheel.prevent
+                          @touchstart.prevent
+                          @touchmove.prevent
+                          placeholder="Bay Size 2"
+                          aria-label="Bay Size 2"
+                          @blur="validateBaySize"
+                        />
+                      </CInputGroup>
                     </div>
                   </CCol>
                   <CCol :md="3">
