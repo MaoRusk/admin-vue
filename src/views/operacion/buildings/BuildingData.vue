@@ -110,6 +110,8 @@ const finalUseId_input = ref(null);
 const shelterId_input = ref(null);
 const copanyTypeId_input = ref(null);
 
+const sfSm_input = ref('SF'); // Valor por defecto 'SF'
+
 const validateRangeInputs = (value1, value2, field1Ref, field2Ref, fieldName) => {
   if (value1 && value2 && Number(value1) > Number(value2)) {
     Swal.fire({
@@ -1150,77 +1152,88 @@ watch(Class, (newOptions) => {
 
                 <!-- Cuarta columna: Switches de características -->
                 <CCol :md="3">
-                  <!-- OFFICE -->
-                  <div class="mt-2 d-flex align-items-center">
-                    <label class="me-3">Office</label>
-                    <CFormSwitch 
-                      size="lg"
-                      :checked="office_input === 'true'"
-                      @change="updateOfficeBool($event.target.checked ? 'true' : 'false')"
-                    />
-                  </div>
-                  <!-- SPRINKLERS -->
-                  <div class="mt-2 d-flex align-items-center">
-                    <label class="me-3">Sprinklers</label>
-                    <CFormSwitch 
-                      size="lg"
-                      :checked="sprinklers_input === 'true'"
-                      @change="updateSPRINKLERSBool($event.target.checked ? 'true' : 'false')"
-                    />
-                  </div>
-                  <!-- CRANE -->
-                  <div class="mt-2 d-flex align-items-center">
-                    <label class="me-3">Crane</label>
-                    <CFormSwitch 
-                      size="lg"
-                      :checked="crane_input === 'true'"
-                      @change="updateCRANEBool($event.target.checked ? 'true' : 'false')"
-                    />
-                  </div>
-                  <!-- HVAC -->
-                  <div class="mt-2 d-flex align-items-center">
-                    <label class="me-3">HVAC</label>
-                    <CFormSwitch 
-                      size="lg"
-                      :checked="hvac_input === 'true'"
-                      @change="updateHVACBool($event.target.checked ? 'true' : 'false')"
-                    />
-                  </div>
-                  <!-- LEED -->
-                  <div class="mt-2 d-flex align-items-center">
-                    <label class="me-3">LEED</label>
-                    <CFormSwitch 
-                      size="lg"
-                      :checked="leed_input === 'true'"
-                      @change="updateLEEDBool($event.target.checked ? 'true' : 'false')"
-                    />
-                  </div>
-                  <!-- RAIL SPUR -->
-                  <div class="mt-2 d-flex align-items-center">
-                    <label class="me-3">Rail Spur</label>
-                    <CFormSwitch 
-                      size="lg"
-                      :checked="railSpur_input === 'true'"
-                      @change="updateRailSpurBool($event.target.checked ? 'true' : 'false')"
-                    />
-                  </div>
-                  <!-- CROSSDOCK -->
-                  <div class="mt-2 d-flex align-items-center">
-                    <label class="me-3">Crossdock</label>
-                    <CFormSwitch 
-                      size="lg"
-                      :checked="crossdock_input === 'true'"
-                      @change="crossdock_input = $event.target.checked ? 'true' : 'false'"
-                    />
-                  </div>
-                  <!-- SHARED TRUCK -->
-                  <div class="mt-2 d-flex align-items-center">
-                    <label class="me-3">Shared Truck</label>
-                    <CFormSwitch 
-                      size="lg"
-                      :checked="sharedTruck_input === 'true'"
-                      @change="sharedTruck_input = $event.target.checked ? 'true' : 'false'"
-                    />
+                  <div>
+                    <!-- SF/SM SWITCH -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">SF/SM</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="sfSm_input === 'SF'"
+                        @change="sfSm_input = $event.target.checked ? 'SF' : 'SM'"
+                      />
+                    </div>
+                    <!-- OFFICE -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">Office</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="office_input === 'true'"
+                        @change="updateOfficeBool($event.target.checked ? 'true' : 'false')"
+                      />
+                    </div>
+                    <!-- SPRINKLERS -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">Sprinklers</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="sprinklers_input === 'true'"
+                        @change="updateSPRINKLERSBool($event.target.checked ? 'true' : 'false')"
+                      />
+                    </div>
+                    <!-- CRANE -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">Crane</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="crane_input === 'true'"
+                        @change="updateCRANEBool($event.target.checked ? 'true' : 'false')"
+                      />
+                    </div>
+                    <!-- HVAC -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">HVAC</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="hvac_input === 'true'"
+                        @change="updateHVACBool($event.target.checked ? 'true' : 'false')"
+                      />
+                    </div>
+                    <!-- LEED -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">LEED</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="leed_input === 'true'"
+                        @change="updateLEEDBool($event.target.checked ? 'true' : 'false')"
+                      />
+                    </div>
+                    <!-- RAIL SPUR -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">Rail Spur</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="railSpur_input === 'true'"
+                        @change="updateRailSpurBool($event.target.checked ? 'true' : 'false')"
+                      />
+                    </div>
+                    <!-- CROSSDOCK -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">Crossdock</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="crossdock_input === 'true'"
+                        @change="crossdock_input = $event.target.checked ? 'true' : 'false'"
+                      />
+                    </div>
+                    <!-- SHARED TRUCK -->
+                    <div class="mt-2 d-flex align-items-center">
+                      <label class="me-3">Shared Truck</label>
+                      <CFormSwitch 
+                        size="lg"
+                        :checked="sharedTruck_input === 'true'"
+                        @change="sharedTruck_input = $event.target.checked ? 'true' : 'false'"
+                      />
+                    </div>
                   </div>
                 </CCol>
               </CRow>
@@ -1229,94 +1242,72 @@ watch(Class, (newOptions) => {
   
           <CRow v-if="builderStateId_input === 1">
             <!-- *** AVAILABILITY *** -->
-            <CCard id="availability" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
+            <CCard id="availability" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings">
               <CCardBody class="card-body-customer-buildings">
                 AVAILABILITY
               </CCardBody>
             </CCard>
-            <!-- <CCard class="card-customer-buildings">
+
+            <CCard class="card-customer-buildings">
               <CCardBody>
-                <CRow> -->
+                <CRow>
+                  <!-- Primera columna: Espacios disponibles -->
                   <CCol :md="3">
                     <!-- AVAILABLE (SF) -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="availableSf_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Available (SF)"
-                      />
-                    </div>
-                    <!-- MINIMUM SPACE (SF) -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="minimumSpaceSf_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Minimum Space (SF)"
-                      />
-                    </div>
-                    <!-- EXPANSION UP TO (SF) -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="expansionUpToSf_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Expansion Up To (SF)"
-                      />
-                    </div>
-                    <!-- DOCK DOORS -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="dockDoors_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Dock Doors"
-                      />
-                    </div>
-                    <!-- DRIVE IN DOOR -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="driveInDoor_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Drive in Door"
-                      />
-                    </div>
-                    <!-- TRUCK COURT -->
                     <div class="mt-2">
                       <CFormInput 
                         type="number" 
                         size="sm"
                         class="no-spinner"
-                        v-model="truckCourt_input"
+                        v-model="availableSf_input"
                         @wheel.prevent
                         @touchstart.prevent
                         @touchmove.prevent
-                        label="Truck Court"
-                        />
+                        label="Available (SF)"
+                      />
+                    </div>
+                    <!-- MINIMUM SPACE (SF) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="minimumSpaceSf_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Minimum Space (SF)"
+                      />
+                    </div>
+                    <!-- EXPANSION UP TO (SF) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="expansionUpToSf_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Expansion Up To (SF)"
+                      />
+                    </div>
+                    <!-- OFFICES SPACE (SF) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="officesSpace_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Offices Space (SF)"
+                      />
                     </div>
                   </CCol>
+
+                  <!-- Segunda columna: Dimensiones y características -->
                   <CCol :md="3">
                     <!-- BUILDING DIMENSIONS -->
                     <div class="mt-2">
@@ -1380,125 +1371,155 @@ watch(Class, (newOptions) => {
                         />
                       </CInputGroup>
                     </div>
-                  </CCol>
-                  <CCol :md="3">
-                    <!--  MIN. LEASE (SF/Mo) -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="minLease_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Min. Lease (SF/Mo)"
-                      />
-                    </div>
-                    <!--  MAX. LEASE (SF/ Mo) -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="maxLease_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Max. Lease (SF/Mo)"
-                      />
-                    </div>
-                    <!-- KNOCKOUTS DOCKS -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="knockoutsDocks_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Knockouts Docks"
-                      />
-                    </div>
-                    <!-- PARKING SPACE -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="parkingSpace_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Parking Space"
-                      />
-                    </div>
-                    <!-- AVAILABLE MONTH -->
-                    <div class="mt-2">
-                      <CDatePicker 
-                      label="Available Month" 
-                      locale="en-US" 
-                      selectionType="month" 
-                      placeholder="" 
-                      v-model:date="availableMonth_input"
-                      />
-                    </div>
-                    <!-- AVAILABLE YEAR -->
-                    <div class="mt-2">
-                      <CDatePicker 
-                      label="Available Year" 
-                      locale="en-US" 
-                      selectionType="year" 
-                      placeholder="" 
-                      v-model:date="availableYear_input"
-                      />
-                    </div>          
-                  </CCol>
-                  <CCol :md="3">
                     <!-- FLOOR THICKNESS -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="floorThickness_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Floor Thickness"
-                      />
-                    </div>
-                    <!-- FLOOR RESISTANCE -->
-                    <div class="mt-2">
-                      <CFormInput 
-                      type="number" 
-                      size="sm"
-                      class="no-spinner"
-                      v-model="floorResistance_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
-                      label="Floor Resistance"
-                      />
-                    </div>
-                    <!-- OFFICCES SPACE (SF) -->
                     <div class="mt-2">
                       <CFormInput 
                         type="number" 
                         size="sm"
                         class="no-spinner"
-                        v-model="officesSpace_input"
+                        v-model="floorThickness_input"
                         @wheel.prevent
                         @touchstart.prevent
                         @touchmove.prevent
-                        label="Offices (SF)"
-                        />
+                        label="Floor Thickness"
+                      />
+                    </div>
+                    <!-- FLOOR RESISTANCE -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="floorResistance_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Floor Resistance"
+                      />
                     </div>
                   </CCol>
-                <!-- </CRow>
+
+                  <!-- Tercera columna: Puertas y accesos -->
+                  <CCol :md="3">
+                    <!-- DOCK DOORS -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="dockDoors_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Dock Doors"
+                      />
+                    </div>
+                    <!-- DRIVE IN DOOR -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="driveInDoor_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Drive in Door"
+                      />
+                    </div>
+                    <!-- KNOCKOUTS DOCKS -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="knockoutsDocks_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Knockouts Docks"
+                      />
+                    </div>
+                    <!-- PARKING SPACE -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="parkingSpace_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Parking Space"
+                      />
+                    </div>
+                    <!-- TRUCK COURT -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="truckCourt_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Truck Court"
+                      />
+                    </div>
+                  </CCol>
+
+                  <!-- Cuarta columna: Fechas y plazos -->
+                  <CCol :md="3">
+                    <!-- AVAILABLE MONTH -->
+                    <div class="mt-2">
+                      <CDatePicker 
+                        label="Available Month" 
+                        locale="en-US" 
+                        selectionType="month" 
+                        placeholder="" 
+                        v-model:date="availableMonth_input"
+                      />
+                    </div>
+                    <!-- AVAILABLE YEAR -->
+                    <div class="mt-2">
+                      <CDatePicker 
+                        label="Available Year" 
+                        locale="en-US" 
+                        selectionType="year" 
+                        placeholder="" 
+                        v-model:date="availableYear_input"
+                      />
+                    </div>
+                    <!-- MIN. LEASE (SF/Mo) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="minLease_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Min. Lease (SF/Mo)"
+                      />
+                    </div>
+                    <!-- MAX. LEASE (SF/Mo) -->
+                    <div class="mt-2">
+                      <CFormInput 
+                        type="number" 
+                        size="sm"
+                        class="no-spinner"
+                        v-model="maxLease_input"
+                        @wheel.prevent
+                        @touchstart.prevent
+                        @touchmove.prevent
+                        label="Max. Lease (SF/Mo)"
+                      />
+                    </div>
+                  </CCol>
+                </CRow>
               </CCardBody>
-            </CCard> -->
+            </CCard>
           </CRow>
   
           <CRow v-else-if="builderStateId_input === 2">
