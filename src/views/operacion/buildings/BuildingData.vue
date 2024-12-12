@@ -1152,19 +1152,19 @@ watch(Class, (newOptions) => {
 
                 <!-- Cuarta columna: Switches de características -->
                 <CCol :md="3">
-                  <div>
+                  <div class="switches-container">
                     <!-- SF/SM SWITCH -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">SF/SM</label>
+                    <div class="switch-item">
+                      <label class="switch-label">SF/SM</label>
                       <CFormSwitch 
                         size="lg"
-                        :checked="sfSm_input === 'SF'"
-                        @change="sfSm_input = $event.target.checked ? 'SF' : 'SM'"
+                        :checked="sfSm_input"
+                        @change="sfSm_input = $event.target.checked"
                       />
                     </div>
                     <!-- OFFICE -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">Office</label>
+                    <div class="switch-item">
+                      <label class="switch-label">Office</label>
                       <CFormSwitch 
                         size="lg"
                         :checked="office_input === 'true'"
@@ -1172,8 +1172,8 @@ watch(Class, (newOptions) => {
                       />
                     </div>
                     <!-- SPRINKLERS -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">Sprinklers</label>
+                    <div class="switch-item">
+                      <label class="switch-label">Sprinklers</label>
                       <CFormSwitch 
                         size="lg"
                         :checked="sprinklers_input === 'true'"
@@ -1181,8 +1181,8 @@ watch(Class, (newOptions) => {
                       />
                     </div>
                     <!-- CRANE -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">Crane</label>
+                    <div class="switch-item">
+                      <label class="switch-label">Crane</label>
                       <CFormSwitch 
                         size="lg"
                         :checked="crane_input === 'true'"
@@ -1190,8 +1190,8 @@ watch(Class, (newOptions) => {
                       />
                     </div>
                     <!-- HVAC -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">HVAC</label>
+                    <div class="switch-item">
+                      <label class="switch-label">HVAC</label>
                       <CFormSwitch 
                         size="lg"
                         :checked="hvac_input === 'true'"
@@ -1199,8 +1199,8 @@ watch(Class, (newOptions) => {
                       />
                     </div>
                     <!-- LEED -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">LEED</label>
+                    <div class="switch-item">
+                      <label class="switch-label">LEED</label>
                       <CFormSwitch 
                         size="lg"
                         :checked="leed_input === 'true'"
@@ -1208,8 +1208,8 @@ watch(Class, (newOptions) => {
                       />
                     </div>
                     <!-- RAIL SPUR -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">Rail Spur</label>
+                    <div class="switch-item">
+                      <label class="switch-label">Rail Spur</label>
                       <CFormSwitch 
                         size="lg"
                         :checked="railSpur_input === 'true'"
@@ -1217,8 +1217,8 @@ watch(Class, (newOptions) => {
                       />
                     </div>
                     <!-- CROSSDOCK -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">Crossdock</label>
+                    <div class="switch-item">
+                      <label class="switch-label">Crossdock</label>
                       <CFormSwitch 
                         size="lg"
                         :checked="crossdock_input === 'true'"
@@ -1226,8 +1226,8 @@ watch(Class, (newOptions) => {
                       />
                     </div>
                     <!-- SHARED TRUCK -->
-                    <div class="mt-2 d-flex align-items-center">
-                      <label class="me-3">Shared Truck</label>
+                    <div class="switch-item">
+                      <label class="switch-label">Shared Truck</label>
                       <CFormSwitch 
                         size="lg"
                         :checked="sharedTruck_input === 'true'"
@@ -1711,3 +1711,31 @@ watch(Class, (newOptions) => {
     </CRow>
   <!-- </CContainer> -->
 </template>
+
+<style scoped>
+.switches-container {
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+  padding: 0.5rem;
+}
+
+.switch-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.25rem 0;
+}
+
+.switch-label {
+  margin: 0;
+  min-width: 100px; /* Asegura un ancho mínimo para las etiquetas */
+}
+
+/* Ajuste para los switches */
+:deep(.form-switch) {
+  padding-left: 2.5em;
+  margin-right: 0.5rem;
+}
+</style>
