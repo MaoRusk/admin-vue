@@ -53,10 +53,22 @@ export default [
     icon: 'cil-list',
   },
   {
-    component: 'CNavItem',
+    component: 'CNavGroup',
     name: 'Buildings',
-    to: '/operacion/Buildings',
-    icon: 'cil-list',
+    to: '/operacion',
+    icon: 'cil-building',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Buildings',
+        to: '/operacion/buildings',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Pending Approvals',
+        to: '/operacion/buildings/pending-approvals',
+      },
+    ],
   },
   {
     component: 'CNavItem',

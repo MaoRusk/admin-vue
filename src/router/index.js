@@ -8,6 +8,8 @@ import EmployeeDetalle from '../views/operacion/employees/EmployeeDetalle.vue';
 import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue';
 import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue';
 import Login from '../views/pages/Login.vue';
+import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
+import Buildings from '@/views/operacion/buildings/Buildings.vue'
 
 const routes = [
   {
@@ -30,77 +32,88 @@ const routes = [
       },
       {
         path: '/operacion',
-        name: 'Theme',
-        redirect: '/operacion/polizas',
-      },
-      {
-        path: '/operacion/polizas',
-        meta: { requiresAuth: true },
-        name: 'Polizas',
-        component: () => import('@/views/operacion/polizas/Polizas.vue'),
-      },
-      {
-        path: '/operacion/poliza/:id', // Nueva ruta para PolizaDetalle
-        meta: { requiresAuth: true },
-        name: 'PolizaDetalle',
-        component: PolizaDetalle,
-        props: true, // Permitir pasar parámetros como props
-      },
+        name: 'Operacion',
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
+        children: [
+          {
+            path: '/operacion/polizas',
+            meta: { requiresAuth: true },
+            name: 'Polizas',
+            component: () => import('@/views/operacion/polizas/Polizas.vue'),
+          },
+          {
+            path: '/operacion/poliza/:id', // Nueva ruta para PolizaDetalle
+            meta: { requiresAuth: true },
+            name: 'PolizaDetalle',
+            component: PolizaDetalle,
+            props: true, // Permitir pasar parámetros como props
+          },
 
-      {
-        path: '/operacion/empresas',
-        meta: { requiresAuth: true },
-        name: 'Empresas',
-        component: () => import('@/views/operacion/empresas/Empresas.vue'),
-      },
-      {
-        path: '/operacion/empresa/:id',
-        meta: { requiresAuth: true },
-        name: 'Empresa Detalle',
-        component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
-        props: true
-      },
+          {
+            path: '/operacion/empresas',
+            meta: { requiresAuth: true },
+            name: 'Empresas',
+            component: () => import('@/views/operacion/empresas/Empresas.vue'),
+          },
+          {
+            path: '/operacion/empresa/:id',
+            meta: { requiresAuth: true },
+            name: 'Empresa Detalle',
+            component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
+            props: true
+          },
 
-      {
-        path: '/operacion/employees',
-        meta: { requiresAuth: true },
-        name: 'Employees',
-        component: () => import('@/views/operacion/employees/Employees.vue'),
-      },
-      {
-        path: '/operacion/employee/:id',
-        meta: { requiresAuth: true },
-        name: 'EmployeeDetalle',
-        component: EmployeeDetalle,
-        props: true
-      },
+          {
+            path: '/operacion/employees',
+            meta: { requiresAuth: true },
+            name: 'Employees',
+            component: () => import('@/views/operacion/employees/Employees.vue'),
+          },
+          {
+            path: '/operacion/employee/:id',
+            meta: { requiresAuth: true },
+            name: 'EmployeeDetalle',
+            component: EmployeeDetalle,
+            props: true
+          },
 
-      {
-        path: '/operacion/buildings',
-        name: 'Buildings',
-        component: () => import('@/views/operacion/buildings/Buildings.vue'),
-      },
-      {
-        path: '/operacion/building/:id', // Nueva ruta
-        meta: { requiresAuth: true },
-        name: 'BuildingDetalle',
-        component: BuildingDetalle,
-        props: true, // Permitir pasar parámetros como props
-      },
-      {
-        path: '/operacion/availability',
-        name: 'Availability',
-        meta: { requiresAuth: true },
-        component: () => import('@/views/operacion/availability/Availability.vue'),
-      },
-      {
-        path: '/operacion/availability/:id',
-        name: 'Availability Detail',
-        meta: { requiresAuth: true },
-        component: () => import('@/views/operacion/availability/AvailabilityDetail.vue'),
-        props: true
-      },
+          {
+            path: '/operacion/buildings',
+            name: 'Buildings',
+            component: Buildings,
+          },
+          {
+            path: '/operacion/building/:id', // Nueva ruta
+            meta: { requiresAuth: true },
+            name: 'BuildingDetalle',
+            component: BuildingDetalle,
+            props: true, // Permitir pasar parámetros como props
+          },
+          {
+            path: '/operacion/availability',
+            name: 'Availability',
+            meta: { requiresAuth: true },
+            component: () => import('@/views/operacion/availability/Availability.vue'),
+          },
+          {
+            path: '/operacion/availability/:id',
+            name: 'Availability Detail',
+            meta: { requiresAuth: true },
+            component: () => import('@/views/operacion/availability/AvailabilityDetail.vue'),
+            props: true
+          },
 
+          {
+            path: 'buildings/pending-approvals',
+            name: 'PendingApprovals',
+            component: PendingApprovals,
+          },
+        ],
+      },
       {
         path: '/theme',
         meta: { requiresAuth: true },
