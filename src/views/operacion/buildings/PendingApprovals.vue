@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const pendingItems = ref([]);
+const selectedItems = ref([]);
 
 const columns = [
   { key: 'status', label: 'Status' },
@@ -55,6 +56,30 @@ const fetchPendingApprovals = async () => {
   }
 };
 
+const approveSelected = async () => {
+  try {
+    if (selectedItems.value.length === 0) {
+      alert('Please select at least one building');
+      return;
+    }
+
+    const selectedIds = selectedItems.value.map(item => item.id);
+    
+    await axios.post('http://127.0.0.1:8000/api/buildings/approve', {
+      ids: selectedIds,
+      vobo: 1
+    });
+
+    await fetchPendingApprovals();
+    selectedItems.value = [];
+    
+    alert('Buildings approved successfully');
+  } catch (error) {
+    console.error('Error approving buildings:', error);
+    alert('Error approving buildings');
+  }
+};
+
 onMounted(async () => {
   await fetchPendingApprovals();
 });
@@ -66,7 +91,17 @@ onMounted(async () => {
       <strong>Pending Approvals</strong>
     </CCardHeader>
     <CCardBody>
+      <CButton
+        color="success"
+        class="mb-3"
+        @click="approveSelected"
+        :disabled="selectedItems.length === 0"
+      >
+        Approve Selected ({{ selectedItems.length }})
+      </CButton>
+
       <CSmartTable
+        v-model:selected="selectedItems"
         :columns="columns"
         :items="pendingItems"
         :items-per-page="10"
@@ -84,6 +119,7 @@ onMounted(async () => {
         items-per-page-select
         pagination
         table-filter
+        selectable
       >
         <template #status="{ item }">
           <td>
