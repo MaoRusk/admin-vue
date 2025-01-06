@@ -52,6 +52,7 @@
 
 <script>
 import axios from 'axios';
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
 export default {
   data() {
@@ -63,28 +64,26 @@ export default {
   },
   methods: {
     async login() {
-
-      this.errorMessage = ""
-
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/auth/login', {
-        // const response = await axios.post('http://127.0.0.1:8000/api/login', {
+        this.errorMessage = ''
+        const response = await axios.post(`${apiBaseUrl}/auth/login`, {
           user_name: this.userName,
-          password: this.password,
-        });
+          password: this.password
+        }, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        })
+
+        // Guardar el token en localStorage
+        // localStorage.setItem('auth_token', response.data.token)
         
-        sessionStorage.setItem('auth_token', response.data.access_token);
-
-        this.$router.push('/dashboard'); // Redirige a la página de inicio o la que desees
-
-      } catch (error) {
-        console.error('Error during login:', error);
-        // Verifica el tipo de error para mostrar el mensaje adecuado
-        if (error.response && error.response.status === 401) {
-          this.errorMessage = 'Username or password incorrect.';
-        } else {
-          this.errorMessage = 'Login failed. Please check your credentials.';
-        }
+        // Redireccionar al dashboard
+        this.$router.push('/')
+        
+      } catch (err) {
+        this.errorMessage = err.response?.data?.message || 'Error al iniciar sesión'
       }
     },
   },
