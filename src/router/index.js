@@ -10,18 +10,19 @@ import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue';
 import Login from '../views/pages/Login.vue';
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
+import { ROUTE_NAMES } from './routeNames';
 
 const routes = [
   {
     path: '/',
-    name: () => i18next.t('home'),
+    name: ROUTE_NAMES.HOME,
     component: DefaultLayout,
     redirect: '/dashboard',
     children: [
       {
         path: '/dashboard',
         meta: { requiresAuth: true },
-        name: () => i18next.t('dashboard'),
+        name: ROUTE_NAMES.DASHBOARD,
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
@@ -32,7 +33,7 @@ const routes = [
       },
       {
         path: '/operacion',
-        name: 'Operacion',
+        name: ROUTE_NAMES.OPERATIONS,
         component: {
           render() {
             return h(resolveComponent('router-view'))
@@ -501,7 +502,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!sessionStorage.getItem('auth_token');
+  const isAuthenticated = !!localStorage.getItem('auth_token');
 
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
     next({ name: 'Login' });

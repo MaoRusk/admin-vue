@@ -50,42 +50,29 @@
   </div>
 </template>
 
-<script>
-import axios from 'axios';
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import client from '../../plugins/axios';
+import { ROUTE_NAMES } from '../../router/routeNames';
 
-export default {
-  data() {
-    return {
-      userName: '',
-      password: '',
-      errorMessage: '', // Propiedad para almacenar el mensaje de error
-    };
-  },
-  methods: {
-    async login() {
-      try {
-        this.errorMessage = ''
-        const response = await axios.post(`${apiBaseUrl}/auth/login`, {
-          user_name: this.userName,
-          password: this.password
-        }, {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        })
+const router = useRouter()
+const userName = ref('')
+const password = ref('')
+const errorMessage = ref('')
 
-        // Guardar el token en localStorage
-        // localStorage.setItem('auth_token', response.data.token)
-        
-        // Redireccionar al dashboard
-        this.$router.push('/')
-        
-      } catch (err) {
-        this.errorMessage = err.response?.data?.message || 'Error al iniciar sesión'
-      }
-    },
-  },
-};
+async function login() {
+  try {
+    errorMessage.value = ''
+    
+    const response = await client.post(`/auth/login`, {
+      user_name: userName.value,
+      password: password.value
+    })
+    localStorage.setItem('auth_token', response.data.access_token)
+    router.push({ name: ROUTE_NAMES.HOME })
+  } catch (err) {
+    errorMessage.value = err.response?.data?.message || 'Error al iniciar sesión'
+  }
+}
 </script>
