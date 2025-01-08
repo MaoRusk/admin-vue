@@ -11,6 +11,7 @@ import Login from '../views/pages/Login.vue';
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
 import { ROUTE_NAMES } from './routeNames';
+import { AUTH_TOKEN } from '../constants';
 
 const routes = [
   {
@@ -457,7 +458,7 @@ const routes = [
       },
       {
         path: 'login',
-        name: 'Login',
+        name: ROUTE_NAMES.LOGIN,
         component: Login,
       },
       {
@@ -502,14 +503,12 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem('auth_token');
+  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN);
 
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: 'Login' });
-
+    next({ name: ROUTE_NAMES.LOGIN });
   } else {
     next();
-
   }
 });
 

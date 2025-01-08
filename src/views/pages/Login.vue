@@ -53,10 +53,14 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import client from '../../plugins/axios';
+import httpClient from '../../plugins/axios';
 import { ROUTE_NAMES } from '../../router/routeNames';
+import { AUTH_TOKEN, AUTH_USER } from '../../constants';
+import { useLocalStorage } from '../../composables/useLocalStorage';
 
 const router = useRouter()
+const { setItem } = useLocalStorage()
+
 const userName = ref('')
 const password = ref('')
 const errorMessage = ref('')
@@ -65,11 +69,14 @@ async function login() {
   try {
     errorMessage.value = ''
     
-    const response = await client.post(`/auth/login`, {
+    const response = await httpClient.post(`/auth/login`, {
       user_name: userName.value,
       password: password.value
     })
-    localStorage.setItem('auth_token', response.data.access_token)
+
+    setItem(AUTH_TOKEN, response.data.access_token)
+    setItem(AUTH_USER, response.data.user)
+
     router.push({ name: ROUTE_NAMES.HOME })
   } catch (err) {
     errorMessage.value = err.response?.data?.message || 'Error al iniciar sesión'

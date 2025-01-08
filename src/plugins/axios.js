@@ -1,6 +1,7 @@
 import axios from 'axios'
+import { AUTH_TOKEN } from '../constants'
 
-const instance = axios.create({
+const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     Accept: 'application/json',
@@ -8,11 +9,13 @@ const instance = axios.create({
   },
 })
 
-/*
 // Add a request interceptor
-instance.interceptors.request.use(
+httpClient.interceptors.request.use(
   function (config) {
-    // Do something before request is sent
+    const token = localStorage.getItem(AUTH_TOKEN)
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   function (error) {
@@ -20,9 +23,9 @@ instance.interceptors.request.use(
     return Promise.reject(error)
   },
 )
-
+/*
 // Add a response interceptor
-instance.interceptors.response.use(
+httpClient.interceptors.response.use(
   function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
@@ -35,4 +38,4 @@ instance.interceptors.response.use(
   },
 )
 */
-export default instance
+export default httpClient
