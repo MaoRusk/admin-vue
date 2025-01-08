@@ -9,6 +9,15 @@ const router = useRouter();
 const loading = ref(false);
 const isNewRecord = computed(() => route.params.id === '0');
 
+const props = defineProps({
+  buildingId: {
+    type: Number,
+    required: true
+  }
+});
+
+const emit = defineEmits(['return']);
+
 // Form fields
 const formData = ref({
   id: null,
@@ -113,6 +122,10 @@ const saveBuilding = async () => {
   }
 };
 
+const handleReturn = () => {
+  emit('return');
+};
+
 onMounted(() => {
   loadBuildingData();
 });
@@ -121,9 +134,17 @@ onMounted(() => {
 <template>
   <div class="building-form p-4">
     <CCard>
-      <CCardHeader>
+      <CCardHeader class="d-flex justify-content-between align-items-center">
         <h3>{{ isNewRecord ? 'New Building' : 'Edit Building' }}</h3>
+        <CButton 
+          color="primary" 
+          variant="outline" 
+          @click="handleReturn"
+        >
+          Return
+        </CButton>
       </CCardHeader>
+      
       <CCardBody>
         <CForm @submit.prevent="saveBuilding">
           <div class="row">
@@ -295,7 +316,7 @@ onMounted(() => {
           <div class="d-flex justify-content-end gap-2">
             <CButton
               color="secondary"
-              @click="router.push('/operacion/availability')"
+              @click="handleReturn"
               :disabled="loading"
             >
               Cancel
@@ -305,11 +326,13 @@ onMounted(() => {
               type="submit"
               :disabled="loading"
             >
-              {{ loading ? 'Saving...' : (isNewRecord ? 'Create Building' : 'Update Building') }}
+              {{ loading ? 'Saving...' : (isNewRecord ? 'Create' : 'Update') }}
             </CButton>
           </div>
         </CForm>
       </CCardBody>
+
+    
     </CCard>
   </div>
 </template>
