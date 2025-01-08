@@ -4,8 +4,10 @@
   import { cilArrowCircleLeft, cilBasket, cilSave } from '@coreui/icons'
   import axios from 'axios';
   import BuildingData from './BuildingData.vue'
+  import BuildingAvailability from './BuildingAvailability.vue'
   import BuildingContact from './BuildingContact.vue';
   import BuildingImages from './BuildingsImages.vue';
+  import BuildingAbsorption from './BuildingAbsorption.vue'
 
   const router = useRouter()
   const props = defineProps({
@@ -16,8 +18,10 @@
   });
 
   const buildingDataRef = ref(null);
+  const buildingAvailabilityRef = ref(null);
   const buildingContactRef = ref(null);
   const buildingImagesRef = ref(null);
+  const buildingAbsorptionRef = ref(null);
   const activeAccordionKey = ref(null);
   const accordion = ref(null);
   const isAccordionVisible = ref(true);
@@ -131,17 +135,25 @@ const toggleMenu = () => {
     <CTabs activeItemKey="DataBuilding">
       <CTabList variant="tabs" style="margin-top: 1rem;">
         <CTab itemKey="DataBuilding">Data Building</CTab>
+        <CTab itemKey="Availability">Availability</CTab>
+        <CTab itemKey="Absorption">Absorption</CTab>
         <CTab itemKey="ContactBuilding">Building Contact</CTab>
-        <CTab itemKey="Images">Images</CTab>
+        <CTab itemKey="Files">Files</CTab>
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
           <BuildingData :id="Number(props.id)" ref="buildingDataRef" />
         </CTabPanel>
+        <CTabPanel class="p-3" itemKey="Availability">
+          <BuildingAvailability :id="Number(props.id)" ref="buildingAvailabilityRef" />
+        </CTabPanel>
+        <CTabPanel class="p-3" itemKey="Absorption">
+          <BuildingAbsorption :id="Number(props.id)" ref="buildingAbsorptionRef" />
+        </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
           <BuildingContact :id="Number(props.id)" ref="buildingContactRef" />
         </CTabPanel>
-        <CTabPanel class="p-3" itemKey="Images">
+        <CTabPanel class="p-3" itemKey="Files">
           <BuildingImages :id="Number(props.id)" ref="buildingImagesRef" />
         </CTabPanel>
       </CTabContent>    

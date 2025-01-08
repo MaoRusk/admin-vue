@@ -9,7 +9,7 @@ import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue';
 import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue';
 import Login from '../views/pages/Login.vue';
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
-import Buildings from '@/views/operacion/buildings/Buildings.vue'
+import Buildings from '@/views/operacion/buildings/Buildings.vue';
 
 const routes = [
   {
@@ -80,33 +80,34 @@ const routes = [
             component: EmployeeDetalle,
             props: true
           },
-
           {
             path: '/operacion/buildings',
             name: 'Buildings',
             component: Buildings,
           },
           {
-            path: '/operacion/building/:id', // Nueva ruta
+            path: '/operacion/building/:id',
             meta: { requiresAuth: true },
             name: 'BuildingDetalle',
             component: BuildingDetalle,
-            props: true, // Permitir pasar parámetros como props
+            props: true,
+            children: [
+              {
+                path: '/buildings/edit/:id',
+                name: 'BuildingEdit',
+                meta: { requiresAuth: true },
+                component: () => import('@/views/operacion/buildings/BuildingAvailabilityForm.vue'),
+                props: true
+              },
+              {
+                path: '/buildings/add',
+                name: 'BuildingAdd',
+                meta: { requiresAuth: true },
+                component: () => import('@/views/operacion/buildings/BuildingAvailabilityForm.vue'),
+                props: true
+              }
+            ]
           },
-          {
-            path: '/operacion/availability',
-            name: 'Availability',
-            meta: { requiresAuth: true },
-            component: () => import('@/views/operacion/availability/Availability.vue'),
-          },
-          {
-            path: '/operacion/availability/:id',
-            name: 'Availability Detail',
-            meta: { requiresAuth: true },
-            component: () => import('@/views/operacion/availability/AvailabilityDetail.vue'),
-            props: true
-          },
-
           {
             path: 'buildings/pending-approvals',
             name: 'PendingApprovals',
@@ -500,16 +501,16 @@ const router = createRouter({
   },
 })
 
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!sessionStorage.getItem('auth_token');
+// router.beforeEach((to, from, next) => {
+//   const isAuthenticated = !!sessionStorage.getItem('auth_token');
 
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: 'Login' });
+//   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+//     next({ name: 'Login' });
 
-  } else {
-    next();
+//   } else {
+//     next();
 
-  }
-});
+//   }
+// });
 
 export default router
