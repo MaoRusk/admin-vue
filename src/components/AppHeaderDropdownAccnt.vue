@@ -2,16 +2,20 @@
 import { useTranslation } from 'i18next-vue'
 import avatar from '@/assets/images/avatars/8.jpg'
 import { useRouter } from 'vue-router';
+import { useLocalStorage } from '../composables/useLocalStorage';
+import { AUTH_TOKEN, AUTH_USER } from '../constants';
+import { ROUTE_NAMES } from '../router/routeNames';
 
 const { t } = useTranslation()
+const { removeItem } = useLocalStorage()
 const itemsCount = 42
 const router = useRouter()
 
 const logout = () => {
-  localStorage.removeItem('auth_token')
-  router.push('/pages/login')
+  removeItem(AUTH_TOKEN)
+  removeItem(AUTH_USER)
+  router.push({ name: ROUTE_NAMES.LOGIN })
 }
-
 </script>
 
 <template>
