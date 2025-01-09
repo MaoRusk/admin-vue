@@ -492,16 +492,16 @@ const router = createRouter({
   },
 })
 
-// router.beforeEach((to, from, next) => {
-//   const isAuthenticated = !!sessionStorage.getItem('auth_token');
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!sessionStorage.getItem('auth_token');
 
-//   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-//     next({ name: 'Login' });
+  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    next({ name: 'Login' });
 
-//   } else {
-//     next();
+  } else {
+    next();
 
-//   }
-// });
+  }
+});
 
 export default router
