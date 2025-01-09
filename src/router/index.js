@@ -13,7 +13,6 @@ import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue'
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
 import Login from '../views/pages/Login.vue'
-import Buildings from '@/views/operacion/buildings/Buildings.vue';
 
 const routes = [
   {
@@ -93,9 +92,9 @@ const routes = [
               {
                 path: 'absorption',
                 name: 'BuildingAbsorption',
-                component: () => import('@/views/operacion/buildings/BuildingAbsorption.vue')
-              }
-            ]
+                component: () => import('@/views/operacion/buildings/BuildingAbsorption.vue'),
+              },
+            ],
           },
           {
             path: 'buildings/pending-approvals',
@@ -482,7 +481,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(process.env.BASE_URL),
+  history: createWebHashHistory(),
   routes,
   scrollBehavior() {
     // always scroll to top
