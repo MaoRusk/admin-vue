@@ -1,38 +1,35 @@
 import { h, resolveComponent } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-import i18next from '@/i18n';
+import i18next from '@/i18n'
 import DefaultLayout from '@/layouts/DefaultLayout'
 
-import EmployeeDetalle from '../views/operacion/employees/EmployeeDetalle.vue';
-import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue';
-import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue';
-import Login from '../views/pages/Login.vue';
+import { ROUTE_NAMES } from './routeNames'
+import { AUTH_TOKEN } from '../constants'
+
+import EmployeeDetalle from '../views/operacion/employees/EmployeeDetalle.vue'
+import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue'
+import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue'
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
+import Login from '../views/pages/Login.vue'
 
 const routes = [
   {
     path: '/',
-    name: () => i18next.t('home'),
+    name: ROUTE_NAMES.HOME,
     component: DefaultLayout,
     redirect: '/dashboard',
     children: [
       {
         path: '/dashboard',
         meta: { requiresAuth: true },
-        name: () => i18next.t('dashboard'),
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () =>
-          import(
-            /* webpackChunkName: "dashboard" */ '@/views/dashboard/Dashboard.vue'
-          ),
+        name: ROUTE_NAMES.DASHBOARD,
+        component: () => import('@/views/dashboard/Dashboard.vue'),
       },
       {
         path: '/operacion',
-        name: 'Operacion',
+        name: ROUTE_NAMES.OPERATIONS,
         component: {
           render() {
             return h(resolveComponent('router-view'))
@@ -64,7 +61,7 @@ const routes = [
             meta: { requiresAuth: true },
             name: 'Empresa Detalle',
             component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
-            props: true
+            props: true,
           },
 
           {
@@ -78,7 +75,7 @@ const routes = [
             meta: { requiresAuth: true },
             name: 'EmployeeDetalle',
             component: EmployeeDetalle,
-            props: true
+            props: true,
           },
 
           {
@@ -104,7 +101,7 @@ const routes = [
             name: 'Availability Detail',
             meta: { requiresAuth: true },
             component: () => import('@/views/operacion/availability/AvailabilityDetail.vue'),
-            props: true
+            props: true,
           },
 
           {
@@ -456,7 +453,7 @@ const routes = [
       },
       {
         path: 'login',
-        name: 'Login',
+        name: ROUTE_NAMES.LOGIN,
         component: Login,
       },
       {
@@ -492,7 +489,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(process.env.BASE_URL),
+  history: createWebHashHistory(),
   routes,
   scrollBehavior() {
     // always scroll to top
@@ -501,15 +498,13 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!sessionStorage.getItem('auth_token');
+  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN)
 
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: 'Login' });
-
+  if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
+    next({ name: ROUTE_NAMES.LOGIN })
   } else {
-    next();
-
+    next()
   }
-});
+})
 
 export default router
