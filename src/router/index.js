@@ -93,18 +93,9 @@ const routes = [
             props: true,
             children: [
               {
-                path: '/buildings/edit/:id',
-                name: 'BuildingEdit',
-                meta: { requiresAuth: true },
-                component: () => import('@/views/operacion/buildings/BuildingAvailabilityForm.vue'),
-                props: true
-              },
-              {
-                path: '/buildings/add',
-                name: 'BuildingAdd',
-                meta: { requiresAuth: true },
-                component: () => import('@/views/operacion/buildings/BuildingAvailabilityForm.vue'),
-                props: true
+                path: 'absorption',
+                name: 'BuildingAbsorption',
+                component: () => import('@/views/operacion/buildings/BuildingAbsorption.vue')
               }
             ]
           },
