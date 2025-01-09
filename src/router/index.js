@@ -1,17 +1,18 @@
 import { h, resolveComponent } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-import i18next from '@/i18n';
+import i18next from '@/i18n'
 import DefaultLayout from '@/layouts/DefaultLayout'
 
-import EmployeeDetalle from '../views/operacion/employees/EmployeeDetalle.vue';
-import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue';
-import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue';
-import Login from '../views/pages/Login.vue';
+import { ROUTE_NAMES } from './routeNames'
+import { AUTH_TOKEN } from '../constants'
+
+import EmployeeDetalle from '../views/operacion/employees/EmployeeDetalle.vue'
+import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue'
+import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue'
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
-import { ROUTE_NAMES } from './routeNames';
-import { AUTH_TOKEN } from '../constants';
+import Login from '../views/pages/Login.vue'
 
 const routes = [
   {
@@ -24,13 +25,7 @@ const routes = [
         path: '/dashboard',
         meta: { requiresAuth: true },
         name: ROUTE_NAMES.DASHBOARD,
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () =>
-          import(
-            /* webpackChunkName: "dashboard" */ '@/views/dashboard/Dashboard.vue'
-          ),
+        component: () => import('@/views/dashboard/Dashboard.vue'),
       },
       {
         path: '/operacion',
@@ -66,7 +61,7 @@ const routes = [
             meta: { requiresAuth: true },
             name: 'Empresa Detalle',
             component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
-            props: true
+            props: true,
           },
 
           {
@@ -80,7 +75,7 @@ const routes = [
             meta: { requiresAuth: true },
             name: 'EmployeeDetalle',
             component: EmployeeDetalle,
-            props: true
+            props: true,
           },
 
           {
@@ -106,7 +101,7 @@ const routes = [
             name: 'Availability Detail',
             meta: { requiresAuth: true },
             component: () => import('@/views/operacion/availability/AvailabilityDetail.vue'),
-            props: true
+            props: true,
           },
 
           {
@@ -494,7 +489,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(process.env.BASE_URL),
+  history: createWebHashHistory(),
   routes,
   scrollBehavior() {
     // always scroll to top
@@ -503,13 +498,13 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN);
+  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN)
 
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: ROUTE_NAMES.LOGIN });
+  if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
+    next({ name: ROUTE_NAMES.LOGIN })
   } else {
-    next();
+    next()
   }
-});
+})
 
 export default router

@@ -31,7 +31,7 @@
                     />
                   </CInputGroup>
                   <CRow>
-                    <CButton color="primary" class="px-4" type="submit"> Login </CButton>
+                    <CLoadingButton :loading="submitting" color="primary" class="px-4" type="submit"> Login </CLoadingButton>
                   </CRow>
                   <!-- Espacio para mostrar mensajes de error -->
                   <p v-if="errorMessage" class="text-danger mt-2">{{ errorMessage }}</p>
@@ -53,26 +53,25 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import httpClient from '../../plugins/axios';
 import { ROUTE_NAMES } from '../../router/routeNames';
 import { AUTH_TOKEN, AUTH_USER } from '../../constants';
 import { useLocalStorage } from '../../composables/useLocalStorage';
+import { API } from '../../services';
 
 const router = useRouter()
 const { setItem } = useLocalStorage()
 
 const userName = ref('')
 const password = ref('')
+const submitting = ref(false)
 const errorMessage = ref('')
 
 async function login() {
   try {
     errorMessage.value = ''
-    
-    const response = await httpClient.post(`/auth/login`, {
-      user_name: userName.value,
-      password: password.value
-    })
+    submitting.value = true
+    const response = await API.auth.login({ username: userName.value, password: password.value })
+    submitting.value = false
 
     setItem(AUTH_TOKEN, response.data.access_token)
     setItem(AUTH_USER, response.data.user)
