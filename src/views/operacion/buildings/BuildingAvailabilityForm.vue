@@ -135,7 +135,7 @@ onMounted(() => {
   <div class="building-form p-4">
     <CCard>
       <CCardHeader class="d-flex justify-content-between align-items-center">
-        <h3>{{ isNewRecord ? 'New Building' : 'Edit Building' }}</h3>
+        <h3>{{ isNewRecord ? 'New Availability' : 'Edit Availability' }}</h3>
         <CButton 
           color="primary" 
           variant="outline" 
