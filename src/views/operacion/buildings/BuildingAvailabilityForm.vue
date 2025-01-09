@@ -8,6 +8,7 @@ const route = useRoute();
 const router = useRouter();
 const loading = ref(false);
 const isNewRecord = computed(() => route.params.id === '0');
+const brokers = ref([]);
 
 const props = defineProps({
   buildingId: {
@@ -20,12 +21,13 @@ const emit = defineEmits(['return']);
 
 // Form fields
 const formData = ref({
-  id: null,
+  broker_id: null,
   building_state: '',
-  size_sf: null,
-  building_dimensions: '',
-  minimum_space_sf: null,
-  expansion_up_to_sf: null,
+  avl_size_sf: null,
+  avl_building_dimensions: '',
+  avl_building_phase: '',
+  avl_minimum_space_sf: null,
+  avl_expansion_up_to_sf: null,
   dock_doors: null,
   drive_in_door: null,
   floor_thickness: null,
@@ -33,84 +35,46 @@ const formData = ref({
   truck_court: null,
   has_crossdock: false,
   shared_truck: false,
+  new_construction: false,
+  is_starting_construction: false,
   bay_size: '',
   columns_spacing: '',
+  avl_date: '',
   knockouts_docks: null,
-  parking_space: null
+  parking_space: null,
+  avl_min_lease: null,
+  avl_max_lease: null
 });
 
-// Building states for dropdown
+// Options for dropdowns
 const buildingStates = [
   { value: 'Available', label: 'Available' },
   { value: 'Under Construction', label: 'Under Construction' },
   { value: 'Partially Available', label: 'Partially Available' }
 ];
 
-// Load building data if editing
-const loadBuildingData = async () => {
-  const buildingId = route.params.id;
-  if (buildingId && buildingId !== '0') {
-    loading.value = true;
-    try {
-      // En desarrollo, usa los datos mock
-      const mockBuildings = [
-        {
-          id: 1,
-          building_state: 'Available',
-          size_sf: 45000,
-          building_dimensions: '150x300',
-          minimum_space_sf: 15000,
-          expansion_up_to_sf: 60000,
-          dock_doors: 8
-        },
-        // ... otros registros mock
-      ];
+const buildingPhases = [
+  { value: 'Phase 1', label: 'Phase 1' },
+  { value: 'Phase 2', label: 'Phase 2' },
+  { value: 'Phase 3', label: 'Phase 3' }
+];
 
-      // Simula la obtención de datos
-      const building = mockBuildings.find(b => b.id === parseInt(buildingId));
-      if (building) {
-        formData.value = { ...formData.value, ...building };
-      }
-
-      // En producción, usa esto:
-      // const response = await axios.get(`http://127.0.0.1:8000/api/buildings/${buildingId}`);
-      // formData.value = { ...formData.value, ...response.data };
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Failed to load building data'
-      });
-    } finally {
-      loading.value = false;
-    }
-  }
+const handleReturn = () => {
+  emit('return');
 };
 
-// Save form data
 const saveBuilding = async () => {
   try {
     loading.value = true;
-    const buildingId = route.params.id;
-    const isNew = buildingId === '0';
-    const method = isNew ? 'post' : 'put';
-    const url = isNew 
-      ? 'http://127.0.0.1:8000/api/buildings'
-      : `http://127.0.0.1:8000/api/buildings/${buildingId}`;
-
-    // En producción, descomenta esto:
-    // await axios[method](url, formData.value);
-    
-    // Simular el guardado en desarrollo
     console.log('Saving building:', formData.value);
     
     Swal.fire({
       icon: 'success',
       title: 'Success',
-      text: `Building successfully ${isNew ? 'created' : 'updated'}`
+      text: `Building successfully ${isNewRecord.value ? 'created' : 'updated'}`
     });
     
-    router.push(`/operacion/building/${route.params.id}/availability`);
+    handleReturn();
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -122,12 +86,22 @@ const saveBuilding = async () => {
   }
 };
 
-const handleReturn = () => {
-  emit('return');
+// Fetch brokers for dropdown
+const fetchBrokers = async () => {
+  try {
+    // Simulated broker data
+    brokers.value = [
+      { value: 1, label: 'Broker 1' },
+      { value: 2, label: 'Broker 2' },
+      { value: 3, label: 'Broker 3' }
+    ];
+  } catch (error) {
+    console.error('Error fetching brokers:', error);
+  }
 };
 
 onMounted(() => {
-  loadBuildingData();
+  fetchBrokers();
 });
 </script>
 
@@ -136,11 +110,7 @@ onMounted(() => {
     <CCard>
       <CCardHeader class="d-flex justify-content-between align-items-center">
         <h3>{{ isNewRecord ? 'New Availability' : 'Edit Availability' }}</h3>
-        <CButton 
-          color="primary" 
-          variant="outline" 
-          @click="handleReturn"
-        >
+        <CButton color="primary" variant="outline" @click="handleReturn">
           Return
         </CButton>
       </CCardHeader>
@@ -154,55 +124,75 @@ onMounted(() => {
                 <CCardHeader>Basic Information</CCardHeader>
                 <CCardBody>
                   <div class="mb-3">
-                    <CFormLabel>Building State</CFormLabel>
-                    <CFormSelect
-                      v-model="formData.building_state"
-                      :options="buildingStates"
+                    <CFormLabel>Broker</CFormLabel>
+                    <CMultiSelect
+                      v-model="formData.broker_id"
+                      :options="brokers"
+                      :multiple="false"
                       required
                     />
                   </div>
-                  
+
+                  <div class="mb-3">
+                    <CFormLabel>Building State</CFormLabel>
+                    <CMultiSelect
+                      v-model="formData.building_state"
+                      :options="buildingStates"
+                      :multiple="false"
+                      required
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <CFormLabel>Building Phase</CFormLabel>
+                    <CMultiSelect
+                      v-model="formData.avl_building_phase"
+                      :options="buildingPhases"
+                      :multiple="false"
+                      required
+                    />
+                  </div>
+
                   <div class="mb-3">
                     <CFormLabel>Size (SF)</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.size_sf"
+                      v-model="formData.avl_size_sf"
                       required
                     />
                   </div>
-                  
+
                   <div class="mb-3">
                     <CFormLabel>Building Dimensions</CFormLabel>
                     <CFormInput
                       type="text"
-                      v-model="formData.building_dimensions"
-                      placeholder="e.g. 150x300"
+                      v-model="formData.avl_building_dimensions"
                     />
                   </div>
-                  
+
                   <div class="mb-3">
                     <CFormLabel>Minimum Space (SF)</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.minimum_space_sf"
+                      v-model="formData.avl_minimum_space_sf"
                     />
                   </div>
-                  
+
                   <div class="mb-3">
                     <CFormLabel>Expansion Up To (SF)</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.expansion_up_to_sf"
+                      v-model="formData.avl_expansion_up_to_sf"
                     />
                   </div>
                 </CCardBody>
               </CCard>
             </div>
 
-            <!-- Additional Details -->
+            <!-- Technical Details -->
             <div class="col-md-6">
               <CCard class="mb-4">
-                <CCardHeader>Additional Details</CCardHeader>
+                <CCardHeader>Technical Details</CCardHeader>
                 <CCardBody>
                   <div class="mb-3">
                     <CFormLabel>Dock Doors</CFormLabel>
@@ -211,15 +201,15 @@ onMounted(() => {
                       v-model="formData.dock_doors"
                     />
                   </div>
-                  
+
                   <div class="mb-3">
-                    <CFormLabel>Drive-In Doors</CFormLabel>
+                    <CFormLabel>Drive-in Door</CFormLabel>
                     <CFormInput
                       type="number"
                       v-model="formData.drive_in_door"
                     />
                   </div>
-                  
+
                   <div class="mb-3">
                     <CFormLabel>Floor Thickness</CFormLabel>
                     <CFormInput
@@ -227,7 +217,7 @@ onMounted(() => {
                       v-model="formData.floor_thickness"
                     />
                   </div>
-                  
+
                   <div class="mb-3">
                     <CFormLabel>Floor Resistance</CFormLabel>
                     <CFormInput
@@ -235,7 +225,7 @@ onMounted(() => {
                       v-model="formData.floor_resistance"
                     />
                   </div>
-                  
+
                   <div class="mb-3">
                     <CFormLabel>Truck Court</CFormLabel>
                     <CFormInput
@@ -243,96 +233,120 @@ onMounted(() => {
                       v-model="formData.truck_court"
                     />
                   </div>
-                </CCardBody>
-              </CCard>
-            </div>
 
-            <!-- Configuration -->
-            <div class="col-md-12">
-              <CCard class="mb-4">
-                <CCardHeader>Configuration</CCardHeader>
-                <CCardBody>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="mb-3">
-                        <CFormLabel>Bay Size</CFormLabel>
-                        <CFormInput
-                          type="text"
-                          v-model="formData.bay_size"
-                          placeholder="e.g. 50x50"
-                        />
-                      </div>
-                      
-                      <div class="mb-3">
-                        <CFormLabel>Columns Spacing</CFormLabel>
-                        <CFormInput
-                          type="text"
-                          v-model="formData.columns_spacing"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                      <div class="mb-3">
-                        <CFormLabel>Knockouts Docks</CFormLabel>
-                        <CFormInput
-                          type="number"
-                          v-model="formData.knockouts_docks"
-                        />
-                      </div>
-                      
-                      <div class="mb-3">
-                        <CFormLabel>Parking Space</CFormLabel>
-                        <CFormInput
-                          type="number"
-                          v-model="formData.parking_space"
-                        />
-                      </div>
-                    </div>
+                  <div class="mb-3">
+                    <CFormLabel>Bay Size</CFormLabel>
+                    <CFormInput
+                      type="text"
+                      v-model="formData.bay_size"
+                    />
                   </div>
 
-                  <div class="row mt-3">
-                    <div class="col-md-6">
-                      <CFormCheck
-                        id="crossdock"
-                        v-model="formData.has_crossdock"
-                        label="Has Crossdock"
-                      />
-                    </div>
-                    <div class="col-md-6">
-                      <CFormCheck
-                        id="sharedTruck"
-                        v-model="formData.shared_truck"
-                        label="Shared Truck"
-                      />
-                    </div>
+                  <div class="mb-3">
+                    <CFormLabel>Columns Spacing</CFormLabel>
+                    <CFormInput
+                      type="text"
+                      v-model="formData.columns_spacing"
+                    />
                   </div>
                 </CCardBody>
               </CCard>
             </div>
           </div>
 
+          <!-- Additional Information -->
+          <CCard class="mb-4">
+            <CCardHeader>Additional Information</CCardHeader>
+            <CCardBody>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <CFormLabel>Availability Date</CFormLabel>
+                    <CDatePicker
+                      v-model="formData.avl_date"
+                      selectionType="year"
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <CFormLabel>Knockouts Docks</CFormLabel>
+                    <CFormInput
+                      type="number"
+                      v-model="formData.knockouts_docks"
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <CFormLabel>Parking Space</CFormLabel>
+                    <CFormInput
+                      type="number"
+                      v-model="formData.parking_space"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <CFormLabel>Minimum Lease</CFormLabel>
+                    <CFormInput
+                      type="number"
+                      v-model="formData.avl_min_lease"
+                      step="0.01"
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <CFormLabel>Maximum Lease</CFormLabel>
+                    <CFormInput
+                      type="number"
+                      v-model="formData.avl_max_lease"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Switches -->
+              <div class="row mt-3">
+                <div class="col-md-3">
+                  <CFormSwitch
+                    v-model="formData.has_crossdock"
+                    label="Has Crossdock"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <CFormSwitch
+                    v-model="formData.shared_truck"
+                    label="Shared Truck"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <CFormSwitch
+                    v-model="formData.new_construction"
+                    label="New Construction"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <CFormSwitch
+                    v-model="formData.is_starting_construction"
+                    label="Starting Construction"
+                  />
+                </div>
+              </div>
+            </CCardBody>
+          </CCard>
+
           <!-- Form Actions -->
           <div class="d-flex justify-content-end gap-2">
-            <CButton
-              color="secondary"
-              @click="handleReturn"
-              :disabled="loading"
-            >
+            <CButton color="secondary" @click="handleReturn" :disabled="loading">
               Cancel
             </CButton>
-            <CButton
-              color="primary"
-              type="submit"
-              :disabled="loading"
-            >
+            <CButton color="primary" type="submit" :disabled="loading">
               {{ loading ? 'Saving...' : (isNewRecord ? 'Create' : 'Update') }}
             </CButton>
           </div>
         </CForm>
       </CCardBody>
-
-    
     </CCard>
   </div>
 </template>
