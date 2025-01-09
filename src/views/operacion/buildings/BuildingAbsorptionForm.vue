@@ -329,54 +329,69 @@ onMounted(() => {
                 </div>
               </div>
 
-              <!-- Switches -->
-              <div class="row mt-3">
-                <div class="col-md-3">
-                  <CFormSwitch
-                    v-model="formData.has_crossdock"
-                    label="Has Crossdock"
-                  />
-                </div>
-                <div class="col-md-3">
-                  <CFormSwitch
-                    v-model="formData.shared_truck"
-                    label="Shared Truck"
-                  />
-                </div>
-                <div class="col-md-3">
-                  <CFormSwitch
-                    v-model="formData.new_construction"
-                    label="New Construction"
-                  />
-                </div>
-                <div class="col-md-3">
-                  <CFormSwitch
-                    v-model="formData.is_starting_construction"
-                    label="Starting Construction"
-                  />
-                </div>
-              </div>
+              <!-- Switches Section -->
+              <CCard class="mb-4">
+                <CCardHeader>Status & Features</CCardHeader>
+                <CCardBody>
+                  <div class="row">
+                    <!-- Construction Status -->
+                    <div class="col-md-4 mb-4">
+                      <h6 class="mb-3">Construction Status</h6>
+                      <div class="d-flex flex-column gap-3">
+                        <CFormSwitch
+                          v-model="formData.new_construction"
+                          label="New Construction"
+                          size="lg"
+                        />
+                        <CFormSwitch
+                          v-model="formData.is_starting_construction"
+                          label="Starting Construction"
+                          size="lg"
+                        />
+                      </div>
+                    </div>
 
-              <div class="row mt-3">
-                <div class="col-md-4">
-                  <CFormSwitch
-                    v-model="formData.abs_closing_date"
-                    label="Closing Date"
-                  />
-                </div>
-                <div class="col-md-4">
-                  <CFormSwitch
-                    v-model="formData.abs_lease_up"
-                    label="Lease Up"
-                  />
-                </div>
-                <div class="col-md-4">
-                  <CFormSwitch
-                    v-model="formData.abs_month"
-                    label="Month"
-                  />
-                </div>
-              </div>
+                    <!-- Building Features -->
+                    <div class="col-md-4 mb-4">
+                      <h6 class="mb-3">Building Features</h6>
+                      <div class="d-flex flex-column gap-3">
+                        <CFormSwitch
+                          v-model="formData.has_crossdock"
+                          label="Has Crossdock"
+                          size="lg"
+                        />
+                        <CFormSwitch
+                          v-model="formData.shared_truck"
+                          label="Shared Truck"
+                          size="lg"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Dates & Status -->
+                    <div class="col-md-4 mb-4">
+                      <h6 class="mb-3">Dates & Status</h6>
+                      <div class="d-flex flex-column gap-3">
+                        <CFormSwitch
+                          v-model="formData.abs_closing_date"
+                          label="Closing Date"
+                          size="lg"
+                        />
+                        <CFormSwitch
+                          v-model="formData.abs_lease_up"
+                          label="Lease Up"
+                          size="lg"
+                        />
+                        <CFormSwitch
+                          v-model="formData.abs_month"
+                          label="Month"
+                          size="lg"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CCardBody>
+              </CCard>
             </CCardBody>
           </CCard>
 
