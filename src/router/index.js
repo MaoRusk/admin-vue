@@ -13,6 +13,7 @@ import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue'
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
 import Login from '../views/pages/Login.vue'
+import Buildings from '@/views/operacion/buildings/Buildings.vue';
 
 const routes = [
   {
@@ -77,33 +78,25 @@ const routes = [
             component: EmployeeDetalle,
             props: true,
           },
-
           {
             path: '/operacion/buildings',
             name: 'Buildings',
             component: Buildings,
           },
           {
-            path: '/operacion/building/:id', // Nueva ruta
+            path: '/operacion/building/:id',
             meta: { requiresAuth: true },
             name: 'BuildingDetalle',
             component: BuildingDetalle,
-            props: true, // Permitir pasar parámetros como props
-          },
-          {
-            path: '/operacion/availability',
-            name: 'Availability',
-            meta: { requiresAuth: true },
-            component: () => import('@/views/operacion/availability/Availability.vue'),
-          },
-          {
-            path: '/operacion/availability/:id',
-            name: 'Availability Detail',
-            meta: { requiresAuth: true },
-            component: () => import('@/views/operacion/availability/AvailabilityDetail.vue'),
             props: true,
+            children: [
+              {
+                path: 'absorption',
+                name: 'BuildingAbsorption',
+                component: () => import('@/views/operacion/buildings/BuildingAbsorption.vue')
+              }
+            ]
           },
-
           {
             path: 'buildings/pending-approvals',
             name: 'PendingApprovals',
@@ -453,7 +446,7 @@ const routes = [
       },
       {
         path: 'login',
-        name: ROUTE_NAMES.LOGIN,
+        name: 'Login',
         component: Login,
       },
       {
@@ -489,7 +482,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHashHistory(process.env.BASE_URL),
   routes,
   scrollBehavior() {
     // always scroll to top
