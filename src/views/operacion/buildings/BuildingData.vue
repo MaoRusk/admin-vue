@@ -1,99 +1,70 @@
 <script setup>
-import { computed, onMounted, ref, watch, nextTick } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import Swal from 'sweetalert2';
-import { cilX, cilPlus } from '@coreui/icons'
-import axios from 'axios';
-import { useRouter, useRoute } from 'vue-router'
-import { Class, IndustrialPark, Status, Owner, Developer, Type, Region, LoadingDoor, Deal, Currency, Tenancy, ListingBroker, BuildingState } from '../../../assets/json/loadCats'
-import { CRow } from '@coreui/vue-pro';
+import { API } from '../../../services';
 
-// * MultiSelect
-const selectedClass = ref([]);
-const inputValue = ref(null)
-const selectedStatus = ref(null)
-const SelectedIndustrialPark = ref(null)
-const SelectedType = ref(null)
-const SelectedOwner = ref(null)
-const SelectedDeveloper = ref(null)
-const SelectedBuilder = ref(null)
-const SelectedRegion = ref(null)
-const marketsCbo = ref([]);
-const submarketCbo = ref([]);
-const SelectedLoadingDoor = ref(null)
-const selectedBuildingState = ref('null');
+const props = defineProps({
+  id: Number
+})
 
-// VARIABLES TABLA BUILDINGS
-const builderStateId_input = ref(null);
-const buildingName_input = ref(null);
-const classId_input = ref(null);
-const buildingSizeSf_input = ref(null);
-const expansionLand_input = ref(null);
-const statusId_input = ref(null);
-const industrialParkId_input = ref(null);
-const typeId_input = ref(null);
-const ownerId_input = ref(null);
-const developerId_input = ref(null);
-const builderId_input = ref(null);
-const regionId_input = ref(null);
-const marketId_input = ref(null);
-const subMarketId_input = ref(null);
-const dealId_input = ref(null);
-const currencyId_input = ref(null);
-const salePriceUsd_input = ref(null);
-const tenancyId_input = ref(null);
-const latitud_input = ref(null);
-const longitud_input = ref(null);
-const yearBuilt_input = ref(null);
-const clearHeight_input = ref(null);
-const officesSpace_input = ref(null);
-const crane_input = ref('true');
-const hvac_input = ref('true');
-const railSpur_input = ref('true');
-const sprinklers_input = ref('true');
-const office_input = ref('true');
-const leed_input = ref('true');
-const totalLand_input = ref(null);
+const buildingEmpty = {
+  region_id: '', // number
+  market_id: '', // number
+  sub_market_id: '', // number
+  builder_id: '', // number
+  industrial_park_id: '', // number
+  developer_id: '', // number
+  owner_id: '', // number
+  user_owner_id: '', // number
+
+  building_name: '', // string
+  building_size_sf: '', // number
+  latitud: '', // string
+  longitud: '', // string
+  year_built: '', // number
+  clear_height: '', // number
+  total_land: '', // number
+  offices_space: '', // number
+
+  'has_expansion_land': true,
+  has_crane: false,
+  has_hvac: true,
+  has_rail_spur: false,
+  has_sprinklers: true,
+  has_office: true,
+  has_leed: false,
+
+  // 'hvac_production_area': '', // string
+  ventilation: '', // string
+  transformer_capacity: '', // string
+  construction_state: '', // string
+  roof_system: '', // string
+  skylights_sf: '', // number
+  coverage: '', // string
+  'kvas': '', // string
+  expansion_land: '', // number
+  class: '', // string enum
+  type_generation: '', // string enum
+  currency: '', // string enum
+  tenancy: '', // string enum
+  construction_type: '', // string enum
+  lightning: '', // string enum
+  fire_protection_system: '', // string enum
+  deal: '', // string enum
+  'loading_door': '', // string enum
+  'above_market_tis': '', // string enum
+  status: '', // string enum
+
+  hvacProduction: '',
+  hvacArea: '',
+
+  availableSince: ''
+}
+
+const building = reactive(buildingEmpty)
+
 const hvacProductionArea_input = ref(null);
 const hvacProductionArea2_input = ref(null);
-const status = ref('Activo');
-
-// VARIABLES TABLA buildings_features
-const loadingDoorId_input = ref(null);
-const lighting_input = ref(null);
-const ventilation_input = ref(null);
-const transformerCapacity_input = ref(null);
-const constructionType_input = ref(null);
-const constructionState_input = ref(null);
-const roofSystem_input = ref(null);
-const fireProtectionSystem_input = ref(null);
-const skylightsSf_input = ref(null);
-const coverage_input = ref(null);
-
-// VARIABLES TABLA BUILDINGS AVAILABILITY
-const availableSf_input = ref(null);
-const minimumSpaceSf_input = ref(null);
-const expansionUpToSf_input = ref(null);
-const dockDoors_input = ref(null);
-const driveInDoor_input = ref(null);
-const floorThickness_input = ref(null);
-const floorResistance_input = ref(null);
-const truckCourt_input = ref(null);
-const crossdock_input = ref(null);
-const sharedTruck_input = ref(null);
-const buildingDimensions1_input = ref(null);
-const buildingDimensions2_input = ref(null);
-const baySize1_input = ref(null);
-const baySize2_input = ref(null);
-const columnsSpacing1_input = ref(null);
-const columnsSpacing2_input = ref(null);
-const knockoutsDocks_input = ref(null);
-const parkingSpace_input = ref(null);
-const availableMonth_input = ref();
-const availableYear_input = ref(null);
-const minLease_input = ref(null);
-const maxLease_input = ref(null);
-
-const sfSm_input = ref('SF'); // Valor por defecto 'SF'
 
 const validateRangeInputs = (value1, value2, field1Ref, field2Ref, fieldName) => {
   if (value1 && value2 && Number(value1) > Number(value2)) {
@@ -121,369 +92,196 @@ const validateHvacRange = () => {
   );
 };
 
-const validateBuildingDimensions = () => {
-  validateRangeInputs(
-    buildingDimensions1_input.value, 
-    buildingDimensions2_input.value,
-    buildingDimensions1_input,
-    buildingDimensions2_input,
-    'Building Dimensions'
-  );
+// Function to fetch building dat
+const fetchBuildingData = async () => {
+  try {
+    const buildingId = props.id;
+    const { data } = await API.buildings.getBuilding(buildingId)
+    console.log(data)
+
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to load building data: ' + error.message,
+    });
+  }
 };
 
-const validateBaySize = () => {
-  validateRangeInputs(
-    baySize1_input.value,
-    baySize2_input.value, 
-    baySize1_input,
-    baySize2_input,
-    'Bay Size'
-  );
-};
+const classes = reactive({ loading: false, items: []})
+const statuses = reactive({ loading: false, items: []})
+const fireProtectionSystems = reactive({ loading: false, items: []})
+const regions = reactive({ loading: false, items: []})
+const markets = reactive({ loading: false, items: []})
+const industrialParks = reactive({ loading: false, items: []})
+const submarkets = reactive({ loading: false, items: []})
+const owners = reactive({ loading: false, items: []})
+const developers = reactive({ loading: false, items: []})
+const builders = reactive({ loading: false, items: []})
+const userOwners = reactive({ loading: false, items: []})
+const currencies = reactive({ loading: false, items: []})
+const tenancies = reactive({ loading: false, items: []})
+const deals = reactive({ loading: false, items: []})
+const constructionTypes = reactive({ loading: false, items: []})
+const generationsTypes = reactive({ loading: false, items: []})
+const typesLightnings = reactive({ loading: false, items: []})
+const loadingDoors = reactive({ loading: false, items: []})
+const technicalImprovements = reactive({ loading: false, items: []})
 
- 
-  const handleStatusSelect = (newValue) => {
-    inputValue.value = newValue;
-    statusId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleIndustrialParkSelect = (newValue) => {
-    inputValue.value = newValue;
-    industrialParkId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleMarket = (newValue) => {
-    inputValue.value = newValue;
-    marketId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleSubMarket = (newValue) => {
-    inputValue.value = newValue;
-    subMarketId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleTypeSelect = (newValue) => {
-    inputValue.value = newValue;
-    typeId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleOwnerSelect = (newValue) => {
-    inputValue.value = newValue;
-    ownerId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleDeveloperSelect = (newValue) => {
-    inputValue.value = newValue;
-    developerId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleBuilderSelect = (newValue) => {
-    inputValue.value = newValue;
-    builderId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleListingBroker = (newValue) => {
-    inputValue.value = newValue;
-    builderId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleCurrency = (newValue) => {
-    inputValue.value = newValue;
-    currencyId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleTenancy = (newValue) => {
-    inputValue.value = newValue;
-    tenancyId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleDeal = (newValue) => {
-    inputValue.value = newValue;
-    dealId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleRegionSelect = (newValue) => {
-    inputValue.value = newValue;
-    regionId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
-  const handleLoadingDoorSelect = (newValue) => {
-    inputValue.value = newValue;
-    loadingDoorId_input.value = inputValue.value.map(item => item.value).join(',');
-  };
- 
+async function fetchBuildingStatuses() {
+  statuses.loading = true
+  const { data } = await API.buildings.getBuildingsStatus()
+  statuses.loading = false
+  statuses.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchBuildingTechnicalImprovements() {
+  technicalImprovements.loading = true
+  const { data } = await API.buildings.getBuildingsTechnicalImprovements();
+  technicalImprovements.loading = false
+  technicalImprovements.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchBuildingLoadingDoors() {
+  loadingDoors.loading = true
+  const { data } = await API.buildings.getBuildingsLoadingDoors();
+  loadingDoors.loading = false
+  loadingDoors.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchBuildingTypesLightnings() {
+  typesLightnings.loading = true
+  const { data } = await API.buildings.getBuildingsTypesLightnings();
+  typesLightnings.loading = false
+  typesLightnings.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchBuildingTypeGenerations() {
+  generationsTypes.loading = true
+  const { data } = await API.buildings.getBuildingsTypesGeneration();
+  generationsTypes.loading = false
+  generationsTypes.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchTenancies() {
+  tenancies.loading = true
+  const { data } = await API.buildings.getBuildingsTenancies();
+  tenancies.loading = false
+  tenancies.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchCurrencies() {
+  currencies.loading = true
+  const { data } = await API.currencies.getCurrencies();
+  currencies.loading = false
+  currencies.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchBuildingContructionTypes() {
+  constructionTypes.loading = true
+  const { data } = await API.buildings.getBuildingsTypesConstruction();
+  constructionTypes.loading = false
+  constructionTypes.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchBuildingDeals() {
+  deals.loading = true
+  const { data } = await API.buildings.getBuildingsTypesDeals();
+  deals.loading = false
+  deals.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchDevelopers() {
+  developers.loading = true
+  owners.loading = true
+  builders.loading = true
+  userOwners.loading = true
+  const { data } = await API.developers.getDevelopers();
+  developers.loading = false
+  owners.loading = false
+  builders.loading = false
+  userOwners.loading = false
   
-    const handleBuildingClass = (newValue) => {
-      // inputValue.value = newValue;
-      // classId_input.value = inputValue.value.map(item => item.value).join(',');
-      selectedClass.value = newValue;
-      classId_input.value = newValue?.value;
-    }
-  // Validaciones RADIO
-  const updateStatus = (newStatus) => {
-    status.value = newStatus;
-  };
-   const updateOfficeBool = (newStatus) => {
-    office_input.value = newStatus;
-  };
-  const updateSPRINKLERSBool = (newStatus) => {
-    sprinklers_input.value = newStatus;
-  };
-  const updateCRANEBool = (newStatus) => {
-    crane_input.value = newStatus;
+  const items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+
+  developers.items = items
+  owners.items = items
+  builders.items = items
+  userOwners.items = items
+}
+
+async function fetchIndustrialParks() {
+  industrialParks.loading = true
+  const { data } = await API.industrialparks.getIndustrialParks();
+  industrialParks.loading = false
+  industrialParks.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+}
+
+async function fetchSubmarkets() {
+  submarkets.loading = true
+  const { data } = await API.submarkets.getSubmarkets();
+  submarkets.loading = false
+  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+}
+
+async function fetchMarkets() {
+  markets.loading = true
+  const { data } = await API.markets.getMarkets();
+  markets.loading = false
+  markets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+}
+
+async function fetchClasses() {
+  classes.loading = true
+  const { data } = await API.buildings.getBuildingsClasses();
+  classes.loading = false
+  classes.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchFireProtectionSystems() {
+  fireProtectionSystems.loading = true
+  const { data } = await API.buildings.getBuildingsFireProtectionSystems();
+  fireProtectionSystems.loading = false
+  fireProtectionSystems.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+}
+
+async function fetchRegions() {
+  regions.loading = true
+  const { data } = await API.regions.getRegions();
+  regions.loading = false
+  regions.items = data.data.map(({ id, name }) => ({ label: name, value: id }))
+}
+
+onMounted(async () => {
+  if (props.id) {
+    await fetchBuildingData();
   }
-  const updateHVACBool = (newStatus) => {
-    hvac_input.value = newStatus;
-  }
-  const updateLEEDBool = (newStatus) => {
-    leed_input.value = newStatus;
-  }
-  const updateRailSpurBool = (newStatus) => {
-    railSpur_input.value = newStatus;
-  }
+  fetchClasses()
+  fetchRegions()
+  fetchMarkets()
+  fetchSubmarkets()
+  fetchIndustrialParks()
+  fetchDevelopers()
+  fetchFireProtectionSystems()
+  fetchBuildingDeals()
+  fetchTenancies()
 
-  const route = useRoute();
+  fetchCurrencies()
+  fetchBuildingContructionTypes()
+  fetchBuildingTypeGenerations()
+  fetchBuildingLoadingDoors()
+  fetchBuildingTypesLightnings()
+  fetchBuildingTechnicalImprovements()
+  fetchBuildingStatuses()
+});
 
-  // Function to fetch building data
-  const fetchBuildingData = async () => {
-    try {
-      const buildingId = route.params.id;
-
-      if (buildingId == 0 ) {
-        return;
-      }
-
-      const response = await axios.get(`http://127.0.0.1:8000/api/buildings/${buildingId}`);
-      
-      const { buildingData } = response.data;
-
-      if (!buildingData) {
-        throw new Error('Building data not found in response');
-      }
-
-      // Actualizar el BuildingState selector
-      if (buildingData.builderStateId) {
-        const buildingStateOption = BuildingState.find(item => item.value === buildingData.builderStateId);
-        if (buildingStateOption) {
-          selectedBuildingState.value = buildingStateOption;
-          builderStateId_input.value = buildingStateOption.value;
-        }
-      }
-
-      // Resto de las asignaciones...
-      buildingName_input.value = buildingData.buildingName;
-
-      classId_input.value = buildingData.classId;
-
-      const findClass = Class.find(item => item.value === buildingData.classId);
-
-      if (findClass) {
-        findClass.selected = true;
-      }
-      
-      buildingSizeSf_input.value = buildingData.buildingSizeSf;
-      expansionLand_input.value = buildingData.expansionLand;
-      statusId_input.value = buildingData.statusId;
-      industrialParkId_input.value = buildingData.industrialParkId;
-      typeId_input.value = buildingData.typeId;
-      ownerId_input.value = buildingData.ownerId;
-      developerId_input.value = buildingData.developerId;
-      builderId_input.value = buildingData.builderId;
-      regionId_input.value = buildingData.regionId;
-      marketId_input.value = buildingData.marketId;
-      subMarketId_input.value = buildingData.subMarketId;
-      dealId_input.value = buildingData.dealId;
-      currencyId_input.value = buildingData.currencyId;
-      salePriceUsd_input.value = buildingData.salePriceUsd;
-      tenancyId_input.value = buildingData.tenancyId;
-      latitud_input.value = buildingData.latitud;
-      longitud_input.value = buildingData.longitud;
-      yearBuilt_input.value = buildingData.yearBuilt;
-      clearHeight_input.value = buildingData.clearHeight;
-      officesSpace_input.value = buildingData.officesSpace;
-      
-      // Valores booleanos
-      crane_input.value = buildingData.crane.toString();
-      hvac_input.value = buildingData.hvac.toString();
-      railSpur_input.value = buildingData.railSpur.toString();
-      sprinklers_input.value = buildingData.sprinklers.toString();
-      office_input.value = buildingData.office.toString();
-      leed_input.value = buildingData.leed.toString();
-      
-      // Resto de campos
-      totalLand_input.value = buildingData.totalLand;
-      hvacProductionArea_input.value = buildingData.hvacProductionArea;
-      loadingDoorId_input.value = buildingData.loadingDoorId;
-      lighting_input.value = buildingData.lighting;
-      ventilation_input.value = buildingData.ventilation;
-      transformerCapacity_input.value = buildingData.transformerCapacity;
-      constructionType_input.value = buildingData.constructionType;
-      constructionState_input.value = buildingData.constructionState;
-      roofSystem_input.value = buildingData.roofSystem;
-      fireProtectionSystem_input.value = buildingData.fireProtectionSystem;
-      skylightsSf_input.value = buildingData.skylightsSf;
-      coverage_input.value = buildingData.coverage;
-
-      // Datos de disponibilidad (si builderStateId es 1)
-      if (buildingData.builderStateId === 1) {
-        availableSf_input.value = buildingData.availableSf;
-        minimumSpaceSf_input.value = buildingData.minimumSpaceSf;
-        expansionUpToSf_input.value = buildingData.expansionUpToSf;
-        dockDoors_input.value = buildingData.dockDoors;
-        driveInDoor_input.value = buildingData.driveInDoor;
-        floorThickness_input.value = buildingData.floorThickness;
-        floorResistance_input.value = buildingData.floorResistance;
-        truckCourt_input.value = buildingData.truckCourt;
-        crossdock_input.value = buildingData.crossdock;
-        sharedTruck_input.value = buildingData.sharedTruck;
-        buildingDimensions1_input.value = buildingData.buildingDimensions1;
-        buildingDimensions2_input.value = buildingData.buildingDimensions2;
-        baySize1_input.value = buildingData.baySize1;
-        baySize2_input.value = buildingData.baySize2;
-        columnsSpacing1_input.value = buildingData.columnsSpacing1;
-        columnsSpacing2_input.value = buildingData.columnsSpacing2;
-        knockoutsDocks_input.value = buildingData.knockoutsDocks;
-        parkingSpace_input.value = buildingData.parkingSpace;
-        
-        if (buildingData.availableMonth) {
-          availableMonth_input.value = new Date(buildingData.availableMonth);
-        }
-        availableYear_input.value = buildingData.availableYear;
-        minLease_input.value = buildingData.minLease;
-        maxLease_input.value = buildingData.maxLease;
-      }
-
-      if (buildingData.classId) {
-        const classOption = Class.find(item => item.value === buildingData.classId);
-        if (classOption) {
-          selectedClass.value = classOption;
-          classId_input.value = classOption.value;
-        }
-      }
-
-    } catch (error) {
-      console.error('Error fetching building data:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Failed to load building data: ' + error.message,
-      });
-    }
-  };
-
-  onMounted(async () => {
-    await fetchData();
-    setTimeout(() => {
-      fetchBuildingData();
-    }, 500);
-  });
-
-  const fetchData = async () => {
-    try {
-      const [ marketsResponse, submarketResponse] = await Promise.all([
-        // axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
-        // axios.get('https://laravel-back-production-9320.up.railway.app/api/submarket'),
-        axios.get('http://127.0.0.1:8000/api/market'),
-        axios.get('http://127.0.0.1:8000/api/submarket'),
-      ]);
-
-
-      marketsCbo.value = marketsResponse.data.map(market => ({
-        value: market.id,
-        label: market.marketName,
-      }));
-
-      submarketCbo.value = submarketResponse.data.map(submarket => ({
-        value: submarket.id,
-        label: submarket.subMarketName,
-        marketId: submarket.marketId,
-      }));
-
-    } catch (error) {
-      console.error('Hubo un error obteniendo los datos:', error);
-    }
-  };
-
-  const getFormData = () => {
-    return {
-      builderStateId: builderStateId_input.value,
-      buildingName: buildingName_input.value,
-      classId: classId_input.value,
-      buildingSizeSf: buildingSizeSf_input.value,
-      expansionLand: expansionLand_input.value,
-      statusId: statusId_input.value,
-      industrialParkId: industrialParkId_input.value,
-      typeId: typeId_input.value,
-      ownerId: ownerId_input.value,
-      developerId: developerId_input.value,
-      builderId: builderId_input.value,
-      regionId: regionId_input.value,
-      marketId: marketId_input.value,
-      subMarketId: subMarketId_input.value,
-      dealId: dealId_input.value,
-      currencyId: currencyId_input.value,
-      salePriceUsd: salePriceUsd_input.value,
-      tenancyId: tenancyId_input.value,
-      latitud: latitud_input.value,
-      longitud: longitud_input.value,
-      yearBuilt: yearBuilt_input.value,
-      clearHeight: clearHeight_input.value,
-      officesSpace: officesSpace_input.value,
-      crane: crane_input.value,
-      hvac: hvac_input.value,
-      railSpur: railSpur_input.value,
-      sprinklers: sprinklers_input.value,
-      office: office_input.value,
-      leed: leed_input.value,
-      totalLand: totalLand_input.value,
-      hvacProductionArea: hvacProductionArea_input.value ? 
-        `${hvacProductionArea_input.value}@${hvacProductionArea2_input.value}` : null,
-      status: status.value,
-      loadingDoorId: loadingDoorId_input.value,
-      lighting: lighting_input.value,
-      ventilation: ventilation_input.value,
-      transformerCapacity: transformerCapacity_input.value,
-      constructionType: constructionType_input.value,
-      constructionState: constructionState_input.value,
-      roofSystem: roofSystem_input.value,
-      fireProtectionSystem: fireProtectionSystem_input.value,
-      skylightsSf: skylightsSf_input.value,
-      coverage: coverage_input.value,
-      availableSf:  availableSf_input.value,
-      minimumSpaceSf:  minimumSpaceSf_input.value,
-      expansionUpToSf:  expansionUpToSf_input.value,
-      dockDoors:  dockDoors_input.value,
-      driveInDoor:  driveInDoor_input.value,
-      floorThickness:  floorThickness_input.value,
-      floorResistance:  floorResistance_input.value,
-      truckCourt:  truckCourt_input.value,
-      crossdock:  crossdock_input.value,
-      sharedTruck:  sharedTruck_input.value,
-      buildingDimensions1:  buildingDimensions1_input.value,
-      buildingDimensions2:  buildingDimensions2_input.value,
-      baySize1:  baySize1_input.value,
-      baySize2:  baySize2_input.value,
-      columnsSpacing1:  columnsSpacing1_input.value,
-      columnsSpacing2:  columnsSpacing2_input.value,
-      knockoutsDocks:  knockoutsDocks_input.value,
-      parkingSpace:  parkingSpace_input.value,
-      availableMonth:  availableMonth_input.value,
-      availableYear:  availableYear_input.value,
-      minLease:  minLease_input.value,
-      maxLease:  maxLease_input.value,
-    };
-  };
+const getFormData = () => building
 
 defineExpose({
   getFormData
 });
-
-// Asegurarse de que builderStateId_input sea reactivo
-watch(builderStateId_input, (newValue) => {
-  console.log('builderStateId_input changed:', newValue);
-});
-
-// Asumiendo que Class es reactivo
-watch(Class, (newOptions) => {
-    if (newOptions && classId_input.value) {
-        const classOption = newOptions.find(item => item.value === classId_input.value);
-        if (classOption) {
-            selectedClass.value = classOption;
-        }
-    }
-}, { immediate: true });
-
 </script>
-
 <template>
-  <!-- <CContainer> -->
     <CRow>
       <CCol :md="12">
         <CRow>
@@ -493,124 +291,75 @@ watch(Class, (newOptions) => {
               General Information
             </CCardBody>
           </CCard>
-         
+
           <CCard class="card-customer-buildings">
             <CCardBody>
               <CRow>
                 <CCol :md="3">
-                  <!-- BUILDING NAME (SF) -->
                   <div class="mt-2">
                     <CFormInput
-                    type="text"
-                    size="sm"
-                    v-model="buildingName_input"
-                    class="no-spinner"
-                    label="Building Name"
+                      size="sm"
+                      v-model="building.building_name"
+                      label="Building Name"
                     />
                   </div>
-                  
                 </CCol>
                 <CCol :md="3">
-                  <!-- CLASS -->
-                  <div  class="mt-2">
+                  <div class="mt-2">
                     <CMultiSelect
                       label="Class"
                       :multiple="false"
-                      :options="Class"
-                      :modelValue="selectedClass"
-                      @update:modelValue="handleBuildingClass"
+                      :options="classes.items"
                       optionsStyle="text"
                       size="sm"
-                      placeholder=""
-                    >
-                    </CMultiSelect>
-                  </div>
-                  <!-- BUILDING SIZE (SF) -->
-                  <div class="mt-2">
-                    <CFormInput 
-                    type="number" 
-                    size="sm"
-                    class="no-spinner"
-                    v-model="buildingSizeSf_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Building Size (SF)"
+                      :loading="classes.loading"
+                      @change="([option]) => { building.class = option?.value ?? '' }"
                     />
                   </div>
                 </CCol>
                 <CCol :md="3">
-                  <!-- EXPANSION LAND -->
                   <div class="mt-2">
                     <CFormInput 
-                    type="number" 
-                    size="sm"
-                    class="no-spinner"
-                    v-model="expansionLand_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent
-                    label="Expansion Land"
+                      type="number"
+                      size="sm"
+                      class="no-spinner"
+                      v-model="building.building_size_sf"
+                      label="Building Size (SF)"
                     />
                   </div>
-                  <!-- STATUS -->
+                </CCol>
+                <CCol :md="3">
+                  <div class="mt-2">
+                    <CFormInput 
+                      type="number"
+                      size="sm"
+                      class="no-spinner"
+                      v-model="building.expansion_land"
+                      label="Expansion Land"
+                    />
+                  </div>
+                </CCol>
+                <CCol md="3">
+                  <div class="mt-2">
+                    <CDatePicker label="Year Built" v-model:date="building.year_built" locale="en-US" size="sm" selectionType="year" />
+                  </div>
+                </CCol>
+                <CCol md="3">
+                  <div class="mt-2">
+                    <CDatePicker label="Available Since" locale="en-US" size="sm" selectionType="month" v-model:date="building.availableSince" />
+                  </div>
+                </CCol>
+                <CCol md="3">
                   <div class="mt-2">
                     <CMultiSelect
                       label="Status"
-                      v-model="selectedStatus"
                       :multiple="false"
-                      :options="Status"
+                      :options="statuses.items"
                       optionsStyle="text"
                       size="sm"
-                      placeholder=""
-                      @change="handleStatusSelect"
-                    >
-                      <template #options="{ option }" >
-                        <div class="d-flex">
-                          <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                        </div>
-                      </template>
-                    </CMultiSelect>
-                    <CInputGroup v-if="selectedStatus == '0'" class="mb-3 mt-2">
-                      <CFormInput aria-label="New status.." aria-describedby="button-addon2"/>
-                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                    </CInputGroup>
-                  </div>
-                </CCol>
-                <CCol :md="3">
-                  <!-- YEAR BUILT -->
-                  <div class="mt-2">
-                    <CDatePicker label="Year Built" v-model:date="yearBuilt_input" locale="en-US" size="sm" selectionType="year" placeholder=""/>
-                  </div>
-                  <!-- ! ****AGREGAR a tabla AVAILABLE SINCE (Available from) -->
-                  <div class="mt-2">
-                    <CDatePicker label="Available Since" locale="en-US" size="sm" selectionType="month" placeholder=""/>
-                  </div>
-                </CCol>
-                <CCol :md="12">
-                  <!-- STATUS (ACTIVO/INACTIVO) -->
-                  <div style="display: flex; justify-content: left; align-items: center;margin-top: .5rem;">
-                    <label for="status">Status</label>
-                    <div style="margin-left: .6rem; padding-top: .5rem;">
-                      <CFormCheck 
-                        inline 
-                        type="radio" 
-                        name="inlineRadioOptions" 
-                        id="inlineCheckbox1" 
-                        value="Activo" 
-                        label="Active"
-                        :checked="status === 'Activo'"
-                        @change="updateStatus('Activo')"                  />
-                      <CFormCheck 
-                        inline 
-                        type="radio" 
-                        name="inlineRadioOptions" 
-                        id="inlineCheckbox2" 
-                        value="Inactivo" 
-                        label="Inactive"
-                        :checked="status === 'Inactivo'"
-                        @change="updateStatus('Inactivo')"                  />    
-                    </div>
+                      :loading="statuses.loading"
+                      @change="([option]) => { building.status = option?.value ?? '' }"
+                    />
                   </div>
                 </CCol>
               </CRow>
@@ -628,47 +377,25 @@ watch(Class, (newOptions) => {
             <div class="mt-2">
               <CMultiSelect
                 label="Region"
-                v-model="Region"
                 :multiple="false"
-                :options="Region"
+                :options="regions.items"
                 optionsStyle="text"
                 size="sm"
-                placeholder=""
-                @change="handleRegionSelect"
-              >
-                <template #options="{ option }" >
-                  <div class="d-flex">
-                    <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                  </div>
-                </template>
-              </CMultiSelect>
-              <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-                <CFormInput aria-label="New Region.." aria-describedby="button-addon2"/>
-                <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-              </CInputGroup>
+                :loading="regions.loading"
+                @change="([option]) => { building.region_id = option?.value ?? '' }"
+              />
             </div>
             <!-- INDUSTRIAL PARK -->
             <div class="mt-2">
               <CMultiSelect
                 label="Industrial Park"
-                v-model="IndustrialPark"
                 :multiple="false"
-                :options="IndustrialPark"
+                :options="industrialParks.items"
                 optionsStyle="text"
                 size="sm"
-                placeholder=""
-                @change="handleIndustrialParkSelect"
-              >
-                <template #options="{ option }" >
-                  <div class="d-flex">
-                    <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                  </div>
-                </template>
-              </CMultiSelect>
-              <CInputGroup v-if="SelectedIndustrialPark == '0'" class="mb-3 mt-2">
-                <CFormInput aria-label="New Industrial Park.." aria-describedby="button-addon2"/>
-                <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-              </CInputGroup>
+                :loading="industrialParks.loading"
+                @change="([option]) => { building.industrial_park_id = option?.value ?? '' }"
+              />
             </div>
           </CCol>
           <CCol :md="4">
@@ -676,46 +403,25 @@ watch(Class, (newOptions) => {
             <div class="mt-2">
               <CMultiSelect
                 label="Market"
-                v-model="marketsCbo"
                 :multiple="false"
-                :options="marketsCbo"
+                :options="markets.items"
                 optionsStyle="text"
                 size="sm"
-                placeholder=""
-                @change="handleMarket"
-              >
-                <template #options="{ option }" >
-                  <div class="d-flex">
-                    <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                  </div>
-                </template>
-              </CMultiSelect>
-              <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-                <CFormInput aria-label="New Market.." aria-describedby="button-addon2"/>
-                <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-              </CInputGroup>
+                :loading="markets.loading"
+                @change="([option]) => { building.market_id = option?.value ?? '' }"
+              />
             </div>
             <!-- SUB MARKET -->
             <div class="mt-2">
               <CMultiSelect
                 label="Submarket"
                 :multiple="false"
-                :options="submarketCbo"
+                :options="submarkets.items"
                 optionsStyle="text"
                 size="sm"
-                placeholder=""
-                @change="handleSubMarket"
-              >
-                <template #options="{ option }" >
-                  <div class="d-flex">
-                    <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                  </div>
-                </template>
-              </CMultiSelect>
-              <CInputGroup v-if="SelectedRegion == '0'" class="mb-3 mt-2">
-                <CFormInput aria-label="New Submarket.." aria-describedby="button-addon2"/>
-                <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-              </CInputGroup>
+                :loading="submarkets.loading"
+                @change="([option]) => { building.sub_market_id = option?.value ?? '' }"
+              />
             </div>
           </CCol>
           <CCol :md="4">    
@@ -725,7 +431,7 @@ watch(Class, (newOptions) => {
               type="text"
               size="sm"
               label="Latitude"
-              v-model="latitud_input"
+              v-model="building.latitud"
               />
             </div>
             <!-- ALTITUD -->
@@ -734,7 +440,7 @@ watch(Class, (newOptions) => {
               type="text"
               size="sm"
               label="Longitude"
-              v-model="longitud_input"
+              v-model="building.longitud"
               />
             </div>
           </CCol>
@@ -753,24 +459,13 @@ watch(Class, (newOptions) => {
                   <div class="mt-2">
                     <CMultiSelect
                       label="Owner"
-                      v-model="Owner"
                       :multiple="false"
-                      :options="Owner"
+                      :options="owners.items"
                       optionsStyle="text"
                       size="sm"
-                      placeholder=""
-                      @change="handleOwnerSelect"
-                    >
-                      <template #options="{ option }" >
-                        <div class="d-flex">
-                          <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                        </div>
-                      </template>
-                    </CMultiSelect>
-                    <CInputGroup v-if="SelectedOwner == '0'" class="mb-3 mt-2">
-                      <CFormInput aria-label="New Owner.." aria-describedby="button-addon2"/>
-                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                    </CInputGroup>
+                      :loading="owners.loading"
+                      @change="([option]) => { building.owner_id = option?.value ?? '' }"
+                    />
                   </div>
                 </CCol>
                 <CCol :md="3">
@@ -778,24 +473,13 @@ watch(Class, (newOptions) => {
                   <div class="mt-2">
                     <CMultiSelect
                       label="Developer"
-                      v-model="Developer"
                       :multiple="false"
-                      :options="Developer"
+                      :options="developers.items"
                       optionsStyle="text"
                       size="sm"
-                      placeholder=""
-                      @change="handleDeveloperSelect"
-                    >
-                      <template #options="{ option }" >
-                        <div class="d-flex">
-                          <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                        </div>
-                      </template>
-                    </CMultiSelect>
-                    <CInputGroup v-if="SelectedDeveloper == '0'" class="mb-3 mt-2">
-                      <CFormInput aria-label="New Developer.." aria-describedby="button-addon2"/>
-                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                    </CInputGroup>
+                      :loading="developers.loading"
+                      @change="([option]) => { building.developer_id = option?.value ?? '' }"
+                    />
                   </div>
                 </CCol>
                 <CCol :md="3">    
@@ -803,40 +487,27 @@ watch(Class, (newOptions) => {
                   <div class="mt-2">
                     <CMultiSelect
                       label="Builder"
-                      v-model="SelectedBuilder"
                       :multiple="false"
-                      :options="Developer"
+                      :options="builders.items"
                       optionsStyle="text"
                       size="sm"
-                      placeholder=""
-                      @change="handleBuilderSelect"
-                    >
-                      <template #options="{ option }" >
-                        <div class="d-flex">
-                          <CIcon v-if="option.value == 0" class="me-1 mt-1" :icon="cilPlus" size="sm"/> {{option.label}}
-                        </div>
-                      </template>
-                    </CMultiSelect>
-                    <CInputGroup v-if="SelectedBuilder == '0'" class="mb-3 mt-2">
-                      <CFormInput aria-label="New Builder.." aria-describedby="button-addon2"/>
-                      <CButton type="button" color="success" variant="outline" id="button-addon2">Save</CButton>
-                    </CInputGroup>
+                      :loading="builders.loading"
+                      @change="([option]) => { building.builder_id = option?.value ?? '' }"
+                    />
                   </div>
                 </CCol>
-                <CCol :md="3">    
-                  <!-- ! **** VERIFICAR QUE ESTE MAPPEADO EN EL SERVICIO **** LISTING BROKER -->
+                <CCol :md="3">
                   <div class="mt-2">
                     <CMultiSelect
-                      label="Listing Broker"
+                      label="User Owner"
                       :multiple="false"
-                      :options="ListingBroker"
+                      :options="userOwners.items"
                       optionsStyle="text"
                       size="sm"
-                      placeholder=""
-                      @change="handleListingBroker"
-                    >
-                    </CMultiSelect>
-                  </div>       
+                      :loading="userOwners.loading"
+                      @change="([option]) => { building.user_owner_id = option?.value ?? '' }"
+                    />
+                  </div>
                 </CCol>
               </CRow>
             </CCardBody>
@@ -848,72 +519,49 @@ watch(Class, (newOptions) => {
               Transactions and Agreements
             </CCardBody>
           </CCard>
-         
-          <CCol :md="3">
-            <!--   SALE PRICE (USD)  -->
-            <div class="mt-2">
-              <label >Sale Price (USD) </label>
-              <CInputGroup class="mb-3 mt-2">
-                <CInputGroupText>$</CInputGroupText>
-                  <CFormInput 
-                    type="number" 
-                    size="sm"
-                    class="no-spinner"
-                    v-model="salePriceUsd_input"
-                    @wheel.prevent
-                    @touchstart.prevent
-                    @touchmove.prevent 
-                    />
-                <CInputGroupText>.00</CInputGroupText>
-              </CInputGroup>
-            </div>
-          </CCol>
-          <CCol :md="3">
+
+          <CCol md="4">
             <!-- CURRENCY -->
             <div class="mt-2">
               <CMultiSelect
                 label="Currency"
                 :multiple="false"
-                :options="Currency"
+                :options="currencies.items"
                 optionsStyle="text"
                 size="sm"
-                @change="handleCurrency"
-                placeholder=""
-              >
-              </CMultiSelect>
+                :loading="currencies.loading"
+                @change="([option]) => { building.currency = option?.value ?? '' }"
+              />
             </div>
           </CCol>
-          <CCol :md="3">
+          <CCol md="4">
             <!-- TENANCY -->
             <div class="mt-2">
               <CMultiSelect
                 label="Tenancy"
                 :multiple="false"
-                :options="Tenancy"
+                :options="tenancies.items"
                 optionsStyle="text"
                 size="sm"
-                @change="handleTenancy"
-                placeholder=""
-              >
-              </CMultiSelect>
+                :loading="tenancies.loading"
+                @change="([option]) => { building.tenancy = option?.value ?? '' }"
+              />
             </div>
           </CCol>
-          <CCol :md="3">
+          <CCol md="4">
             <!-- DEAL -->
             <div class="mt-2">
               <CMultiSelect
                 label="Deal"
                 :multiple="false"
-                :options="Deal"
+                :options="deals.items"
                 optionsStyle="text"
                 size="sm"
-                @change="handleDeal"
-                placeholder=""
-              >
-            </CMultiSelect>
+                :loading="deals.loading"
+                @change="([option]) => { building.deal = option?.value ?? '' }"
+              />
             </div>
           </CCol>
-             
           <!-- *** TECHNICAL SPECIFICATIONS *** -->
           <CCard id="technical-specifications" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
             <CCardBody class="card-body-customer-buildings">
@@ -929,25 +577,20 @@ watch(Class, (newOptions) => {
                   <div class="mt-2">
                     <CMultiSelect
                       label="Type"
-                      v-model="Type"
                       :multiple="false"
-                      :options="Type"
+                      :options="generationsTypes.items"
                       optionsStyle="text"
                       size="sm"
-                      placeholder=""
-                      @change="handleTypeSelect"
+                      :loading="generationsTypes.loading"
+                      @change="([option]) => { building.type_generation = option?.value ?? '' }"
                     />
                   </div>
-                  <!-- CLEAR HEIGHT -->
+                  <!-- HEIGHT -->
                   <div class="mt-2">
                     <CFormInput 
                       type="number" 
                       size="sm"
-                      class="no-spinner"
-                      v-model="clearHeight_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
+                      v-model="building.clear_height"
                       label="Clear Height"
                     />
                   </div>
@@ -956,11 +599,7 @@ watch(Class, (newOptions) => {
                     <CFormInput 
                       type="number" 
                       size="sm"
-                      class="no-spinner"
-                      v-model="totalLand_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
+                      v-model="building.total_land"
                       label="Total Land"
                     />
                   </div>
@@ -969,12 +608,16 @@ watch(Class, (newOptions) => {
                     <CFormInput 
                       type="number" 
                       size="sm"
-                      class="no-spinner"
-                      v-model="coverage_input"
-                      @wheel.prevent
-                      @touchstart.prevent
-                      @touchmove.prevent
+                      v-model="building.coverage"
                       label="Coverage %"
+                    />
+                  </div>
+                  <div class="mt-2">
+                    <CFormInput 
+                      type="number" 
+                      size="sm"
+                      v-model="building.offices_space"
+                      label="Offices Space"
                     />
                   </div>
                 </CCol>
@@ -983,38 +626,50 @@ watch(Class, (newOptions) => {
                 <CCol :md="3">
                   <!-- CONSTRUCTION TYPE -->
                   <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="constructionType_input"
+                    <CMultiSelect
                       label="Construction Type"
+                      :multiple="false"
+                      :options="constructionTypes.items"
+                      optionsStyle="text"
+                      size="sm"
+                      :loading="constructionTypes.loading"
+                      @change="([option]) => { building.construction_type = option?.value ?? '' }"
                     />
                   </div>
                   <!-- CONSTRUCTION STATE -->
                   <div class="mt-2">
                     <CFormInput
-                      type="text"
                       size="sm"
-                      v-model="constructionState_input"
+                      v-model="building.construction_state"
                       label="Construction State"
                     />
                   </div>
                   <!-- ROOF SYSTEM -->
                   <div class="mt-2">
                     <CFormInput
-                      type="text"
                       size="sm"
-                      v-model="roofSystem_input"
+                      v-model="building.roof_system"
                       label="Roof System"
                     />
                   </div>
                   <!-- FIRE PROTECTION SYSTEM -->
                   <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="fireProtectionSystem_input"
+                    <CMultiSelect
                       label="Fire Protection System (FPS)"
+                      :multiple="false"
+                      :options="fireProtectionSystems.items"
+                      optionsStyle="text"
+                      size="sm"
+                      :loading="fireProtectionSystems.loading"
+                      @change="([option]) => { building.fire_protection_system = option?.value ?? '' }"
+                    />
+                  </div>
+                  <div class="mt-2">
+                    <CFormInput
+                      type="number"
+                      size="sm"
+                      v-model="building.skylights_sf"
+                      label="Skylights SF"
                     />
                   </div>
                 </CCol>
@@ -1026,17 +681,20 @@ watch(Class, (newOptions) => {
                     <CFormInput
                       type="text"
                       size="sm"
-                      v-model="transformerCapacity_input"
+                      v-model="building.transformer_capacity"
                       label="Transformer Capacity"
                     />
                   </div>
                   <!-- LIGHTING -->
                   <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="lighting_input"
+                    <CMultiSelect
                       label="Lighting"
+                      :multiple="false"
+                      :options="typesLightnings.items"
+                      optionsStyle="text"
+                      size="sm"
+                      :loading="typesLightnings.loading"
+                      @change="([option]) => { building.lightning = option?.value ?? '' }"
                     />
                   </div>
                   <!-- VENTILATION -->
@@ -1044,7 +702,7 @@ watch(Class, (newOptions) => {
                     <CFormInput
                       type="text"
                       size="sm"
-                      v-model="ventilation_input"
+                      v-model="building.ventilation"
                       label="Ventilation System"
                     />
                   </div>
@@ -1056,10 +714,7 @@ watch(Class, (newOptions) => {
                         type="number" 
                         size="sm"
                         class="no-spinner"
-                        v-model="hvacProductionArea_input"
-                        @wheel.prevent
-                        @touchstart.prevent
-                        @touchmove.prevent
+                        v-model="building.hvacProduction"
                         placeholder="Production"
                         aria-label="Production"
                         @blur="validateHvacRange"
@@ -1069,10 +724,7 @@ watch(Class, (newOptions) => {
                         type="number"
                         size="sm"
                         class="no-spinner"
-                        v-model="hvacProductionArea2_input"
-                        @wheel.prevent
-                        @touchstart.prevent
-                        @touchmove.prevent
+                        v-model="building.hvacArea"
                         placeholder="Area"
                         aria-label="Area"
                         @blur="validateHvacRange"
@@ -1089,8 +741,7 @@ watch(Class, (newOptions) => {
                       <label class="switch-label">SF/SM</label>
                       <CFormSwitch 
                         size="lg"
-                        :checked="sfSm_input"
-                        @change="sfSm_input = $event.target.checked"
+                        v-model="building.sfSm"
                       />
                     </div>
                     <!-- OFFICE -->
@@ -1098,8 +749,7 @@ watch(Class, (newOptions) => {
                       <label class="switch-label">Office</label>
                       <CFormSwitch 
                         size="lg"
-                        :checked="office_input === 'true'"
-                        @change="updateOfficeBool($event.target.checked ? 'true' : 'false')"
+                        v-model="building.has_office"
                       />
                     </div>
                     <!-- SPRINKLERS -->
@@ -1107,8 +757,7 @@ watch(Class, (newOptions) => {
                       <label class="switch-label">Sprinklers</label>
                       <CFormSwitch 
                         size="lg"
-                        :checked="sprinklers_input === 'true'"
-                        @change="updateSPRINKLERSBool($event.target.checked ? 'true' : 'false')"
+                        v-model="building.has_sprinklers"
                       />
                     </div>
                     <!-- CRANE -->
@@ -1116,8 +765,7 @@ watch(Class, (newOptions) => {
                       <label class="switch-label">Crane</label>
                       <CFormSwitch 
                         size="lg"
-                        :checked="crane_input === 'true'"
-                        @change="updateCRANEBool($event.target.checked ? 'true' : 'false')"
+                        v-model="building.has_crane"
                       />
                     </div>
                     <!-- HVAC -->
@@ -1125,8 +773,7 @@ watch(Class, (newOptions) => {
                       <label class="switch-label">HVAC</label>
                       <CFormSwitch 
                         size="lg"
-                        :checked="hvac_input === 'true'"
-                        @change="updateHVACBool($event.target.checked ? 'true' : 'false')"
+                        v-model="building.has_hvac"
                       />
                     </div>
                     <!-- LEED -->
@@ -1134,8 +781,7 @@ watch(Class, (newOptions) => {
                       <label class="switch-label">LEED</label>
                       <CFormSwitch 
                         size="lg"
-                        :checked="leed_input === 'true'"
-                        @change="updateLEEDBool($event.target.checked ? 'true' : 'false')"
+                        v-model="building.has_leed"
                       />
                     </div>
                     <!-- RAIL SPUR -->
@@ -1143,26 +789,7 @@ watch(Class, (newOptions) => {
                       <label class="switch-label">Rail Spur</label>
                       <CFormSwitch 
                         size="lg"
-                        :checked="railSpur_input === 'true'"
-                        @change="updateRailSpurBool($event.target.checked ? 'true' : 'false')"
-                      />
-                    </div>
-                    <!-- CROSSDOCK -->
-                    <div class="switch-item">
-                      <label class="switch-label">Crossdock</label>
-                      <CFormSwitch 
-                        size="lg"
-                        :checked="crossdock_input === 'true'"
-                        @change="crossdock_input = $event.target.checked ? 'true' : 'false'"
-                      />
-                    </div>
-                    <!-- SHARED TRUCK -->
-                    <div class="switch-item">
-                      <label class="switch-label">Shared Truck</label>
-                      <CFormSwitch 
-                        size="lg"
-                        :checked="sharedTruck_input === 'true'"
-                        @change="sharedTruck_input = $event.target.checked ? 'true' : 'false'"
+                        v-model="building.has_rail_spur"
                       />
                     </div>
                   </div>
@@ -1173,7 +800,6 @@ watch(Class, (newOptions) => {
         </CRow>
       </CCol>
     </CRow>
-  <!-- </CContainer> -->
 </template>
 
 <style scoped>

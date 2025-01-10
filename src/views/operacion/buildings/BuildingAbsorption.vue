@@ -88,6 +88,7 @@ onMounted(() => {
 </script>
 
 <template>
+  Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ut odio facilis harum est distinctio ad illo, accusamus quisquam alias, enim eos impedit vel reprehenderit eius labore similique debitis, praesentium iure.
   <div class="building-absorption">
     <div v-if="!showForm">
       <!-- Header with Add button -->

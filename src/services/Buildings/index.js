@@ -57,7 +57,7 @@ export default {
     above_market_tis,
     status,
   }) {
-    return httpClient.post(`/buildings`, {
+    return httpClient.postForm(`/buildings`, {
       region_id,
       market_id,
       sub_market_id,
@@ -244,5 +244,8 @@ export default {
   },
   getBuildingsTechnicalImprovements() {
     return httpClient.get(`/buildings/technical-improvements`)
+  },
+  getBuildingsStatus() {
+    return httpClient.get(`/buildings/status`)
   },
 }

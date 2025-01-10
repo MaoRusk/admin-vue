@@ -1,72 +1,64 @@
 <script setup>
-  import { ref, onMounted, computed, registerRuntimeCompiler, nextTick } from 'vue';
-  import { useRouter } from 'vue-router'
-  import { cilArrowCircleLeft, cilBasket, cilSave } from '@coreui/icons'
-  import axios from 'axios';
-  import BuildingData from './BuildingData.vue'
-  import BuildingAvailability from './BuildingAvailability.vue'
-  import BuildingContact from './BuildingContact.vue';
-  import BuildingImages from './BuildingsImages.vue';
-  import BuildingAbsorption from './BuildingAbsorption.vue'
+import { ref, onMounted, watch, computed } from 'vue';
+import { useRoute } from 'vue-router'
+import { cilArrowCircleLeft, cilSave } from '@coreui/icons'
+import BuildingData from './BuildingData.vue'
+import BuildingAvailability from './BuildingAvailability.vue'
+import BuildingContact from './BuildingContact.vue';
+import BuildingImages from './BuildingsImages.vue';
+import BuildingAbsorption from './BuildingAbsorption.vue'
+import { API } from '../../../services';
 
-  const router = useRouter()
-  const props = defineProps({
-    id: {
-        type: Number,
-        required: true
-      },
-  });
+// const router = useRouter()
+const route = useRoute()
 
-  const buildingDataRef = ref(null);
-  const buildingAvailabilityRef = ref(null);
-  const buildingContactRef = ref(null);
-  const buildingImagesRef = ref(null);
-  const buildingAbsorptionRef = ref(null);
-  const activeAccordionKey = ref(null);
-  const accordion = ref(null);
-  const isAccordionVisible = ref(true);
-  const isMenuOpen = ref(false)
-  const availableSections = ref([]);
+watch(
+  () => route.params.buildingId,
+  (newId) => {
+    // react to route changes...
+    console.log(newId)
+  }
+)
 
-  const sections = [
-    { id: 'general-information', label: 'General information' },
-    { id: 'location', label: ' Location ' },
-    { id: 'property-details', label: 'Property Details' },
-    { id: 'transactions-agreements', label: 'Transactions and Agreements' },
-    { id: 'technical-specifications', label: 'Technical Specifications' },
-    { id: 'availability', label: 'Availability' },
-    { id: 'absorption', label: 'Absorption' }
-  ];
+const buildingId = computed(() => Number(route.params.buildingId) || null)
 
-  onMounted(() => {
-    // Verificar qué secciones existen en el DOM
-    availableSections.value = sections.filter(section => 
-      document.getElementById(section.id) !== null
-    );
-  });
+const buildingDataRef = ref(null);
+const buildingAvailabilityRef = ref(null);
+const buildingContactRef = ref(null);
+const buildingImagesRef = ref(null);
+const buildingAbsorptionRef = ref(null);
+const isMenuOpen = ref(false)
+const availableSections = ref([]);
+
+const sections = [
+  { id: 'general-information', label: 'General information' },
+  { id: 'location', label: ' Location ' },
+  { id: 'property-details', label: 'Property Details' },
+  { id: 'transactions-agreements', label: 'Transactions and Agreements' },
+  { id: 'technical-specifications', label: 'Technical Specifications' },
+  { id: 'availability', label: 'Availability' },
+  { id: 'absorption', label: 'Absorption' }
+];
+
+onMounted(() => {
+  // Verificar qué secciones existen en el DOM
+  availableSections.value = sections.filter(section => 
+    document.getElementById(section.id) !== null
+  );
+});
 
 const saveAllData = async () => {
   try {
-    // const buildingData = buildingDataRef.value?.getFormData();
-    // const contactData = buildingContactRef.value?.getFormData();
-    // const imagesData = buildingImagesRef.value?.getFormData();
     const buildingData = buildingDataRef.value.getFormData();
-    const contactData = buildingContactRef.value.getFormData();
-    
-    const allData = new FormData(); // Creas un nuevo FormData
-    allData.append('buildingData', JSON.stringify(buildingData)); // Añades los datos al FormData
-    allData.append('contactData', JSON.stringify(contactData));
-    // Aquí realizarías la llamada al API para guardar los datos
-    const response = await axios.post('https://laravel-back-production-9320.up.railway.app/api/buildings', allData);
-    // const response = await axios.post('http://127.0.0.1:8000/api/buildings', allData);
-    
+    console.log(buildingData)
+
+    const response = await API.buildings.createBuilding(buildingData);
     console.log('Datos guardados exitosamente:', response.data);
-    // Aquí puedes agregar alguna notificación de éxito para el usuario
   } catch (error) {
     console.error('Error al guardar los datos:', error);
-    // Aquí puedes agregar alguna notificación de error para el usuario
   }
 };
+
 const scrollToSection = (sectionId) => {
   const section = document.getElementById(sectionId);
   if (section) {
@@ -86,11 +78,9 @@ const scrollToSection = (sectionId) => {
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
 }
-
 </script>
 <template>
   <div>
-    <!-- <div class="movil-response"></div> -->
     <CCard class="container-btn-flotante">
       <CCardBody style="padding: 8px 16px;">
         <div style="text-align: center;">
@@ -123,8 +113,7 @@ const toggleMenu = () => {
             </CButton>
             <router-link to="../buildings">
               <CButton color="primary" variant="outline" style="margin-left: .7rem;">
-                <CIcon :content="cilArrowCircleLeft" size="sm" />
-                Return
+                <CIcon :content="cilArrowCircleLeft" size="sm" /> back
               </CButton>
             </router-link>
           </CCol>
@@ -132,6 +121,7 @@ const toggleMenu = () => {
         </div>
       </CCardBody>
     </CCard>
+
     <CTabs activeItemKey="DataBuilding">
       <CTabList variant="tabs" style="margin-top: 1rem;">
         <CTab itemKey="DataBuilding">Data Building</CTab>
@@ -142,19 +132,19 @@ const toggleMenu = () => {
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
-          <BuildingData :id="Number(props.id)" ref="buildingDataRef" />
+          <BuildingData :id="buildingId" ref="buildingDataRef" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Availability">
-          <BuildingAvailability :id="Number(props.id)" ref="buildingAvailabilityRef" />
+          <BuildingAvailability :id="buildingId" ref="buildingAvailabilityRef" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
-          <BuildingAbsorption :id="Number(props.id)" ref="buildingAbsorptionRef" />
+          <BuildingAbsorption :id="buildingId" ref="buildingAbsorptionRef" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
-          <BuildingContact :id="Number(props.id)" ref="buildingContactRef" />
+          <BuildingContact :id="buildingId" ref="buildingContactRef" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Files">
-          <BuildingImages :id="Number(props.id)" ref="buildingImagesRef" />
+          <BuildingImages :id="buildingId" ref="buildingImagesRef" />
         </CTabPanel>
       </CTabContent>    
 
