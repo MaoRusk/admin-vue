@@ -489,14 +489,14 @@ const router = createRouter({
   },
 })
 
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN)
+// router.beforeEach((to, from, next) => {
+//   const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN)
 
-  if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: ROUTE_NAMES.LOGIN })
-  } else {
-    next()
-  }
-})
+//   if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
+//     next({ name: ROUTE_NAMES.LOGIN })
+//   } else {
+//     next()
+//   }
+// })
 
 export default router

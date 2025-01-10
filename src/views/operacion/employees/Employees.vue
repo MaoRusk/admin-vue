@@ -3,7 +3,6 @@ import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { cilPlus } from '@coreui/icons';
-import data from './_data';
 
 const router = useRouter();
 const employees = ref([]);
@@ -45,7 +44,7 @@ const addUserFunction = () => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get('https://laravel-back-production-9320.up.railway.app/api/employees');
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users`);
     employees.value = response.data;
   } catch (error) {
     console.error('Error fetching employees:', error);

@@ -82,10 +82,10 @@
   const fetchServices = async (userId) => {
     try {
       // Llamado de apis en paralelo
-      const [employeeResponse,userTypesResponse,marketsResponse] = await Promise.all([
-        axios.get(`https://laravel-back-production-9320.up.railway.app/api/employees/${userId}`),
-        axios.get(`https://laravel-back-production-9320.up.railway.app/api/user-types`),
-        axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
+      const [employeeResponse, userTypesResponse, marketsResponse] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/${userId}`),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/user-types`),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/market`),
       ]);
       const employeeInfo = employeeResponse.data;
       // const userInfoDetails = userDetailsResponse.data;      
@@ -228,29 +228,28 @@
       formData.append('totalScreens', 0);
       formData.append('status', status.value);
   
-          axios.post('https://laravel-back-production-9320.up.railway.app/api/employees', formData).then(response => {
-            Swal.fire({
-              title: "Added!",
-              text: "Employee added successfully.",
-              icon: "success",
-              showConfirmButton: false,
-              timer: 3500
-            }).then(() => {
-              router.push({
-                name: 'Employees',
-                params: { id: Number(0) },
-              })
-            });
-  
-          }).catch(error => {
-            Swal.fire({
-              title: "Error adding Employee.",
-              text: error.response.data.message,
-              icon: "error",
-              showConfirmButton: false,
-              timer: 3500
-            });
-          });
+      try {
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/users`, formData);
+        await Swal.fire({
+          title: "Added!",
+          text: "Employee added successfully.",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3500
+        });
+        router.push({
+          name: 'Employees',
+          params: { id: Number(0) },
+        });
+      } catch (error) {
+        Swal.fire({
+          title: "Error adding Employee.",
+          text: error.response?.data?.message || "Unknown error occurred",
+          icon: "error",
+          showConfirmButton: false,
+          timer: 3500
+        });
+      }
     }
   }
 
@@ -279,28 +278,28 @@
       // formData.append('_method', "put");
 
       
-      axios.post(`https://laravel-back-production-9320.up.railway.app/api/employees/update/${props.id}`, formData).then(response => {
-        Swal.fire({
+      try {
+        await axios.put(`${import.meta.env.VITE_API_BASE_URL}/users/${props.id}`, formData);
+        await Swal.fire({
           title: "Updated!",
           text: "User updated successfully.",
           icon: "success",
           showConfirmButton: false,
           timer: 1500
-        }).then(() => {
-          router.push({
-            name: 'Employees',
-            params: { id: Number(0) },
-          })
         });
-      }).catch(error => {
+        router.push({
+          name: 'Employees',
+          params: { id: Number(0) },
+        });
+      } catch (error) {
         Swal.fire({
-              title: "Error update User.",
-              text: error.response.data.message,
-              icon: "error",
-              showConfirmButton: false,
-              timer: 2000
-            });
-      });
+          title: "Error update User.",
+          text: error.response?.data?.message || "Unknown error occurred",
+          icon: "error",
+          showConfirmButton: false,
+          timer: 2000
+        });
+      }
       }
   }
 
@@ -314,29 +313,28 @@
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        axios.put(`https://laravel-back-production-9320.up.railway.app/api/user/${props.id}/delete`).then(response => {
-          Swal.fire({
+        try {
+          await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/users/${props.id}`);
+          await Swal.fire({
             title: "Deleted!",
-            text: "Company deleted successfully.",
+            text: "User deleted successfully.",
             icon: "success",
             showConfirmButton: false,
             timer: 1500
-          }).then(() => {
-            router.push({
-              name: 'Employees',
-              params: { id: Number(0) },
-            })
           });
-          
-        }).catch(error => {
+          router.push({
+            name: 'Employees',
+            params: { id: Number(0) },
+          });
+        } catch (error) {
           Swal.fire({
             title: "Error!",
-            text: "Error deleting company.",
+            text: "Error deleting user.",
             icon: "error"
           });
-        });
+        }
       }
     });
     }

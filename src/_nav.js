@@ -30,7 +30,8 @@ export default [
       {
         component: 'CNavItem',
         name: 'Usuarios',
-        to: '/seguridad/usuarios',
+        to: '/operacion/employees',
+        icon: 'cil-people',
       },
     ]
   },
@@ -44,12 +45,6 @@ export default [
     component: 'CNavItem',
     name: 'Companies',
     to: '/operacion/empresas',
-    icon: 'cil-list',
-  },
-  {
-    component: 'CNavItem',
-    name: 'Employees',
-    to: '/operacion/employees',
     icon: 'cil-list',
   },
   {
