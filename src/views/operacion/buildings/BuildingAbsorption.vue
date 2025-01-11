@@ -1,13 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useRouter } from 'vue-router';
 import BuildingAbsorptionForm from './BuildingAbsorptionForm.vue';
 import { CIcon } from '@coreui/icons-vue';
 import { cilPencil, cilTrash, cilPlus } from '@coreui/icons';
 
-const router = useRouter();
+const props = defineProps({
+  id: Number
+})
+console.log(props)
+
 const absorptions = ref([]);
 const loading = ref(false);
 const showForm = ref(false);

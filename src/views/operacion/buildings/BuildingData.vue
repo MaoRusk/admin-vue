@@ -1,11 +1,17 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watchEffect } from 'vue';
 import Swal from 'sweetalert2';
 import { API } from '../../../services';
+import { useRouter } from 'vue-router';
+import { ROUTE_NAMES } from '../../../router/routeNames';
+
+const router = useRouter()
 
 const props = defineProps({
   id: Number
 })
+
+const emit = defineEmits(['submitting'])
 
 const buildingEmpty = {
   region_id: '', // number
@@ -26,22 +32,21 @@ const buildingEmpty = {
   total_land: '', // number
   offices_space: '', // number
 
-  'has_expansion_land': true,
   has_crane: false,
-  has_hvac: true,
+  has_hvac: false,
   has_rail_spur: false,
-  has_sprinklers: true,
-  has_office: true,
+  has_sprinklers: false,
+  has_office: false,
   has_leed: false,
+  has_expansion_land: false,
 
-  // 'hvac_production_area': '', // string
   ventilation: '', // string
   transformer_capacity: '', // string
   construction_state: '', // string
   roof_system: '', // string
   skylights_sf: '', // number
   coverage: '', // string
-  'kvas': '', // string
+  kvas: '', // string
   expansion_land: '', // number
   class: '', // string enum
   type_generation: '', // string enum
@@ -51,54 +56,70 @@ const buildingEmpty = {
   lightning: '', // string enum
   fire_protection_system: '', // string enum
   deal: '', // string enum
-  'loading_door': '', // string enum
-  'above_market_tis': '', // string enum
+  loading_door: '', // string enum
+  above_market_tis: '', // string enum
   status: '', // string enum
 
   hvacProduction: '',
   hvacArea: '',
-
-  availableSince: ''
+  sfSm: false,
 }
 
 const building = reactive(buildingEmpty)
+const formHtmlElement = ref(null)
 
-const hvacProductionArea_input = ref(null);
-const hvacProductionArea2_input = ref(null);
-
-const validateRangeInputs = (value1, value2, field1Ref, field2Ref, fieldName) => {
-  if (value1 && value2 && Number(value1) > Number(value2)) {
+const validateRangeInputs = (model, field1, field2, fieldName) => {
+  if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
     Swal.fire({
       icon: 'warning',
       title: 'Invalid Range',
       text: `The first ${fieldName} value cannot be greater than the second value`,
     });
-    
-    // Reset the values
-    field1Ref.value = null;
-    field2Ref.value = null;
-    return false;
+    model[field1] = ''
+    model[field2] = ''
   }
-  return true;
 };
 
 const validateHvacRange = () => {
   validateRangeInputs(
-    hvacProductionArea_input.value,
-    hvacProductionArea2_input.value,
-    hvacProductionArea_input,
-    hvacProductionArea2_input,
+    building,
+    'hvacProduction',
+    'hvacArea',
     'HVAC Production Area'
   );
 };
 
-// Function to fetch building dat
+async function onSubmit() {
+  emit('submitting', true)
+  try {
+    const { data } = await API.buildings.createBuilding({
+      ...building,
+      hvac_production_area: `${building.hvacProduction} x ${building.hvacArea}`
+    });
+    emit('submitting', false)
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: data.message,
+    });
+    router.push({ name: ROUTE_NAMES.BUILDINGS })
+  } catch (e) {
+    emit('submitting', false)
+    Swal.fire(e.response.data.message, JSON.stringify(e.response.data.errors), 'error')
+  }
+}
+
 const fetchBuildingData = async () => {
   try {
     const buildingId = props.id;
     const { data } = await API.buildings.getBuilding(buildingId)
     console.log(data)
-
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: 'The building was saved correctly',
+    });
+    router.push({ name: ROUTE_NAMES.BUILDINGS })
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -132,63 +153,63 @@ async function fetchBuildingStatuses() {
   statuses.loading = true
   const { data } = await API.buildings.getBuildingsStatus()
   statuses.loading = false
-  statuses.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  statuses.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchBuildingTechnicalImprovements() {
   technicalImprovements.loading = true
   const { data } = await API.buildings.getBuildingsTechnicalImprovements();
   technicalImprovements.loading = false
-  technicalImprovements.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  technicalImprovements.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchBuildingLoadingDoors() {
   loadingDoors.loading = true
   const { data } = await API.buildings.getBuildingsLoadingDoors();
   loadingDoors.loading = false
-  loadingDoors.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  loadingDoors.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchBuildingTypesLightnings() {
   typesLightnings.loading = true
   const { data } = await API.buildings.getBuildingsTypesLightnings();
   typesLightnings.loading = false
-  typesLightnings.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  typesLightnings.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchBuildingTypeGenerations() {
   generationsTypes.loading = true
   const { data } = await API.buildings.getBuildingsTypesGeneration();
   generationsTypes.loading = false
-  generationsTypes.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  generationsTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchTenancies() {
   tenancies.loading = true
   const { data } = await API.buildings.getBuildingsTenancies();
   tenancies.loading = false
-  tenancies.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  tenancies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchCurrencies() {
   currencies.loading = true
   const { data } = await API.currencies.getCurrencies();
   currencies.loading = false
-  currencies.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  currencies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchBuildingContructionTypes() {
   constructionTypes.loading = true
   const { data } = await API.buildings.getBuildingsTypesConstruction();
   constructionTypes.loading = false
-  constructionTypes.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  constructionTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchBuildingDeals() {
   deals.loading = true
   const { data } = await API.buildings.getBuildingsTypesDeals();
   deals.loading = false
-  deals.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  deals.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchDevelopers() {
@@ -217,9 +238,9 @@ async function fetchIndustrialParks() {
   industrialParks.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
-async function fetchSubmarkets() {
+async function fetchSubmarkets(marketId) {
   submarkets.loading = true
-  const { data } = await API.submarkets.getSubmarkets();
+  const { data } = await API.submarkets.getSubmarkets({ marketId });
   submarkets.loading = false
   submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
@@ -235,14 +256,14 @@ async function fetchClasses() {
   classes.loading = true
   const { data } = await API.buildings.getBuildingsClasses();
   classes.loading = false
-  classes.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  classes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchFireProtectionSystems() {
   fireProtectionSystems.loading = true
   const { data } = await API.buildings.getBuildingsFireProtectionSystems();
   fireProtectionSystems.loading = false
-  fireProtectionSystems.items = Object.keys(data.data).map(item => ({ label: data.data[item], value: item }))
+  fireProtectionSystems.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
 }
 
 async function fetchRegions() {
@@ -259,14 +280,13 @@ onMounted(async () => {
   fetchClasses()
   fetchRegions()
   fetchMarkets()
-  fetchSubmarkets()
   fetchIndustrialParks()
   fetchDevelopers()
+  fetchTenancies()
+  
+  fetchCurrencies()
   fetchFireProtectionSystems()
   fetchBuildingDeals()
-  fetchTenancies()
-
-  fetchCurrencies()
   fetchBuildingContructionTypes()
   fetchBuildingTypeGenerations()
   fetchBuildingLoadingDoors()
@@ -275,13 +295,23 @@ onMounted(async () => {
   fetchBuildingStatuses()
 });
 
-const getFormData = () => building
+watchEffect(async () => {
+  if (building.market_id) {
+    await fetchSubmarkets(building.market_id)
+    building.sub_market_id = ''
+  }
+})
 
 defineExpose({
-  getFormData
+  submit() {
+    if (formHtmlElement.value?.reportValidity()) {
+      formHtmlElement.value?.requestSubmit()
+    }
+  }
 });
 </script>
 <template>
+  <form @submit.prevent="onSubmit" ref="formHtmlElement">
     <CRow>
       <CCol :md="12">
         <CRow>
@@ -301,6 +331,7 @@ defineExpose({
                       size="sm"
                       v-model="building.building_name"
                       label="Building Name"
+                      required
                     />
                   </div>
                 </CCol>
@@ -314,6 +345,7 @@ defineExpose({
                       size="sm"
                       :loading="classes.loading"
                       @change="([option]) => { building.class = option?.value ?? '' }"
+                      required
                     />
                   </div>
                 </CCol>
@@ -325,6 +357,7 @@ defineExpose({
                       class="no-spinner"
                       v-model="building.building_size_sf"
                       label="Building Size (SF)"
+                      required
                     />
                   </div>
                 </CCol>
@@ -336,17 +369,13 @@ defineExpose({
                       class="no-spinner"
                       v-model="building.expansion_land"
                       label="Expansion Land"
+                      required
                     />
                   </div>
                 </CCol>
                 <CCol md="3">
                   <div class="mt-2">
                     <CDatePicker label="Year Built" v-model:date="building.year_built" locale="en-US" size="sm" selectionType="year" />
-                  </div>
-                </CCol>
-                <CCol md="3">
-                  <div class="mt-2">
-                    <CDatePicker label="Available Since" locale="en-US" size="sm" selectionType="month" v-model:date="building.availableSince" />
                   </div>
                 </CCol>
                 <CCol md="3">
@@ -359,6 +388,7 @@ defineExpose({
                       size="sm"
                       :loading="statuses.loading"
                       @change="([option]) => { building.status = option?.value ?? '' }"
+                      required
                     />
                   </div>
                 </CCol>
@@ -383,6 +413,7 @@ defineExpose({
                 size="sm"
                 :loading="regions.loading"
                 @change="([option]) => { building.region_id = option?.value ?? '' }"
+                required
               />
             </div>
             <!-- INDUSTRIAL PARK -->
@@ -395,6 +426,7 @@ defineExpose({
                 size="sm"
                 :loading="industrialParks.loading"
                 @change="([option]) => { building.industrial_park_id = option?.value ?? '' }"
+                required
               />
             </div>
           </CCol>
@@ -409,6 +441,7 @@ defineExpose({
                 size="sm"
                 :loading="markets.loading"
                 @change="([option]) => { building.market_id = option?.value ?? '' }"
+                required
               />
             </div>
             <!-- SUB MARKET -->
@@ -421,10 +454,12 @@ defineExpose({
                 size="sm"
                 :loading="submarkets.loading"
                 @change="([option]) => { building.sub_market_id = option?.value ?? '' }"
+                :disabled="!building.market_id"
+                required
               />
             </div>
           </CCol>
-          <CCol :md="4">    
+          <CCol :md="4">
             <!-- LATITUD -->
             <div class="mt-2">
               <CFormInput
@@ -432,6 +467,7 @@ defineExpose({
               size="sm"
               label="Latitude"
               v-model="building.latitud"
+              required
               />
             </div>
             <!-- ALTITUD -->
@@ -441,6 +477,7 @@ defineExpose({
               size="sm"
               label="Longitude"
               v-model="building.longitud"
+              required
               />
             </div>
           </CCol>
@@ -465,6 +502,7 @@ defineExpose({
                       size="sm"
                       :loading="owners.loading"
                       @change="([option]) => { building.owner_id = option?.value ?? '' }"
+                      required
                     />
                   </div>
                 </CCol>
@@ -479,6 +517,7 @@ defineExpose({
                       size="sm"
                       :loading="developers.loading"
                       @change="([option]) => { building.developer_id = option?.value ?? '' }"
+                      required
                     />
                   </div>
                 </CCol>
@@ -493,6 +532,7 @@ defineExpose({
                       size="sm"
                       :loading="builders.loading"
                       @change="([option]) => { building.builder_id = option?.value ?? '' }"
+                      required
                     />
                   </div>
                 </CCol>
@@ -506,6 +546,7 @@ defineExpose({
                       size="sm"
                       :loading="userOwners.loading"
                       @change="([option]) => { building.user_owner_id = option?.value ?? '' }"
+                      required
                     />
                   </div>
                 </CCol>
@@ -531,6 +572,7 @@ defineExpose({
                 size="sm"
                 :loading="currencies.loading"
                 @change="([option]) => { building.currency = option?.value ?? '' }"
+                required
               />
             </div>
           </CCol>
@@ -545,6 +587,7 @@ defineExpose({
                 size="sm"
                 :loading="tenancies.loading"
                 @change="([option]) => { building.tenancy = option?.value ?? '' }"
+                required
               />
             </div>
           </CCol>
@@ -559,6 +602,7 @@ defineExpose({
                 size="sm"
                 :loading="deals.loading"
                 @change="([option]) => { building.deal = option?.value ?? '' }"
+                required
               />
             </div>
           </CCol>
@@ -583,6 +627,7 @@ defineExpose({
                       size="sm"
                       :loading="generationsTypes.loading"
                       @change="([option]) => { building.type_generation = option?.value ?? '' }"
+                      required
                     />
                   </div>
                   <!-- HEIGHT -->
@@ -618,6 +663,17 @@ defineExpose({
                       size="sm"
                       v-model="building.offices_space"
                       label="Offices Space"
+                    />
+                  </div>
+                  <div class="mt-2">
+                    <CMultiSelect
+                      label="Loading Door"
+                      :multiple="false"
+                      :options="loadingDoors.items"
+                      optionsStyle="text"
+                      size="sm"
+                      :loading="loadingDoors.loading"
+                      @change="([option]) => { building.loading_door = option?.value ?? '' }"
                     />
                   </div>
                 </CCol>
@@ -672,6 +728,17 @@ defineExpose({
                       label="Skylights SF"
                     />
                   </div>
+                  <div class="mt-2">
+                    <CMultiSelect
+                      label="Above Market TIS"
+                      :multiple="false"
+                      :options="technicalImprovements.items"
+                      optionsStyle="text"
+                      size="sm"
+                      :loading="technicalImprovements.loading"
+                      @change="([option]) => { building.above_market_tis = option?.value ?? '' }"
+                    />
+                  </div>
                 </CCol>
 
                 <!-- Tercera columna: Sistemas eléctricos y ambientales -->
@@ -704,6 +771,14 @@ defineExpose({
                       size="sm"
                       v-model="building.ventilation"
                       label="Ventilation System"
+                    />
+                  </div>
+                  <div class="mt-2">
+                    <CFormInput
+                      type="text"
+                      size="sm"
+                      v-model="building.kvas"
+                      label="KVAS"
                     />
                   </div>
                   <!-- HVAC PRODUCTION AREA -->
@@ -800,6 +875,7 @@ defineExpose({
         </CRow>
       </CCol>
     </CRow>
+  </form>
 </template>
 
 <style scoped>
