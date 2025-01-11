@@ -14,24 +14,22 @@ const props = defineProps({
 const emit = defineEmits(['submitting'])
 
 const buildingEmpty = {
-  region_id: '', // number
-  market_id: '', // number
-  sub_market_id: '', // number
-  builder_id: '', // number
-  industrial_park_id: '', // number
-  developer_id: '', // number
-  owner_id: '', // number
-  user_owner_id: '', // number
-
-  building_name: '', // string
-  building_size_sf: '', // number
-  latitud: '', // string
-  longitud: '', // string
-  year_built: '', // number
-  clear_height: '', // number
-  total_land: '', // number
-  offices_space: '', // number
-
+  region_id: '', 
+  market_id: '', 
+  sub_market_id: '', 
+  builder_id: '', 
+  industrial_park_id: '', 
+  developer_id: '', 
+  owner_id: '', 
+  user_owner_id: '', 
+  building_name: '', 
+  building_size_sf: '', 
+  latitud: '', 
+  longitud: '', 
+  year_built: '', 
+  clear_height: '', 
+  total_land: '', 
+  offices_space: '', 
   has_crane: false,
   has_hvac: false,
   has_rail_spur: false,
@@ -39,34 +37,34 @@ const buildingEmpty = {
   has_office: false,
   has_leed: false,
   has_expansion_land: false,
-
-  ventilation: '', // string
-  transformer_capacity: '', // string
-  construction_state: '', // string
-  roof_system: '', // string
-  skylights_sf: '', // number
-  coverage: '', // string
-  kvas: '', // string
-  expansion_land: '', // number
-  class: '', // string enum
-  type_generation: '', // string enum
-  currency: '', // string enum
-  tenancy: '', // string enum
-  construction_type: '', // string enum
-  lightning: '', // string enum
-  fire_protection_system: '', // string enum
-  deal: '', // string enum
-  loading_door: '', // string enum
-  above_market_tis: '', // string enum
-  status: '', // string enum
+  ventilation: '', 
+  transformer_capacity: '', 
+  construction_state: '', 
+  roof_system: '', 
+  skylights_sf: '', 
+  coverage: '', 
+  kvas: '', 
+  expansion_land: '', 
+  class: '', 
+  type_generation: '', 
+  currency: '', 
+  tenancy: '', 
+  construction_type: '', 
+  lightning: '', 
+  fire_protection_system: '', 
+  deal: '', 
+  loading_door: '', 
+  above_market_tis: '', 
+  status: '', 
 
   hvacProduction: '',
   hvacArea: '',
-  sfSm: false,
+  sfSm: false, // TODO, esta variable no esta en building
 }
 
 const building = reactive(buildingEmpty)
 const formHtmlElement = ref(null)
+const HVAC_SEPARATOR = ' x '
 
 const validateRangeInputs = (model, field1, field2, fieldName) => {
   if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
@@ -92,10 +90,16 @@ const validateHvacRange = () => {
 async function onSubmit() {
   emit('submitting', true)
   try {
-    const { data } = await API.buildings.createBuilding({
+    let data;
+    const body = {
       ...building,
-      hvac_production_area: `${building.hvacProduction} x ${building.hvacArea}`
-    });
+      hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${HVAC_SEPARATOR}${building.hvacArea}` : '',
+    }
+    if (props.id) {
+      ({ data } = await API.buildings.updateBuilding(props.id, body));
+    } else {
+      ({ data } = await API.buildings.createBuilding(body));
+    }
     emit('submitting', false)
     Swal.fire({
       icon: 'success',
@@ -112,8 +116,19 @@ async function onSubmit() {
 const fetchBuildingData = async () => {
   try {
     const buildingId = props.id;
-    const { data } = await API.buildings.getBuilding(buildingId)
-    console.log(data)
+    const { data } = await API.buildings.getBuilding(buildingId);
+    ['region_id', 'market_id', 'sub_market_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id', 'user_owner_id', 'building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height', 'total_land', 'offices_space', 'ventilation', 'transformer_capacity', 'construction_state', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'fire_protection_system', 'deal', 'loading_door', 'above_market_tis', 'status']
+    .forEach(prop => building[prop] = data.data[prop]);
+    ['has_crane', 'has_hvac', 'has_rail_spur', 'has_sprinklers', 'has_office', 'has_leed', 'has_expansion_land']
+    .forEach(prop => building[prop] = Boolean(data.data[prop]))
+
+    building.year_built = `${data.data.year_built}`
+    if (data.data.hvac_production_area && data.data.hvac_production_area.length > HVAC_SEPARATOR.length) {
+      const [hvacProduction, hvacArea] = data.data.hvac_production_area.split(HVAC_SEPARATOR)
+      building.hvacProduction = hvacProduction
+      building.hvacArea = hvacArea
+    }
+    building.sfSm = false // TODO, esta variable no esta en building
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -147,63 +162,63 @@ async function fetchBuildingStatuses() {
   statuses.loading = true
   const { data } = await API.buildings.getBuildingsStatus()
   statuses.loading = false
-  statuses.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  statuses.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.status }))
 }
 
 async function fetchBuildingTechnicalImprovements() {
   technicalImprovements.loading = true
   const { data } = await API.buildings.getBuildingsTechnicalImprovements();
   technicalImprovements.loading = false
-  technicalImprovements.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  technicalImprovements.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.above_market_tis }))
 }
 
 async function fetchBuildingLoadingDoors() {
   loadingDoors.loading = true
   const { data } = await API.buildings.getBuildingsLoadingDoors();
   loadingDoors.loading = false
-  loadingDoors.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  loadingDoors.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.loading_door }))
 }
 
 async function fetchBuildingTypesLightnings() {
   typesLightnings.loading = true
   const { data } = await API.buildings.getBuildingsTypesLightnings();
   typesLightnings.loading = false
-  typesLightnings.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  typesLightnings.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.lightning }))
 }
 
 async function fetchBuildingTypeGenerations() {
   generationsTypes.loading = true
   const { data } = await API.buildings.getBuildingsTypesGeneration();
   generationsTypes.loading = false
-  generationsTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  generationsTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.type_generation }))
 }
 
 async function fetchTenancies() {
   tenancies.loading = true
   const { data } = await API.buildings.getBuildingsTenancies();
   tenancies.loading = false
-  tenancies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  tenancies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.tenancy }))
 }
 
 async function fetchCurrencies() {
   currencies.loading = true
   const { data } = await API.currencies.getCurrencies();
   currencies.loading = false
-  currencies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  currencies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.currency }))
 }
 
 async function fetchBuildingContructionTypes() {
   constructionTypes.loading = true
   const { data } = await API.buildings.getBuildingsTypesConstruction();
   constructionTypes.loading = false
-  constructionTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  constructionTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.construction_type }))
 }
 
 async function fetchBuildingDeals() {
   deals.loading = true
   const { data } = await API.buildings.getBuildingsTypesDeals();
   deals.loading = false
-  deals.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  deals.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.deal }))
 }
 
 async function fetchDevelopers() {
@@ -216,83 +231,92 @@ async function fetchDevelopers() {
   owners.loading = false
   builders.loading = false
   userOwners.loading = false
-  
-  const items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 
-  developers.items = items
-  owners.items = items
-  builders.items = items
-  userOwners.items = items
+  developers.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.developer_id })).sort((a, b) => a.label.localeCompare(b.label))
+  owners.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.owner_id })).sort((a, b) => a.label.localeCompare(b.label))
+  builders.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.builder_id })).sort((a, b) => a.label.localeCompare(b.label))
+  userOwners.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.user_owner_id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchIndustrialParks() {
   industrialParks.loading = true
   const { data } = await API.industrialparks.getIndustrialParks();
   industrialParks.loading = false
-  industrialParks.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+  industrialParks.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.industrial_park_id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchSubmarkets(marketId) {
   submarkets.loading = true
   const { data } = await API.submarkets.getSubmarkets({ marketId });
   submarkets.loading = false
-  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.sub_market_id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchMarkets() {
   markets.loading = true
   const { data } = await API.markets.getMarkets();
   markets.loading = false
-  markets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+  markets.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.market_id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchClasses() {
   classes.loading = true
   const { data } = await API.buildings.getBuildingsClasses();
   classes.loading = false
-  classes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  classes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.class }))
 }
 
 async function fetchFireProtectionSystems() {
   fireProtectionSystems.loading = true
   const { data } = await API.buildings.getBuildingsFireProtectionSystems();
   fireProtectionSystems.loading = false
-  fireProtectionSystems.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item }))
+  fireProtectionSystems.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.fire_protection_system }))
 }
 
 async function fetchRegions() {
   regions.loading = true
   const { data } = await API.regions.getRegions();
   regions.loading = false
-  regions.items = data.data.map(({ id, name }) => ({ label: name, value: id }))
+  regions.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.region_id}))
 }
 
 onMounted(async () => {
+  Swal.fire({
+    title: "Loading!",
+    didOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+  })
   if (props.id) {
     await fetchBuildingData();
   }
-  fetchClasses()
-  fetchRegions()
-  fetchMarkets()
-  fetchIndustrialParks()
-  fetchDevelopers()
-  fetchTenancies()
-  
-  fetchCurrencies()
-  fetchFireProtectionSystems()
-  fetchBuildingDeals()
-  fetchBuildingContructionTypes()
-  fetchBuildingTypeGenerations()
-  fetchBuildingLoadingDoors()
-  fetchBuildingTypesLightnings()
-  fetchBuildingTechnicalImprovements()
-  fetchBuildingStatuses()
+  await Promise.all([
+    fetchClasses(),
+    fetchRegions(),
+    fetchMarkets(),
+    fetchIndustrialParks(),
+    fetchDevelopers(),
+    fetchTenancies(),
+    
+    fetchCurrencies(),
+    fetchFireProtectionSystems(),
+    fetchBuildingDeals(),
+    fetchBuildingContructionTypes(),
+    fetchBuildingTypeGenerations(),
+    fetchBuildingLoadingDoors(),
+    fetchBuildingTypesLightnings(),
+    fetchBuildingTechnicalImprovements(),
+    fetchBuildingStatuses()
+  ])
+  Swal.close()
 });
 
 watchEffect(async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
-    building.sub_market_id = ''
+    building.sub_market_id = props.id ? building.sub_market_id : ''
   }
 })
 
