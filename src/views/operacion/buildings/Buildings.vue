@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { cilPlus } from '@coreui/icons'
+import { cilPlus, cilTrash, cilEyedropper } from '@coreui/icons'
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { watch } from 'vue';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { BUILDINGS_ITEMS_PER_PAGE } from '../../../constants';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const storage = useLocalStorage()
@@ -29,6 +30,27 @@ const columns = [
   { key: 'industrialParkName', label: 'Industrial Park' },
   { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
+
+async function removeBuilding(id) {
+  try {
+    const { isConfirmed } = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    })
+    if (isConfirmed) {
+      const { data } = await API.buildings.deleteBuilding(id);
+      Swal.fire('Deleted!', data.message, 'success')
+      fetchBuildings()
+    }
+  } catch (error) {
+    console.error('Error fetching buildings:', error);
+  }
+}
 
 async function fetchBuildings () {
   loading.value = true
@@ -118,9 +140,12 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
     }"
   >
     <template #actions="{ item }">
-      <td class="py-2">
+      <td class="d-flex gap-1">
         <CButton color="primary" variant="outline" square size="sm" @click="router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id } })">
-          {{ 'Details' }}
+          <CIcon :content="cilEyedropper" size="sm" />
+        </CButton>
+        <CButton color="danger" variant="outline" square size="sm" @click="removeBuilding(item.id)">
+          <CIcon :content="cilTrash" size="sm" />
         </CButton>
       </td>
     </template>
