@@ -1,120 +1,131 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { cilPlus } from '@coreui/icons'
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { watch } from 'vue';
+import { useLocalStorage } from '../../../composables/useLocalStorage';
+import { BUILDINGS_ITEMS_PER_PAGE } from '../../../constants';
 
-  const router = useRouter();
-  const buildings = ref([]);
+const router = useRouter();
+const storage = useLocalStorage()
 
-  const selectedStatus = ref('All');
+const buildings = ref([]);
+const loading = ref(false)
+const totalItems = ref(0)
+const totalPages = ref(0)
+const page = ref(1)
+const itemsPerPage = ref(storage.getItem(BUILDINGS_ITEMS_PER_PAGE) ?? 10)
+const columnFilter = ref({})
+const columnSorter = ref({})
+const tableSearch = ref('')
 
-  const statusOptions = computed(() => ['All', ...new Set(buildings.value.map(user => user.status))]);
+const columns = [
+  { key: 'status', label: 'Status' },
+  { key: 'building_name', label: 'Building Name' },
+  { key: 'marketName', label: 'Market' },
+  { key: 'submarketName', label: 'Submarket' },
+  { key: 'industrialParkName', label: 'Industrial Park' },
+  { key: 'actions', label: 'actions', sorter: false, filter: false },
+];
 
-  const filteredBuildings = computed(() => {
-    if (selectedStatus.value === 'All') {
-      return buildings.value;
-    }
-    return buildings.value.filter(user => user.status === selectedStatus.value);
-  });
+async function fetchBuildings () {
+  loading.value = true
 
-  const columns = [
-    { key: 'status', label: 'status' },
-    { key: 'name1', label: 'BuildingName' },
-    { key: 'market', label: 'market' },
-    { key: 'subMarket', label: 'subMarket' },
-    { key: 'industrialPark', label: 'industrialPark' },
-    { key: 'registered', label: 'registered' },
-    { key: 'actions', label: 'actions' },
-  ];
-
-  
-const getBadge = (status) => {
-  switch (status) {
-    case 'Availability':
-      return 'success'
-    case 'Absorption':
-      return 'danger'
-    case 'NegativeAbsoprtion':
-      return 'secondary'
-    default:
-      'primary'
+  try {
+    const { data } = await API.buildings.getBuildings({
+      page: page.value,
+      size: itemsPerPage.value,
+      search: tableSearch.value,
+    }, columnFilter.value, columnSorter.value);
+    page.value = data.data.current_page
+    totalItems.value = data.data.total
+    totalPages.value = data.data.last_page
+    buildings.value = data.data.data.map((item) => ({
+      ...item,
+      marketName: item.market.name,
+      submarketName: item.sub_market.name,
+      industrialParkName: item.industrial_park.name,
+    }))
+    loading.value = false
+  } catch (error) {
+    console.error('Error fetching buildings:', error);
+    buildings.value = [];
+  } finally {
+    loading.value = false
   }
 }
 
-  const showUserDetails = (item) => {
-    router.push({
-      name: 'BuildingDetalle',
-      params: { id: Number(item.id) },
-    })
-  }
+onMounted(() => {
+  fetchBuildings();
+});
 
-  const fetchBuildings = async () => {
-    try {
-      const response = await API.buildings.getBuildings();
-      console.log(response)
-    } catch (error) {
-      console.error('Error fetching buildings:', error);
-      buildings.value = [];
-    }
-  };
-
-  onMounted(async () => {
-    await fetchBuildings();
-  });
+watch([page, itemsPerPage, tableSearch], fetchBuildings)
+watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
 </script>
 
 <template>
-  <!-- Botón para agregar usuario -->
   <div class="d-flex justify-content-end mb-3">
     <CButton color="success" @click="router.push({ name: ROUTE_NAMES.BUILDINGS_CREATE })">
       <CIcon :content="cilPlus" size="sm" />
       New Building
     </CButton>
   </div>
-  <div class="d-flex justify-content-end align-items-center mb-3">
-    <div>
-      <CFormSelect
-        v-model="selectedStatus"
-        :options="statusOptions"
-        style="width: 200px;"
-      />
-    </div>
-
-  </div>
   <CSmartTable
-    :active-page="1"
-    cleaner
-    column-filter
-    column-sorter
+    :pagination="{ external: true }"
+    :column-filter="{ external: true }"
+    :column-sorter="{ external: true }"
+    :table-filter="{ external: true }"
+    :loading="loading"
+    :items="buildings"
+    :paginationProps="{
+      activePage: page,
+      pages: totalPages
+    }"
     :columns="columns"
-    clickable-rows
+    cleaner
     footer
     header
-    :items-per-page="10"
     items-per-page-select
-    :items="filteredBuildings"
-    pagination
-    table-filter
+    :items-per-page="itemsPerPage"
     :table-props="{
       hover: true,
       striped: true,
       responsive: true,
     }"
+    @active-page-change="(_activePage) => {
+      page = _activePage
+    }"
+    @items-per-page-change="(_itemsPerPage) => {
+      activePage = 1
+      itemsPerPage = _itemsPerPage
+      storage.setItem(BUILDINGS_ITEMS_PER_PAGE, _itemsPerPage)
+    }"
+    @sorter-change="(sorter) => {
+      columnSorter = sorter
+      console.log(sorter)
+    }"
+    @table-filter-change="(filter) => {
+      activePage = 1
+      tableSearch = filter
+      console.log(filter)
+    }"
+    @column-filter-change="(filter) => {
+      activePage = 1
+      columnFilter = filter
+      console.log(filter)
+    }"
   >
-  <template #status="{ item }">
-      <td>
-        <CBadge :color="getBadge(item.status)">{{ item.status }}</CBadge>
-      </td>
-    </template>
-
     <template #actions="{ item }">
       <td class="py-2">
-        <CButton color="primary" variant="outline" square size="sm" @click="showUserDetails(item)">
+        <CButton color="primary" variant="outline" square size="sm" @click="router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id } })">
           {{ 'Details' }}
         </CButton>
       </td>
     </template>
   </CSmartTable>
+  <div>
+    Total records {{ totalItems }}
+  </div>
 </template>

@@ -114,12 +114,6 @@ const fetchBuildingData = async () => {
     const buildingId = props.id;
     const { data } = await API.buildings.getBuilding(buildingId)
     console.log(data)
-    Swal.fire({
-      icon: 'success',
-      title: 'Success',
-      text: 'The building was saved correctly',
-    });
-    router.push({ name: ROUTE_NAMES.BUILDINGS })
   } catch (error) {
     Swal.fire({
       icon: 'error',

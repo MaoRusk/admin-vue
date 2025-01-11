@@ -1,8 +1,16 @@
 import httpClient from '../../plugins/axios'
 
 export default {
-  getBuildings() {
-    return httpClient.get(`/buildings`)
+  getBuildings(query, filters = {}, sorter = {}) {
+    return httpClient.get(`/buildings`, {
+      params: {
+        page: query?.page || null,
+        size: query?.size || null,
+        search: query?.search || null,
+        ...filters,
+        ...sorter,
+      },
+    })
   },
   getBuilding(buildingId) {
     return httpClient.get(`/buildings/${buildingId}`)
