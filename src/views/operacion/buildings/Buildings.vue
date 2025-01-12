@@ -1,18 +1,17 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, watch } from 'vue';
+import Swal from 'sweetalert2';
 import { cilPlus, cilTrash, cilEyedropper } from '@coreui/icons'
+
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
-import { watch } from 'vue';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { BUILDINGS_ITEMS_PER_PAGE } from '../../../constants';
-import Swal from 'sweetalert2';
 
-const router = useRouter();
 const storage = useLocalStorage()
 
 const buildings = ref([]);
+
 const loading = ref(false)
 const totalItems = ref(0)
 const totalPages = ref(0)
@@ -89,7 +88,7 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="router.push({ name: ROUTE_NAMES.BUILDINGS_CREATE })">
+    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.BUILDINGS_CREATE })">
       <CIcon :content="cilPlus" size="sm" />
       New Building
     </CButton>
@@ -141,7 +140,7 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
   >
     <template #actions="{ item }">
       <td class="d-flex gap-1">
-        <CButton color="primary" variant="outline" square size="sm" @click="router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id } })">
+        <CButton color="primary" variant="outline" square size="sm" @click="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id } })">
           <CIcon :content="cilEyedropper" size="sm" />
         </CButton>
         <CButton color="danger" variant="outline" square size="sm" @click="removeBuilding(item.id)">

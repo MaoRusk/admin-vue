@@ -1,7 +1,8 @@
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import { useRoute } from 'vue-router'
 import { cilArrowCircleLeft, cilSave } from '@coreui/icons'
+
 import BuildingData from './BuildingData.vue'
 import BuildingAvailability from './BuildingAvailability.vue'
 import BuildingContact from './BuildingContact.vue';
@@ -11,13 +12,6 @@ import { ROUTE_NAMES } from '../../../router/routeNames';
 
 const route = useRoute()
 
-watch(
-  () => route.params.buildingId,
-  (newId) => {
-    console.log(newId)
-  }
-)
-
 const buildingId = computed(() => Number(route.params.buildingId) || null)
 
 const activeTab = ref('DataBuilding')
@@ -25,23 +19,43 @@ const submittingForm = ref(false)
 
 const buildingDataRef = ref(null);
 const buildingAvailabilityRef = ref(null);
+const buildingAbsorptionRef = ref(null);
 const buildingContactRef = ref(null);
 const buildingImagesRef = ref(null);
-const buildingAbsorptionRef = ref(null);
+
+const tabDataLoaded = ref(false);
+const tabAvailabilityLoaded = ref(false);
+const tabContactLoaded = ref(false);
+const tabImagesLoaded = ref(false);
+const tabAbsorptionLoaded = ref(false);
 
 function dispatchSubmitForm() {
   if (activeTab.value === 'DataBuilding') {
-    buildingDataRef.value?.submit()
+    buildingDataRef.value?.submit?.()
   } else if (activeTab.value === 'Availability') {
-    buildingAvailabilityRef.value?.submit()
+    buildingAvailabilityRef.value?.submit?.()
   } else if (activeTab.value === 'Absorption') {
-    buildingContactRef.value?.submit()
+    buildingAbsorptionRef.value?.submit?.()
   } else if (activeTab.value === 'ContactBuilding') {
-    buildingImagesRef.value?.submit()
+    buildingImagesRef.value?.submit?.()
   } else if (activeTab.value === 'Files') {
-    buildingAbsorptionRef.value?.submit()
+    buildingContactRef.value?.submit?.()
   }
 }
+
+watchEffect(() => {
+  if (activeTab.value === 'DataBuilding') {
+    tabDataLoaded.value = true
+  } else if (activeTab.value === 'Availability') {
+    tabAvailabilityLoaded.value = true
+  } else if (activeTab.value === 'Absorption') {
+    tabAbsorptionLoaded.value = true
+  } else if (activeTab.value === 'ContactBuilding') {
+    tabContactLoaded.value = true
+  } else if (activeTab.value === 'Files') {
+    tabImagesLoaded.value = true
+  }
+})
 
 </script>
 <template>
@@ -74,19 +88,19 @@ function dispatchSubmitForm() {
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
-          <BuildingData :id="buildingId" ref="buildingDataRef" @submitting="(value) => submittingForm = value" />
+          <BuildingData v-if="tabDataLoaded" :id="buildingId" ref="buildingDataRef" @submitting="(value) => submittingForm = value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Availability">
-          <BuildingAvailability :id="buildingId" ref="buildingAvailabilityRef" />
+          <BuildingAvailability v-if="tabAvailabilityLoaded" :id="buildingId" ref="buildingAvailabilityRef" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
-          <BuildingAbsorption :id="buildingId" ref="buildingAbsorptionRef" />
+          <BuildingAbsorption v-if="tabAbsorptionLoaded" :id="buildingId" ref="buildingAbsorptionRef" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
-          <BuildingContact :id="buildingId" ref="buildingContactRef" />
+          <BuildingContact v-if="tabContactLoaded" :id="buildingId" ref="buildingContactRef" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Files">
-          <BuildingImages :id="buildingId" ref="buildingImagesRef" />
+          <BuildingImages v-if="tabImagesLoaded" :id="buildingId" ref="buildingImagesRef" />
         </CTabPanel>
       </CTabContent>
     </CTabs>
