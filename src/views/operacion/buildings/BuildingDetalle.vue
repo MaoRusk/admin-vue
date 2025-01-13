@@ -13,6 +13,7 @@ import { ROUTE_NAMES } from '../../../router/routeNames';
 const route = useRoute()
 
 const buildingId = computed(() => Number(route.params.buildingId) || null)
+const disabledTab = computed(() => !buildingId.value)
 
 const activeTab = ref('DataBuilding')
 const submittingForm = ref(false)
@@ -81,10 +82,10 @@ watchEffect(() => {
     <CTabs activeItemKey="DataBuilding">
       <CTabList variant="tabs" class="mt-4">
         <CTab itemKey="DataBuilding" @click="activeTab = 'DataBuilding'">Data Building</CTab>
-        <CTab itemKey="Availability" @click="activeTab = 'Availability'">Availability</CTab>
-        <CTab itemKey="Absorption" @click="activeTab = 'Absorption'">Absorption</CTab>
-        <CTab itemKey="ContactBuilding" @click="activeTab = 'ContactBuilding'">Building Contact</CTab>
-        <CTab itemKey="Files" @click="activeTab = 'Files'">Files</CTab>
+        <CTab :disabled="disabledTab" itemKey="Availability" @click="activeTab = 'Availability'">Availability</CTab>
+        <CTab :disabled="disabledTab" itemKey="Absorption" @click="activeTab = 'Absorption'">Absorption</CTab>
+        <CTab :disabled="disabledTab" itemKey="ContactBuilding" @click="activeTab = 'ContactBuilding'">Building Contact</CTab>
+        <CTab :disabled="disabledTab" itemKey="Files" @click="activeTab = 'Files'">Files</CTab>
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
