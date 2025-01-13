@@ -125,17 +125,14 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
     }"
     @sorter-change="(sorter) => {
       columnSorter = sorter
-      console.log(sorter)
     }"
     @table-filter-change="(filter) => {
       activePage = 1
       tableSearch = filter
-      console.log(filter)
     }"
     @column-filter-change="(filter) => {
       activePage = 1
       columnFilter = filter
-      console.log(filter)
     }"
   >
     <template #actions="{ item }">
