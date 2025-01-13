@@ -1,13 +1,17 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
-import { useRouter } from 'vue-router';
-import BuildingAvailabilityForm from './BuildingAvailabilityForm.vue';
-import { CIcon } from '@coreui/icons-vue';
 import { cilPencil, cilTrash, cilPlus } from '@coreui/icons';
 
-const router = useRouter();
+import BuildingAvailabilityForm from './BuildingAvailabilityForm.vue';
+
+const props = defineProps({
+  id: Number
+})
+const emit = defineEmits(['submitting', 'changeShowForm'])
+
+console.log(props)
+
 const buildings = ref([]);
 const loading = ref(false);
 const showForm = ref(false);
@@ -33,33 +37,6 @@ const mockBuildings = [
     expansion_up_to_sf: 100000,
     dock_doors: 12
   },
-  {
-    id: 3,
-    building_state: 'Available',
-    size_sf: 30000,
-    building_dimensions: '100x300',
-    minimum_space_sf: 10000,
-    expansion_up_to_sf: 45000,
-    dock_doors: 6
-  },
-  {
-    id: 4,
-    building_state: 'Partially Available',
-    size_sf: 120000,
-    building_dimensions: '300x400',
-    minimum_space_sf: 40000,
-    expansion_up_to_sf: 150000,
-    dock_doors: 16
-  },
-  {
-    id: 5,
-    building_state: 'Available',
-    size_sf: 25000,
-    building_dimensions: '100x250',
-    minimum_space_sf: 8000,
-    expansion_up_to_sf: 35000,
-    dock_doors: 4
-  }
 ];
 
 const fetchBuildings = async () => {
@@ -123,10 +100,25 @@ const handleAddAvailability = () => {
 onMounted(() => {
   fetchBuildings();
 });
+
+watch(showForm, (newValue) => {
+  emit('changeShowForm', newValue)
+})
+
+defineExpose({
+  showForm,
+  submit() {
+    console.log('submit')
+    // if (formHtmlElement.value?.reportValidity()) {
+    //   formHtmlElement.value?.requestSubmit()
+    // }
+  }
+})
+
 </script>
 
 <template>
-  <div class="building-availability">
+  <div class="p-1">
     <div v-if="!showForm">
       <!-- Header with Add button -->
       <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -207,13 +199,5 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
 <style scoped>
-.building-availability {
-  padding: 1rem;
-}
-
-.table-actions {
-  white-space: nowrap;
-}
 </style>

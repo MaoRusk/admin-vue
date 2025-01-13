@@ -25,6 +25,40 @@ const props = defineProps({
 
 const emit = defineEmits(['return']);
 
+/**
+ * {
+  "building_id": 1,
+  "abs_tenant_id": 3,
+  "abs_industry_id": 2,
+  "abs_country_id": 1,
+  "broker_id": 1,
+  "dock_doors": 4,
+  "drive_in_door": 2,
+  "floor_thickness": 6,
+  "floor_resistance": "3000 PSI",
+  "truck_court": 60,
+  "has_crossdock": true,
+  "shared_truck": false,
+  "new_construction": true,
+  "is_starting_construction": false,
+  "bay_size": "25x50",
+  "columns_spacing": "20x20",
+  "abs_lease_term_month": 36,
+  "knockouts_docks": 2,
+  "parking_space": 20,
+  "abs_asking_rate_shell": 18.25,
+  "abs_closing_rate": 17.50,
+  "abs_closing_date": "2025-03-01",
+  "abs_lease_up": "2025-06-01",
+  "abs_month": "2025-07-01",
+  "abs_sale_price": 5000000.00,
+  "building_state": "Absorption",
+  "abs_building_phase": "BTS",
+  "abs_final_use": "Logistic",
+  "abs_company_type": "New Company in Market"
+}
+ */
+
 // Form fields
 const formData = ref({
   abs_tenant_id: null,

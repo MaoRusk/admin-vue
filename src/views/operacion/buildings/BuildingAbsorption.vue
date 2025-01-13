@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
 import BuildingAbsorptionForm from './BuildingAbsorptionForm.vue';
 import { CIcon } from '@coreui/icons-vue';
@@ -8,6 +8,8 @@ import { cilPencil, cilTrash, cilPlus } from '@coreui/icons';
 const props = defineProps({
   id: Number
 })
+const emit = defineEmits(['submitting', 'changeShowForm'])
+
 console.log(props)
 
 const absorptions = ref([]);
@@ -87,6 +89,20 @@ const handleAddAbsorption = () => {
 onMounted(() => {
   fetchAbsorptions();
 });
+
+watch(showForm, (newValue) => {
+  emit('changeShowForm', newValue)
+})
+
+defineExpose({
+  showForm,
+  submit() {
+    console.log('submit')
+    // if (formHtmlElement.value?.reportValidity()) {
+    //   formHtmlElement.value?.requestSubmit()
+    // }
+  }
+})
 </script>
 
 <template>

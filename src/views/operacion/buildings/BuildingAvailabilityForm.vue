@@ -1,23 +1,44 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
 import Swal from 'sweetalert2';
-
-const route = useRoute();
-const router = useRouter();
-const loading = ref(false);
-const isNewRecord = computed(() => route.params.id === '0');
-const brokers = ref([]);
 
 const props = defineProps({
   buildingId: {
     type: Number,
-    required: true
   }
 });
 
 const emit = defineEmits(['return']);
+
+const loading = ref(false);
+const isNewRecord = computed(() => props.buildingId);
+const brokers = ref([]);
+/*
+"building_id": 1,
+"broker_id": 1,
+"avl_size_sf": 5000,
+"avl_building_dimensions": "50x100",
+"avl_minimum_space_sf": 2500,
+"avl_expansion_up_to_sf": 10000,
+"dock_doors": 4,
+"drive_in_door": 2,
+"floor_thickness": 6,
+"floor_resistance": "3000 PSI",
+"truck_court": 60,
+"has_crossdock": true,
+"shared_truck": false,
+"new_construction": true,
+"is_starting_construction": false,
+"bay_size": "25x50",
+"columns_spacing": "20x20",
+"avl_date": "2025-01-15",
+"knockouts_docks": 2,
+"parking_space": 20,
+"avl_min_lease": 15.50,
+"avl_max_lease": 20.75,
+"building_state": "Availability",
+"avl_building_phase": "Construction"
+*/
 
 // Form fields
 const formData = ref({

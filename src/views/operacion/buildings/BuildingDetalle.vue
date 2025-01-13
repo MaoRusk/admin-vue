@@ -17,6 +17,7 @@ const disabledTab = computed(() => !buildingId.value)
 
 const activeTab = ref('DataBuilding')
 const submittingForm = ref(false)
+const disabledSave = ref(false)
 
 const buildingDataRef = ref(null);
 const buildingAvailabilityRef = ref(null);
@@ -49,12 +50,17 @@ watchEffect(() => {
     tabDataLoaded.value = true
   } else if (activeTab.value === 'Availability') {
     tabAvailabilityLoaded.value = true
+    disabledSave.value = !(buildingAvailabilityRef.value?.showForm ?? false)
   } else if (activeTab.value === 'Absorption') {
     tabAbsorptionLoaded.value = true
+    disabledSave.value = !(buildingAbsorptionRef.value?.showForm ?? false)
   } else if (activeTab.value === 'ContactBuilding') {
     tabContactLoaded.value = true
   } else if (activeTab.value === 'Files') {
     tabImagesLoaded.value = true
+  }
+  if (['DataBuilding', 'Files', 'ContactBuilding'].includes(activeTab.value)) {
+    disabledSave.value = false
   }
 })
 
@@ -65,7 +71,7 @@ watchEffect(() => {
       <CCardBody class="ps-1 py-3">
         <CRow class="justify-content-center">
           <CCol xs="auto" class="btns-flotantes-customer-moviles">
-            <CLoadingButton color="success" variant="outline" @click="dispatchSubmitForm" class="me-3" :loading="submittingForm">
+            <CLoadingButton color="success" variant="outline" @click="dispatchSubmitForm" class="me-3" :loading="submittingForm" :disabled="disabledSave">
               <CIcon :content="cilSave" size="sm" />
               Save
             </CLoadingButton>
@@ -92,10 +98,10 @@ watchEffect(() => {
           <BuildingData v-if="tabDataLoaded" :id="buildingId" ref="buildingDataRef" @submitting="(value) => submittingForm = value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Availability">
-          <BuildingAvailability v-if="tabAvailabilityLoaded" :id="buildingId" ref="buildingAvailabilityRef" />
+          <BuildingAvailability v-if="tabAvailabilityLoaded" :id="buildingId" ref="buildingAvailabilityRef" @changeShowForm="(value) => disabledSave = !value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
-          <BuildingAbsorption v-if="tabAbsorptionLoaded" :id="buildingId" ref="buildingAbsorptionRef" />
+          <BuildingAbsorption v-if="tabAbsorptionLoaded" :id="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => disabledSave = !value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
           <BuildingContact v-if="tabContactLoaded" :id="buildingId" ref="buildingContactRef" />
