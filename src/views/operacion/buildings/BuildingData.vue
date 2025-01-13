@@ -106,7 +106,7 @@ async function onSubmit() {
       title: 'Success',
       text: data.message,
     });
-    router.push({ name: ROUTE_NAMES.BUILDINGS })
+    router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: data.data.id } })
   } catch (e) {
     emit('submitting', false)
     Swal.fire(e.response.data.message, JSON.stringify(e.response.data.errors), 'error')
