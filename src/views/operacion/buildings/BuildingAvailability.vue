@@ -6,16 +6,17 @@ import { cilPencil, cilTrash, cilPlus } from '@coreui/icons';
 import BuildingAvailabilityForm from './BuildingAvailabilityForm.vue';
 
 const props = defineProps({
-  id: Number
+  buildingId: {
+    type: Number,
+    required: true
+  }
 })
 const emit = defineEmits(['submitting', 'changeShowForm'])
-
-console.log(props)
 
 const buildings = ref([]);
 const loading = ref(false);
 const showForm = ref(false);
-const selectedBuildingId = ref(null);
+const selectedAvailabilityId = ref(null);
 
 // Mock data for development
 const mockBuildings = [
@@ -58,14 +59,14 @@ const fetchBuildings = async () => {
 
 // Handle edit building
 const handleEdit = (buildingId) => {
-  selectedBuildingId.value = buildingId;
+  selectedAvailabilityId.value = buildingId;
   showForm.value = true;
 };
 
 // Handle return from form
 const handleReturn = () => {
   showForm.value = false;
-  selectedBuildingId.value = null;
+  selectedAvailabilityId.value = null;
   fetchBuildings(); // Refresh the data when returning
 };
 
@@ -93,7 +94,7 @@ const handleDelete = async (buildingId) => {
 };
 
 const handleAddAvailability = () => {
-  selectedBuildingId.value = 0; // 0 indicates new record
+  selectedAvailabilityId.value = 0; // 0 indicates new record
   showForm.value = true;
 };
 
@@ -105,13 +106,12 @@ watch(showForm, (newValue) => {
   emit('changeShowForm', newValue)
 })
 
+const formAvailabilityRef = ref(null)
+
 defineExpose({
   showForm,
   submit() {
-    console.log('submit')
-    // if (formHtmlElement.value?.reportValidity()) {
-    //   formHtmlElement.value?.requestSubmit()
-    // }
+    formAvailabilityRef.value?.submit?.()
   }
 })
 
@@ -193,8 +193,11 @@ defineExpose({
     <!-- Show form when editing -->
     <div v-else>
       <BuildingAvailabilityForm 
-        :buildingId="selectedBuildingId"
+        :buildingId="props.buildingId"
+        :availabilityId="selectedAvailabilityId"
         @return="handleReturn"
+        @submitting="() => emit('submitting', value)"
+        ref="formAvailabilityRef"
       />
     </div>
   </div>

@@ -95,19 +95,19 @@ watchEffect(() => {
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
-          <BuildingData v-if="tabDataLoaded" :id="buildingId" ref="buildingDataRef" @submitting="(value) => submittingForm = value" />
+          <BuildingData v-if="tabDataLoaded" :buildingId="buildingId" ref="buildingDataRef" @submitting="(value) => submittingForm = value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Availability">
-          <BuildingAvailability v-if="tabAvailabilityLoaded" :id="buildingId" ref="buildingAvailabilityRef" @changeShowForm="(value) => disabledSave = !value" />
+          <BuildingAvailability v-if="tabAvailabilityLoaded" :buildingId="buildingId" ref="buildingAvailabilityRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => submittingForm = value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
-          <BuildingAbsorption v-if="tabAbsorptionLoaded" :id="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => disabledSave = !value" />
+          <BuildingAbsorption v-if="tabAbsorptionLoaded" :buildingId="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => disabledSave = !value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
-          <BuildingContact v-if="tabContactLoaded" :id="buildingId" ref="buildingContactRef" />
+          <BuildingContact v-if="tabContactLoaded" :buildingId="buildingId" ref="buildingContactRef" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Files">
-          <BuildingImages v-if="tabImagesLoaded" :id="buildingId" ref="buildingImagesRef" />
+          <BuildingImages v-if="tabImagesLoaded" :buildingId="buildingId" ref="buildingImagesRef" />
         </CTabPanel>
       </CTabContent>
     </CTabs>

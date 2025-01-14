@@ -13,6 +13,8 @@ import Regions from './Regions'
 import Shelters from './Shelters'
 import Submarkets from './Submarkets'
 import Tenants from './Tenants'
+import BuildingsAvailability from './BuildingsAvailability'
+import BuildingsAbsorption from './BuildingsAbsorption'
 
 export const API = {
   auth: Auth,
@@ -30,4 +32,6 @@ export const API = {
   shelters: Shelters,
   submarkets: Submarkets,
   tenants: Tenants,
+  buildingsAvailability: BuildingsAvailability,
+  buildingsAbsorption: BuildingsAbsorption,
 }

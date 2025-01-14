@@ -10,7 +10,6 @@ export default {
   createAvailableBuilding(
     buildingId,
     {
-      building_id,
       broker_id,
       avl_size_sf,
       avl_building_dimensions,
@@ -37,7 +36,7 @@ export default {
     },
   ) {
     return httpClient.post(`/buildings/${buildingId}/availability`, {
-      building_id,
+      building_id: buildingId,
       broker_id,
       avl_size_sf,
       avl_building_dimensions,

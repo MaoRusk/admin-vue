@@ -8,7 +8,7 @@ import { ROUTE_NAMES } from '../../../router/routeNames';
 const router = useRouter()
 
 const props = defineProps({
-  id: Number
+  buildingId: Number
 })
 
 const emit = defineEmits(['submitting'])
@@ -95,8 +95,8 @@ async function onSubmit() {
       ...building,
       hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${HVAC_SEPARATOR}${building.hvacArea}` : '',
     }
-    if (props.id) {
-      ({ data } = await API.buildings.updateBuilding(props.id, body));
+    if (props.buildingId) {
+      ({ data } = await API.buildings.updateBuilding(props.buildingId, body));
     } else {
       ({ data } = await API.buildings.createBuilding(body));
     }
@@ -115,7 +115,7 @@ async function onSubmit() {
 
 const fetchBuildingData = async () => {
   try {
-    const buildingId = props.id;
+    const buildingId = props.buildingId;
     const { data } = await API.buildings.getBuilding(buildingId);
     ['region_id', 'market_id', 'sub_market_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id', 'user_owner_id', 'building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height', 'total_land', 'offices_space', 'ventilation', 'transformer_capacity', 'construction_state', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'fire_protection_system', 'deal', 'loading_door', 'above_market_tis', 'status']
     .forEach(prop => building[prop] = data.data[prop]);
@@ -221,6 +221,7 @@ async function fetchBuildingDeals() {
   deals.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.deal }))
 }
 
+// TODO. modificar, por ahora no filtro por tipo de developer, ya que las respuesta del api venia en false todas las banderas, entonces no podia listar. cuando haya datos correctos, corregir
 async function fetchDevelopers() {
   developers.loading = true
   owners.loading = true
@@ -281,42 +282,42 @@ async function fetchRegions() {
 }
 
 onMounted(async () => {
-  Swal.fire({
-    title: "Loading!",
-    didOpen: () => {
-      Swal.showLoading();
-    },
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-  })
-  if (props.id) {
-    await fetchBuildingData();
-  }
-  await Promise.all([
-    fetchClasses(),
-    fetchRegions(),
-    fetchMarkets(),
-    fetchIndustrialParks(),
-    fetchDevelopers(),
-    fetchTenancies(),
+  // Swal.fire({
+  //   title: "Loading!",
+  //   didOpen: () => {
+  //     Swal.showLoading();
+  //   },
+  //   allowOutsideClick: false,
+  //   allowEscapeKey: false,
+  // })
+  // if (props.buildingId) {
+  //   await fetchBuildingData();
+  // }
+  // await Promise.all([
+  //   fetchClasses(),
+  //   fetchRegions(),
+  //   fetchMarkets(),
+  //   fetchIndustrialParks(),
+  //   fetchDevelopers(),
+  //   fetchTenancies(),
     
-    fetchCurrencies(),
-    fetchFireProtectionSystems(),
-    fetchBuildingDeals(),
-    fetchBuildingContructionTypes(),
-    fetchBuildingTypeGenerations(),
-    fetchBuildingLoadingDoors(),
-    fetchBuildingTypesLightnings(),
-    fetchBuildingTechnicalImprovements(),
-    fetchBuildingStatuses()
-  ])
-  Swal.close()
+  //   fetchCurrencies(),
+  //   fetchFireProtectionSystems(),
+  //   fetchBuildingDeals(),
+  //   fetchBuildingContructionTypes(),
+  //   fetchBuildingTypeGenerations(),
+  //   fetchBuildingLoadingDoors(),
+  //   fetchBuildingTypesLightnings(),
+  //   fetchBuildingTechnicalImprovements(),
+  //   fetchBuildingStatuses()
+  // ])
+  // Swal.close()
 });
 
 watchEffect(async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
-    building.sub_market_id = props.id ? building.sub_market_id : ''
+    building.sub_market_id = props.buildingId ? building.sub_market_id : ''
   }
 })
 
