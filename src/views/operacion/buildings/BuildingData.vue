@@ -282,36 +282,36 @@ async function fetchRegions() {
 }
 
 onMounted(async () => {
-  // Swal.fire({
-  //   title: "Loading!",
-  //   didOpen: () => {
-  //     Swal.showLoading();
-  //   },
-  //   allowOutsideClick: false,
-  //   allowEscapeKey: false,
-  // })
-  // if (props.buildingId) {
-  //   await fetchBuildingData();
-  // }
-  // await Promise.all([
-  //   fetchClasses(),
-  //   fetchRegions(),
-  //   fetchMarkets(),
-  //   fetchIndustrialParks(),
-  //   fetchDevelopers(),
-  //   fetchTenancies(),
+  Swal.fire({
+    title: "Loading!",
+    didOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+  })
+  if (props.buildingId) {
+    await fetchBuildingData();
+  }
+  await Promise.all([
+    fetchClasses(),
+    fetchRegions(),
+    fetchMarkets(),
+    fetchIndustrialParks(),
+    fetchDevelopers(),
+    fetchTenancies(),
     
-  //   fetchCurrencies(),
-  //   fetchFireProtectionSystems(),
-  //   fetchBuildingDeals(),
-  //   fetchBuildingContructionTypes(),
-  //   fetchBuildingTypeGenerations(),
-  //   fetchBuildingLoadingDoors(),
-  //   fetchBuildingTypesLightnings(),
-  //   fetchBuildingTechnicalImprovements(),
-  //   fetchBuildingStatuses()
-  // ])
-  // Swal.close()
+    fetchCurrencies(),
+    fetchFireProtectionSystems(),
+    fetchBuildingDeals(),
+    fetchBuildingContructionTypes(),
+    fetchBuildingTypeGenerations(),
+    fetchBuildingLoadingDoors(),
+    fetchBuildingTypesLightnings(),
+    fetchBuildingTechnicalImprovements(),
+    fetchBuildingStatuses()
+  ])
+  Swal.close()
 });
 
 watchEffect(async () => {

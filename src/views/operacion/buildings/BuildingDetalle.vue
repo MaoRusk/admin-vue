@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router'
 import { cilArrowCircleLeft, cilSave } from '@coreui/icons'
 
@@ -45,7 +45,7 @@ function dispatchSubmitForm() {
   }
 }
 
-watchEffect(() => {
+watch(activeTab, () => {
   if (activeTab.value === 'DataBuilding') {
     tabDataLoaded.value = true
   } else if (activeTab.value === 'Availability') {
@@ -62,7 +62,7 @@ watchEffect(() => {
   if (['DataBuilding', 'Files', 'ContactBuilding'].includes(activeTab.value)) {
     disabledSave.value = false
   }
-})
+}, { immediate: true })
 
 </script>
 <template>
