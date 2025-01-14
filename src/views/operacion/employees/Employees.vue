@@ -49,7 +49,9 @@ const addUserFunction = () => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users`);
+    const response = await axios.get(`laravel-back.test/api/users`);
+    console.log(response.data);
+    
     // Asegurarnos de que la respuesta sea un array
     employees.value = Array.isArray(response.data) ? response.data : 
                      response.data?.data ? response.data.data : [];
