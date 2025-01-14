@@ -105,7 +105,6 @@ async function removeAvailability(availabilityId) {
   }
 }
 
-
 const handleAddAvailability = () => {
   selectedAvailabilityId.value = 0; // 0 indicates new record
   showForm.value = true;

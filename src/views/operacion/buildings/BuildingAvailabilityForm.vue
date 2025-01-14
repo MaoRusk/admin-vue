@@ -90,6 +90,7 @@ const brokers = reactive({ loading: false, items: []})
 const phases = reactive({ loading: false, items: []})
 const buildingStates = reactive({ loading: false, items: []})
 
+// TODO, no encontre catalogo en backend, solo tendra un valor?
 async function fetchBuildingStates() {
   buildingStates.loading = true
   const { data } = await new Promise(r => {
@@ -129,7 +130,6 @@ async function fetchAvailability() {
     .forEach(prop => availability[prop] = `${data.data[prop] ?? ''}`);
     ['has_crossdock', 'shared_truck', 'new_construction', 'is_starting_construction']
     .forEach(prop => availability[prop] = Boolean(data.data[prop]))
-    console.log(data)
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -323,7 +323,6 @@ defineExpose({
               <div class="row">
                 <div class="col-md-6">
                   <div class="mb-3">
-                    {{ availability.avl_date }}
                     <CFormLabel>Availability Date</CFormLabel>
                     <CDatePicker
                       v-model:date="availability.avl_date"

@@ -101,7 +101,7 @@ watchEffect(() => {
           <BuildingAvailability v-if="tabAvailabilityLoaded" :buildingId="buildingId" ref="buildingAvailabilityRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => submittingForm = value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
-          <BuildingAbsorption v-if="tabAbsorptionLoaded" :buildingId="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => disabledSave = !value" />
+          <BuildingAbsorption v-if="tabAbsorptionLoaded" :buildingId="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => submittingForm = value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
           <BuildingContact v-if="tabContactLoaded" :buildingId="buildingId" ref="buildingContactRef" />
