@@ -95,13 +95,13 @@ watch(activeTab, () => {
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
-          <BuildingData v-if="tabDataLoaded" :buildingId="buildingId" ref="buildingDataRef" @submitting="(value) => submittingForm = value" />
+          <BuildingData v-if="tabDataLoaded" :buildingId="buildingId" ref="buildingDataRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Availability">
-          <BuildingAvailability v-if="tabAvailabilityLoaded" :buildingId="buildingId" ref="buildingAvailabilityRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => submittingForm = value" />
+          <BuildingAvailability v-if="tabAvailabilityLoaded" :buildingId="buildingId" ref="buildingAvailabilityRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
-          <BuildingAbsorption v-if="tabAbsorptionLoaded" :buildingId="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => submittingForm = value" />
+          <BuildingAbsorption v-if="tabAbsorptionLoaded" :buildingId="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
           <BuildingContact v-if="tabContactLoaded" :buildingId="buildingId" ref="buildingContactRef" />

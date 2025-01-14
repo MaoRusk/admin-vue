@@ -212,7 +212,7 @@ defineExpose({
         :buildingId="props.buildingId"
         :availabilityId="selectedAvailabilityId"
         @return="handleReturn"
-        @submitting="() => emit('submitting', value)"
+        @submitting="(value) => emit('submitting', value)"
         ref="formAvailabilityRef"
       />
     </div>
