@@ -1,6 +1,5 @@
 <script setup>
 import { useTranslation } from 'i18next-vue'
-import avatar from '@/assets/images/avatars/8.jpg'
 import { useRouter } from 'vue-router';
 import { useLocalStorage } from '../composables/useLocalStorage';
 import { AUTH_TOKEN, AUTH_USER } from '../constants';
@@ -21,7 +20,7 @@ const logout = () => {
 <template>
   <CDropdown placement="bottom-end" variant="nav-item">
     <CDropdownToggle class="py-0" :caret="false">
-      <CAvatar :src="avatar" size="md" status="success"/>
+      <CAvatar size="md" color="success">A</CAvatar>
     </CDropdownToggle>
     <CDropdownMenu class="pt-0">
       <CDropdownHeader

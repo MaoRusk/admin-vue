@@ -4,6 +4,9 @@ import Swal from 'sweetalert2';
 import { cilPencil, cilTrash, cilPlus } from '@coreui/icons';
 
 import BuildingAvailabilityForm from './BuildingAvailabilityForm.vue';
+import { useLocalStorage } from '../../../composables/useLocalStorage';
+import { API } from '../../../services';
+import { BUILDINGS_ITEMS_PER_PAGE } from '../../../constants';
 
 const props = defineProps({
   buildingId: {
@@ -13,85 +16,95 @@ const props = defineProps({
 })
 const emit = defineEmits(['submitting', 'changeShowForm'])
 
+const storage = useLocalStorage()
+
 const buildings = ref([]);
-const loading = ref(false);
+
+const loading = ref(false)
+const totalItems = ref(0)
+const totalPages = ref(0)
+const page = ref(1)
+const itemsPerPage = ref(storage.getItem(BUILDINGS_ITEMS_PER_PAGE) ?? 10)
+const columnFilter = ref({})
+const columnSorter = ref({})
+const tableSearch = ref('')
+
 const showForm = ref(false);
 const selectedAvailabilityId = ref(null);
 
-// Mock data for development
-const mockBuildings = [
-  {
-    id: 1,
-    building_state: 'Available',
-    size_sf: 45000,
-    building_dimensions: '150x300',
-    minimum_space_sf: 15000,
-    expansion_up_to_sf: 60000,
-    dock_doors: 8
-  },
-  {
-    id: 2,
-    building_state: 'Under Construction',
-    size_sf: 75000,
-    building_dimensions: '250x300',
-    minimum_space_sf: 25000,
-    expansion_up_to_sf: 100000,
-    dock_doors: 12
-  },
+const columns = [
+  { key: 'building_state', label: 'Building State' },
+  { key: 'avl_size_sf', label: 'Size (SF)' },
+  { key: 'avl_building_dimensions', label: 'Building Dimensions' },
+  { key: 'avl_minimum_space_sf', label: 'Min. Space' },
+  { key: 'avl_expansion_up_to_sf', label: 'Expansion Up To' },
+  { key: 'dock_doors', label: 'Dock Doors' },
+  { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
 
-const fetchBuildings = async () => {
-  loading.value = true;
+async function fetchBuildings() {
+  loading.value = true
   try {
-    // Simulate API call with mock data
-    buildings.value = mockBuildings;
+    const { data } = await API.buildingsAvailability.getAvailableBuildings(props.buildingId, {
+      page: page.value,
+      size: itemsPerPage.value,
+      search: tableSearch.value,
+    }, columnFilter.value, columnSorter.value);
+    page.value = data.data.current_page
+    totalItems.value = data.data.total
+    totalPages.value = data.data.last_page
+    buildings.value = data.data.data.map(item => ({
+      ...item,
+      building_state: item.building_state ?? '',
+      avl_size_sf: item.avl_size_sf ?? '',
+      avl_building_dimensions: item.avl_building_dimensions ?? '',
+      avl_minimum_space_sf: item.avl_minimum_space_sf ?? '',
+      avl_expansion_up_to_sf: item.avl_expansion_up_to_sf ?? '',
+      dock_doors: item.dock_doors ?? '',
+    }))
+    loading.value = false
   } catch (error) {
     console.error('Error fetching buildings:', error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Failed to load buildings data'
-    });
+    buildings.value = [];
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // Handle edit building
-const handleEdit = (buildingId) => {
-  selectedAvailabilityId.value = buildingId;
+const handleEdit = ({ id: availabilityId }) => {
+  selectedAvailabilityId.value = availabilityId;
   showForm.value = true;
 };
 
-// Handle return from form
 const handleReturn = () => {
   showForm.value = false;
   selectedAvailabilityId.value = null;
   fetchBuildings(); // Refresh the data when returning
 };
 
-const handleDelete = async (buildingId) => {
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: "You won't be able to revert this!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete it!'
-  });
-
-  if (result.isConfirmed) {
-    try {
-      // Simulate delete operation
-      buildings.value = buildings.value.filter(b => b.id !== buildingId);
-      Swal.fire('Deleted!', 'Building has been deleted.', 'success');
-    } catch (error) {
-      console.error('Error deleting building:', error);
-      Swal.fire('Error!', 'Failed to delete building.', 'error');
+async function removeAvailability(availabilityId) {
+  try {
+    const { isConfirmed } = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    })
+    if (isConfirmed) {
+      const { data } = await API.buildingsAvailability.deleteAvailableBuilding(availabilityId, props.buildingId);
+      Swal.fire('Deleted!', data.message, 'success')
+      fetchBuildings()
     }
+  } catch (error) {
+    console.error('Error fetching buildings:', error);
+    Swal.fire('Failed!', error.message, 'error')
   }
-};
+}
+
 
 const handleAddAvailability = () => {
   selectedAvailabilityId.value = 0; // 0 indicates new record
@@ -108,13 +121,15 @@ watch(showForm, (newValue) => {
 
 const formAvailabilityRef = ref(null)
 
+watch([page, itemsPerPage, tableSearch], fetchBuildings)
+watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
+
 defineExpose({
   showForm,
   submit() {
     formAvailabilityRef.value?.submit?.()
   }
 })
-
 </script>
 
 <template>
@@ -132,60 +147,62 @@ defineExpose({
       <!-- Buildings Table -->
       <CCard>
         <CCardBody>
-          <CTable hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>ID</CTableHeaderCell>
-                <CTableHeaderCell>Building State</CTableHeaderCell>
-                <CTableHeaderCell>Size (SF)</CTableHeaderCell>
-                <CTableHeaderCell>Building Dimensions</CTableHeaderCell>
-                <CTableHeaderCell>Min. Space</CTableHeaderCell>
-                <CTableHeaderCell>Expansion Up To</CTableHeaderCell>
-                <CTableHeaderCell>Dock Doors</CTableHeaderCell>
-                <CTableHeaderCell>Actions</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              <CTableRow v-if="loading">
-                <CTableDataCell colspan="8" class="text-center">
-                  Loading...
-                </CTableDataCell>
-              </CTableRow>
-              <CTableRow v-else-if="buildings.length === 0">
-                <CTableDataCell colspan="8" class="text-center">
-                  No buildings available
-                </CTableDataCell>
-              </CTableRow>
-              <CTableRow v-else v-for="building in buildings" :key="building.id">
-                <CTableDataCell>{{ building.id }}</CTableDataCell>
-                <CTableDataCell>{{ building.building_state }}</CTableDataCell>
-                <CTableDataCell>{{ building.size_sf }}</CTableDataCell>
-                <CTableDataCell>{{ building.building_dimensions }}</CTableDataCell>
-                <CTableDataCell>{{ building.minimum_space_sf }}</CTableDataCell>
-                <CTableDataCell>{{ building.expansion_up_to_sf }}</CTableDataCell>
-                <CTableDataCell>{{ building.dock_doors }}</CTableDataCell>
-                <CTableDataCell>
-                  <CButtonGroup>
-                    <CButton 
-                      color="info" 
-                      size="sm" 
-                      @click="handleEdit(building.id)"
-                      class="me-2"
-                    >
-                      <CIcon :icon="cilPencil" />
-                    </CButton>
-                    <CButton 
-                      color="danger" 
-                      size="sm" 
-                      @click="handleDelete(building.id)"
-                    >
-                      <CIcon :icon="cilTrash" />
-                    </CButton>
-                  </CButtonGroup>
-                </CTableDataCell>
-              </CTableRow>
-            </CTableBody>
-          </CTable>
+          <CSmartTable
+            :pagination="{ external: true }"
+            :column-filter="{ external: true }"
+            :column-sorter="{ external: true }"
+            :table-filter="{ external: true }"
+            :loading="loading"
+            :items="buildings"
+            :paginationProps="{
+              activePage: page,
+              pages: totalPages
+            }"
+            :columns="columns"
+            cleaner
+            footer
+            header
+            items-per-page-select
+            :items-per-page="itemsPerPage"
+            :table-props="{
+              hover: true,
+              striped: true,
+              responsive: true,
+            }"
+            @active-page-change="(_activePage) => {
+              page = _activePage
+            }"
+            @items-per-page-change="(_itemsPerPage) => {
+              activePage = 1
+              itemsPerPage = _itemsPerPage
+              storage.setItem(BUILDINGS_ITEMS_PER_PAGE, _itemsPerPage)
+            }"
+            @sorter-change="(sorter) => {
+              columnSorter = sorter
+            }"
+            @table-filter-change="(filter) => {
+              activePage = 1
+              tableSearch = filter
+            }"
+            @column-filter-change="(filter) => {
+              activePage = 1
+              columnFilter = filter
+            }"
+          >
+            <template #actions="{ item }">
+              <td class="d-flex gap-1">
+                <CButton color="primary" variant="outline" square size="sm" >
+                  <CIcon :content="cilPencil" size="sm" @click="handleEdit(item)" />
+                </CButton>
+                <CButton color="danger" variant="outline" square size="sm" @click="removeAvailability(item.id)">
+                  <CIcon :content="cilTrash" size="sm" />
+                </CButton>
+              </td>
+            </template>
+          </CSmartTable>
+          <div>
+            Total records {{ totalItems }}
+          </div>
         </CCardBody>
       </CCard>
     </div>

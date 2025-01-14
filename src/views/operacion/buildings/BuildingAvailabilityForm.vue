@@ -2,6 +2,7 @@
 import { onMounted, computed, reactive, ref } from 'vue';
 import Swal from 'sweetalert2';
 import { API } from '../../../services';
+import dayjs from 'dayjs';
 
 const props = defineProps({
   buildingId: {
@@ -59,6 +60,7 @@ async function saveAvailability() {
   try {
     const body = {
       ...availability,
+      avl_date: availability.avl_date ? dayjs(availability.avl_date).format('YYYY-MM-DD') : '',
     }
     let data;
     if (isNewRecord.value) {
@@ -121,7 +123,20 @@ async function fetchBrokers() {
 }
 
 async function fetchAvailability() {
-  console.log('hola')
+  try {
+    const { data } = await API.buildingsAvailability.getAvailableBuilding(props.availabilityId, props.buildingId);
+    ['broker_id', 'avl_size_sf', 'avl_building_dimensions', 'avl_minimum_space_sf', 'avl_expansion_up_to_sf', 'dock_doors', 'drive_in_door', 'floor_thickness', 'floor_resistance', 'truck_court', 'bay_size', 'columns_spacing', 'avl_date', 'knockouts_docks', 'parking_space', 'avl_min_lease', 'avl_max_lease', 'building_state', 'avl_building_phase']
+    .forEach(prop => availability[prop] = `${data.data[prop] ?? ''}`);
+    ['has_crossdock', 'shared_truck', 'new_construction', 'is_starting_construction']
+    .forEach(prop => availability[prop] = Boolean(data.data[prop]))
+    console.log(data)
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to load building data: ' + error.message,
+    });
+  }
 }
 
 onMounted(async () => {
@@ -308,9 +323,10 @@ defineExpose({
               <div class="row">
                 <div class="col-md-6">
                   <div class="mb-3">
+                    {{ availability.avl_date }}
                     <CFormLabel>Availability Date</CFormLabel>
                     <CDatePicker
-                      v-model="availability.avl_date"
+                      v-model:date="availability.avl_date"
                     />
                   </div>
 
