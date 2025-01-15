@@ -18,7 +18,7 @@ export default {
   createBuilding({
     region_id,
     market_id,
-    sub_market_id,
+    submarket_id,
     builder_id,
     industrial_park_id,
     developer_id,
@@ -64,7 +64,7 @@ export default {
     return httpClient.post(`/buildings`, {
       region_id,
       market_id,
-      sub_market_id,
+      submarket_id,
       builder_id,
       industrial_park_id,
       developer_id,
@@ -113,7 +113,7 @@ export default {
     {
       region_id,
       market_id,
-      sub_market_id,
+      submarket_id,
       builder_id,
       industrial_park_id,
       developer_id,
@@ -160,7 +160,7 @@ export default {
     return httpClient.put(`/buildings/${buildingId}`, {
       region_id,
       market_id,
-      sub_market_id,
+      submarket_id,
       builder_id,
       industrial_park_id,
       developer_id,

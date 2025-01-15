@@ -16,7 +16,7 @@ const emit = defineEmits(['submitting'])
 const buildingEmpty = {
   region_id: '', 
   market_id: '', 
-  sub_market_id: '', 
+  submarket_id: '', 
   builder_id: '', 
   industrial_park_id: '', 
   developer_id: '', 
@@ -117,8 +117,8 @@ const fetchBuildingData = async () => {
   try {
     const buildingId = props.buildingId;
     const { data } = await API.buildings.getBuilding(buildingId);
-    ['region_id', 'market_id', 'sub_market_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id', 'user_owner_id', 'building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height', 'total_land', 'offices_space', 'ventilation', 'transformer_capacity', 'construction_state', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'fire_protection_system', 'deal', 'loading_door', 'above_market_tis', 'status']
-    .forEach(prop => building[prop] = data.data[prop]);
+    ['region_id', 'market_id', 'submarket_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id', 'user_owner_id', 'building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height', 'total_land', 'offices_space', 'ventilation', 'transformer_capacity', 'construction_state', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'fire_protection_system', 'deal', 'loading_door', 'above_market_tis', 'status']
+    .forEach(prop => building[prop] = data.data[prop] ? `${data.data[prop]}` : '');
     ['has_crane', 'has_hvac', 'has_rail_spur', 'has_sprinklers', 'has_office', 'has_leed', 'has_expansion_land']
     .forEach(prop => building[prop] = Boolean(data.data[prop]))
 
@@ -163,6 +163,7 @@ async function fetchBuildingStatuses() {
   const { data } = await API.buildings.getBuildingsStatus()
   statuses.loading = false
   statuses.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.status }))
+  statuses.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchBuildingTechnicalImprovements() {
@@ -170,6 +171,7 @@ async function fetchBuildingTechnicalImprovements() {
   const { data } = await API.buildings.getBuildingsTechnicalImprovements();
   technicalImprovements.loading = false
   technicalImprovements.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.above_market_tis }))
+  technicalImprovements.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchBuildingLoadingDoors() {
@@ -177,6 +179,7 @@ async function fetchBuildingLoadingDoors() {
   const { data } = await API.buildings.getBuildingsLoadingDoors();
   loadingDoors.loading = false
   loadingDoors.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.loading_door }))
+  loadingDoors.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchBuildingTypesLightnings() {
@@ -184,6 +187,7 @@ async function fetchBuildingTypesLightnings() {
   const { data } = await API.buildings.getBuildingsTypesLightnings();
   typesLightnings.loading = false
   typesLightnings.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.lightning }))
+  typesLightnings.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchBuildingTypeGenerations() {
@@ -191,6 +195,7 @@ async function fetchBuildingTypeGenerations() {
   const { data } = await API.buildings.getBuildingsTypesGeneration();
   generationsTypes.loading = false
   generationsTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.type_generation }))
+  generationsTypes.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchTenancies() {
@@ -198,6 +203,7 @@ async function fetchTenancies() {
   const { data } = await API.buildings.getBuildingsTenancies();
   tenancies.loading = false
   tenancies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.tenancy }))
+  tenancies.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchCurrencies() {
@@ -205,6 +211,7 @@ async function fetchCurrencies() {
   const { data } = await API.currencies.getCurrencies();
   currencies.loading = false
   currencies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.currency }))
+  currencies.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchBuildingContructionTypes() {
@@ -212,6 +219,7 @@ async function fetchBuildingContructionTypes() {
   const { data } = await API.buildings.getBuildingsTypesConstruction();
   constructionTypes.loading = false
   constructionTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.construction_type }))
+  constructionTypes.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchBuildingDeals() {
@@ -219,9 +227,9 @@ async function fetchBuildingDeals() {
   const { data } = await API.buildings.getBuildingsTypesDeals();
   deals.loading = false
   deals.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.deal }))
+  deals.items.unshift({ value: '', label: 'Select...' })
 }
 
-// TODO. modificar, por ahora no filtro por tipo de developer, ya que las respuesta del api venia en false todas las banderas, entonces no podia listar. cuando haya datos correctos, corregir
 async function fetchDevelopers() {
   developers.loading = true
   owners.loading = true
@@ -233,31 +241,44 @@ async function fetchDevelopers() {
   builders.loading = false
   userOwners.loading = false
 
-  developers.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.developer_id })).sort((a, b) => a.label.localeCompare(b.label))
-  owners.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.owner_id })).sort((a, b) => a.label.localeCompare(b.label))
-  builders.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.builder_id })).sort((a, b) => a.label.localeCompare(b.label))
-  userOwners.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.user_owner_id })).sort((a, b) => a.label.localeCompare(b.label))
+  const items = data.data.sort((a, b) => a.name.localeCompare(b.name))
+  const firstOption = { value: '', label: 'Select...' }
+  const itemsGrouped = items.reduce((group, item) => {
+    if (item.is_owner) group.owners.push({ label: item.name, value: item.id, selected: item.id === building.owner_id })
+    if (item.is_developer) group.developers.push({ label: item.name, value: item.id, selected: item.id === building.developer_id })
+    if (item.is_user_owner) group.userOwners.push({ label: item.name, value: item.id, selected: item.id === building.user_owner_id })
+    if (item.is_builder) group.builders.push({ label: item.name, value: item.id, selected: item.id === building.builder_id })
+    return group
+  }, { owners: [{...firstOption}], developers: [{...firstOption}], builders: [{...firstOption}], userOwners: [{...firstOption}] })
+
+  developers.items = itemsGrouped.developers
+  owners.items = itemsGrouped.owners
+  builders.items = itemsGrouped.builders
+  userOwners.items = itemsGrouped.userOwners
 }
 
-async function fetchIndustrialParks() {
+async function fetchIndustrialParks(marketId, submarketId) {
   industrialParks.loading = true
-  const { data } = await API.industrialparks.getIndustrialParks();
+  const { data } = await API.industrialparks.getIndustrialParks({ marketId, submarketId});
   industrialParks.loading = false
   industrialParks.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.industrial_park_id })).sort((a, b) => a.label.localeCompare(b.label))
+  industrialParks.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchSubmarkets(marketId) {
   submarkets.loading = true
   const { data } = await API.submarkets.getSubmarkets({ marketId });
   submarkets.loading = false
-  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.sub_market_id })).sort((a, b) => a.label.localeCompare(b.label))
+  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.submarket_id })).sort((a, b) => a.label.localeCompare(b.label))
+  submarkets.items.unshift({ value: '', label: 'Select...' })
 }
 
-async function fetchMarkets() {
+async function fetchMarkets(regionId) {
   markets.loading = true
-  const { data } = await API.markets.getMarkets();
+  const { data } = await API.markets.getMarkets({ regionId });
   markets.loading = false
   markets.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.market_id })).sort((a, b) => a.label.localeCompare(b.label))
+  markets.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchClasses() {
@@ -265,6 +286,7 @@ async function fetchClasses() {
   const { data } = await API.buildings.getBuildingsClasses();
   classes.loading = false
   classes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.class }))
+  classes.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchFireProtectionSystems() {
@@ -272,6 +294,7 @@ async function fetchFireProtectionSystems() {
   const { data } = await API.buildings.getBuildingsFireProtectionSystems();
   fireProtectionSystems.loading = false
   fireProtectionSystems.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.fire_protection_system }))
+  fireProtectionSystems.items.unshift({ value: '', label: 'Select...' })
 }
 
 async function fetchRegions() {
@@ -279,6 +302,7 @@ async function fetchRegions() {
   const { data } = await API.regions.getRegions();
   regions.loading = false
   regions.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.region_id}))
+  regions.items.unshift({ value: '', label: 'Select...' })
 }
 
 onMounted(async () => {
@@ -296,8 +320,6 @@ onMounted(async () => {
   await Promise.all([
     fetchClasses(),
     fetchRegions(),
-    fetchMarkets(),
-    fetchIndustrialParks(),
     fetchDevelopers(),
     fetchTenancies(),
     
@@ -315,9 +337,23 @@ onMounted(async () => {
 });
 
 watchEffect(async () => {
+  if (building.region_id) {
+    await fetchMarkets(building.region_id)
+    building.market_id = props.buildingId ? building.market_id : ''
+  }
+})
+
+watchEffect(async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
-    building.sub_market_id = props.buildingId ? building.sub_market_id : ''
+    building.submarket_id = props.buildingId ? building.submarket_id : ''
+  }
+})
+
+watchEffect(async () => {
+  if (building.submarket_id) {
+    await fetchIndustrialParks(building.market_id, building.submarket_id)
+    building.industrial_park_id = props.buildingId ? building.industrial_park_id : ''
   }
 })
 
@@ -356,14 +392,11 @@ defineExpose({
                 </CCol>
                 <CCol :md="3">
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Class"
-                      :multiple="false"
+                      v-model="building.class"
                       :options="classes.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="classes.loading"
-                      @change="([option]) => { building.class = option?.value ?? '' }"
                       required
                     />
                   </div>
@@ -399,14 +432,11 @@ defineExpose({
                 </CCol>
                 <CCol md="3">
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Status"
-                      :multiple="false"
+                      v-model="building.status"
                       :options="statuses.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="statuses.loading"
-                      @change="([option]) => { building.status = option?.value ?? '' }"
                       required
                     />
                   </div>
@@ -421,64 +451,58 @@ defineExpose({
               Location
             </CCardBody>
           </CCard>
-          <CCol :md="4">
+          <div class="col-md-4">
             <!-- REGION -->
             <div class="mt-2">
-              <CMultiSelect
+              <CFormSelect
                 label="Region"
-                :multiple="false"
+                v-model="building.region_id"
                 :options="regions.items"
-                optionsStyle="text"
                 size="sm"
-                :loading="regions.loading"
-                @change="([option]) => { building.region_id = option?.value ?? '' }"
                 required
               />
             </div>
-            <!-- INDUSTRIAL PARK -->
-            <div class="mt-2">
-              <CMultiSelect
-                label="Industrial Park"
-                :multiple="false"
-                :options="industrialParks.items"
-                optionsStyle="text"
-                size="sm"
-                :loading="industrialParks.loading"
-                @change="([option]) => { building.industrial_park_id = option?.value ?? '' }"
-                required
-              />
-            </div>
-          </CCol>
-          <CCol :md="4">
+          </div>
+          <div class="col-md-4">
             <!-- MARKET -->
             <div class="mt-2">
-              <CMultiSelect
+              <CFormSelect
                 label="Market"
-                :multiple="false"
+                v-model="building.market_id"
                 :options="markets.items"
-                optionsStyle="text"
                 size="sm"
-                :loading="markets.loading"
-                @change="([option]) => { building.market_id = option?.value ?? '' }"
                 required
+                :disabled="!building.region_id"
               />
             </div>
+          </div>
+          <div class="col-md-4">
             <!-- SUB MARKET -->
             <div class="mt-2">
-              <CMultiSelect
+              <CFormSelect
                 label="Submarket"
-                :multiple="false"
+                v-model="building.submarket_id"
                 :options="submarkets.items"
-                optionsStyle="text"
                 size="sm"
-                :loading="submarkets.loading"
-                @change="([option]) => { building.sub_market_id = option?.value ?? '' }"
-                :disabled="!building.market_id"
                 required
+                :disabled="!building.market_id"
               />
             </div>
-          </CCol>
-          <CCol :md="4">
+          </div>
+          <div class="col-md-4">
+            <!-- INDUSTRIAL PARK -->
+            <div class="mt-2">
+              <CFormSelect
+                label="Industrial Park"
+                v-model="building.industrial_park_id"
+                :options="industrialParks.items"
+                size="sm"
+                required
+                :disabled="!building.submarket_id"
+              />
+            </div>
+          </div>
+          <div class="col-md-4">
             <!-- LATITUD -->
             <div class="mt-2">
               <CFormInput
@@ -489,6 +513,8 @@ defineExpose({
               required
               />
             </div>
+          </div>
+          <div class="col-md-4">
             <!-- ALTITUD -->
             <div class="mt-2">
               <CFormInput
@@ -499,7 +525,7 @@ defineExpose({
               required
               />
             </div>
-          </CCol>
+          </div>
           
           <!-- *** PROPERTY DETAILS *** -->
           <CCard id="property-details" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
@@ -513,14 +539,11 @@ defineExpose({
                 <CCol :md="3">
                   <!-- OWNER -->
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Owner"
-                      :multiple="false"
+                      v-model="building.owner_id"
                       :options="owners.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="owners.loading"
-                      @change="([option]) => { building.owner_id = option?.value ?? '' }"
                       required
                     />
                   </div>
@@ -528,14 +551,11 @@ defineExpose({
                 <CCol :md="3">
                   <!-- DEVELOPER -->
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Developer"
-                      :multiple="false"
+                      v-model="building.developer_id"
                       :options="developers.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="developers.loading"
-                      @change="([option]) => { building.developer_id = option?.value ?? '' }"
                       required
                     />
                   </div>
@@ -543,28 +563,22 @@ defineExpose({
                 <CCol :md="3">    
                   <!-- BUILDER -->
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Builder"
-                      :multiple="false"
+                      v-model="building.builder_id"
                       :options="builders.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="builders.loading"
-                      @change="([option]) => { building.builder_id = option?.value ?? '' }"
                       required
                     />
                   </div>
                 </CCol>
                 <CCol :md="3">
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="User Owner"
-                      :multiple="false"
+                      v-model="building.user_owner_id"
                       :options="userOwners.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="userOwners.loading"
-                      @change="([option]) => { building.user_owner_id = option?.value ?? '' }"
                       required
                     />
                   </div>
@@ -583,14 +597,11 @@ defineExpose({
           <CCol md="4">
             <!-- CURRENCY -->
             <div class="mt-2">
-              <CMultiSelect
+              <CFormSelect
                 label="Currency"
-                :multiple="false"
+                v-model="building.currency"
                 :options="currencies.items"
-                optionsStyle="text"
                 size="sm"
-                :loading="currencies.loading"
-                @change="([option]) => { building.currency = option?.value ?? '' }"
                 required
               />
             </div>
@@ -598,14 +609,11 @@ defineExpose({
           <CCol md="4">
             <!-- TENANCY -->
             <div class="mt-2">
-              <CMultiSelect
+              <CFormSelect
                 label="Tenancy"
-                :multiple="false"
+                v-model="building.tenancy"
                 :options="tenancies.items"
-                optionsStyle="text"
                 size="sm"
-                :loading="tenancies.loading"
-                @change="([option]) => { building.tenancy = option?.value ?? '' }"
                 required
               />
             </div>
@@ -613,14 +621,11 @@ defineExpose({
           <CCol md="4">
             <!-- DEAL -->
             <div class="mt-2">
-              <CMultiSelect
+              <CFormSelect
                 label="Deal"
-                :multiple="false"
+                v-model="building.deal"
                 :options="deals.items"
-                optionsStyle="text"
                 size="sm"
-                :loading="deals.loading"
-                @change="([option]) => { building.deal = option?.value ?? '' }"
                 required
               />
             </div>
@@ -638,14 +643,11 @@ defineExpose({
                 <CCol :md="3">
                   <!-- TYPE -->
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Type"
-                      :multiple="false"
+                      v-model="building.type_generation"
                       :options="generationsTypes.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="generationsTypes.loading"
-                      @change="([option]) => { building.type_generation = option?.value ?? '' }"
                       required
                     />
                   </div>
@@ -685,14 +687,12 @@ defineExpose({
                     />
                   </div>
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Loading Door"
-                      :multiple="false"
+                      v-model="building.loading_door"
                       :options="loadingDoors.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="loadingDoors.loading"
-                      @change="([option]) => { building.loading_door = option?.value ?? '' }"
+                      required
                     />
                   </div>
                 </CCol>
@@ -701,14 +701,12 @@ defineExpose({
                 <CCol :md="3">
                   <!-- CONSTRUCTION TYPE -->
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Construction Type"
-                      :multiple="false"
+                      v-model="building.construction_type"
                       :options="constructionTypes.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="constructionTypes.loading"
-                      @change="([option]) => { building.construction_type = option?.value ?? '' }"
+                      required
                     />
                   </div>
                   <!-- CONSTRUCTION STATE -->
@@ -729,14 +727,12 @@ defineExpose({
                   </div>
                   <!-- FIRE PROTECTION SYSTEM -->
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Fire Protection System (FPS)"
-                      :multiple="false"
+                      v-model="building.fire_protection_system"
                       :options="fireProtectionSystems.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="fireProtectionSystems.loading"
-                      @change="([option]) => { building.fire_protection_system = option?.value ?? '' }"
+                      required
                     />
                   </div>
                   <div class="mt-2">
@@ -748,14 +744,12 @@ defineExpose({
                     />
                   </div>
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Above Market TIS"
-                      :multiple="false"
+                      v-model="building.above_market_tis"
                       :options="technicalImprovements.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="technicalImprovements.loading"
-                      @change="([option]) => { building.above_market_tis = option?.value ?? '' }"
+                      required
                     />
                   </div>
                 </CCol>
@@ -773,14 +767,12 @@ defineExpose({
                   </div>
                   <!-- LIGHTING -->
                   <div class="mt-2">
-                    <CMultiSelect
+                    <CFormSelect
                       label="Lighting"
-                      :multiple="false"
+                      v-model="building.lightning"
                       :options="typesLightnings.items"
-                      optionsStyle="text"
                       size="sm"
-                      :loading="typesLightnings.loading"
-                      @change="([option]) => { building.lightning = option?.value ?? '' }"
+                      required
                     />
                   </div>
                   <!-- VENTILATION -->

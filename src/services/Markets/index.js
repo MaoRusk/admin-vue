@@ -1,7 +1,11 @@
 import httpClient from '../../plugins/axios'
 
 export default {
-  getMarkets() {
-    return httpClient.get(`/markets`)
+  getMarkets(query) {
+    return httpClient.get(`/markets`, {
+      params: {
+        region_id: query?.regionId || null,
+      },
+    })
   },
 }
