@@ -12,13 +12,17 @@ const httpClient = axios.create({
 httpClient.interceptors.request.use(
   function (config) {
     const token = localStorage.getItem(AUTH_TOKEN)
+    
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers['Authorization'] = `Bearer ${token}`
+    } else {
+      delete config.headers['Authorization']
     }
+    
     return config
   },
   function (error) {
     return Promise.reject(error)
-  },
+  }
 )
 export default httpClient

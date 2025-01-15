@@ -30,8 +30,8 @@ export default [
       {
         component: 'CNavItem',
         name: 'Usuarios',
-        to: '/operacion/employees',
-        icon: 'cil-people',
+        to: { name: ROUTE_NAMES.USERS },
+        icon: 'cil-user',
       },
     ]
   },

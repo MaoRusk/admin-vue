@@ -13,6 +13,8 @@ import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue'
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
 import Login from '../views/pages/Login.vue'
+import Users from '../views/operacion/users/Users.vue'
+import UserDetail from '../views/operacion/users/UserDetail.vue'
 
 const routes = [
   {
@@ -100,6 +102,30 @@ const routes = [
             path: 'buildings/pending-approvals',
             name: 'PendingApprovals',
             component: PendingApprovals,
+          },
+          {
+            path: '/seguridad',
+            name: 'Seguridad',
+            meta: { requiresAuth: true },
+            children: [
+              {
+                path: 'usuarios',
+                name: ROUTE_NAMES.USERS,
+                component: Users,
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
+                path: 'usuarios/:id',
+                name: ROUTE_NAMES.USER_DETAIL,
+                component: UserDetail,
+                props: true,
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+            ],
           },
         ],
       },
