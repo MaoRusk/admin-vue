@@ -12,4 +12,18 @@ export default {
   getIndustrialPark(industrialParkId) {
     return httpClient.get(`/industrial-parks/${industrialParkId}`)
   },
+  createIndustrialPark({ name, market_id, submarket_id }) {
+    return httpClient.post(`/industrial-parks`, {
+      name,
+      market_id,
+      submarket_id,
+    })
+  },
+  updateIndustrialPark(industrialParkId, { name, market_id, submarket_id }) {
+    return httpClient.put(`/industrial-parks/${industrialParkId}`, {
+      name,
+      market_id,
+      submarket_id,
+    })
+  },
 }

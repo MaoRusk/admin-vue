@@ -37,7 +37,7 @@ function onSubmit() {
       >
         <option v-for="option in props.options" :key="option.value" :value="option.value">{{ option.label }}</option>
       </select>
-      <button v-if="props.createOption" class="btn btn-secondary" type="button" @click="showModal = true">+</button>
+      <button v-if="props.createOption" :disabled="$attrs?.disabled ?? false" class="btn btn-secondary" type="button" @click="showModal = true">+</button>
 
       <CModal
         :visible="showModal"

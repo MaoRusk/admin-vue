@@ -348,8 +348,10 @@ async function createOptionGeneral(field, value) {
     const { data } = await API.developers.createDeveloper({ name: value.name, ...developerOptions[field] })
     building[field] = data.data.id
     fetchDevelopers()
-  } else if (field === 'region_id') {
-    // otra opcion
+  } else if (field === 'industrial_park_id') {
+    const { data } = await API.industrialparks.createIndustrialPark({ name: value.name, market_id: building.market_id, submarket_id: building.submarket_id })
+    building[field] = data.data.id
+    fetchIndustrialParks()
   }
   Swal.fire({
     icon: "success",
@@ -522,13 +524,15 @@ defineExpose({
           <div class="col-md-4">
             <!-- INDUSTRIAL PARK -->
             <div class="mt-2">
-              <CFormSelect
+              <MSelect
                 label="Industrial Park"
-                v-model="building.industrial_park_id"
                 :options="industrialParks.items"
+                v-model="building.industrial_park_id"
+                @submitOption="value => createOptionGeneral('industrial_park_id', value)"
+                create-option
                 size="sm"
-                required
                 :disabled="!building.submarket_id"
+                required
               />
             </div>
           </div>

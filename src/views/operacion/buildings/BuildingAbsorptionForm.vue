@@ -3,6 +3,7 @@ import { onMounted, computed, reactive, ref } from 'vue';
 import Swal from 'sweetalert2';
 import { API } from '../../../services';
 import dayjs from 'dayjs';
+import MSelect from '../../../components/MSelect.vue';
 
 const props = defineProps({
   buildingId: {
@@ -106,7 +107,7 @@ async function fetchBuildingStates() {
     r({
       data: {
         data: [
-          { value: '', label: 'Select' },
+          { value: '', label: 'Select...' },
           { value: 'Absorption', label: 'Absorption' },
         ]
       }
@@ -121,23 +122,23 @@ async function fetchPhases() {
   const { data } = await API.buildings.getBuildingsPhases();
   phases.loading = false
   phases.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === absorption.abs_building_phases }))
-  phases.items.unshift({label: 'Select', value: ''})
+  phases.items.unshift({label: 'Select...', value: ''})
 }
 
 async function fetchTenants() {
   tenants.loading = true
   const { data } = await API.tenants.getTenants();
   tenants.loading = false
-  tenants.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_tenant_id}))
-  tenants.items.unshift({label: 'Select', value: ''})
+  tenants.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_tenant_id})).sort((a, b) => a.label.localeCompare(b.label))
+  tenants.items.unshift({label: 'Select...', value: ''})
 }
 
 async function fetchIndustries() {
   industries.loading = true
   const { data } = await API.industries.getIndustries();
   industries.loading = false
-  industries.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_industry_id}))
-  industries.items.unshift({label: 'Select', value: ''})
+  industries.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_industry_id})).sort((a, b) => a.label.localeCompare(b.label))
+  industries.items.unshift({label: 'Select...', value: ''})
 }
 
 async function fetchCountries() {
@@ -145,15 +146,16 @@ async function fetchCountries() {
   const { data } = await API.countries.getCountries();
   countries.loading = false
   countries.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_country_id}))
-  countries.items.unshift({label: 'Select', value: ''})
+  countries.items.unshift({label: 'Select...', value: ''})
 }
 
+// TODO, falta verificar si el brokers sera la tabla brokers o developers, ya que la validacion corresponde a developers, pero en developers no hay bandera para is_broker
 async function fetchBrokers() {
   brokers.loading = true
   const { data } = await API.developers.getDevelopers();
   brokers.loading = false
   brokers.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.broker_id}))
-  brokers.items.unshift({label: 'Select', value: ''})
+  brokers.items.unshift({label: 'Select...', value: ''})
 }
 
 const handleReturn = () => {
@@ -213,6 +215,31 @@ async function fetchAbsorption() {
   }
 }
 
+async function createOptionGeneral(field, value) {
+  if (field === 'abs_industry_id') {
+    const { data } = await API.industries.createIndustry({ name: value.name })
+    absorption[field] = data.data.id
+    fetchIndustries()
+  } else if (field === 'abs_tenant_id') {
+    const { data } = await API.tenants.createTenant({ name: value.name })
+    absorption[field] = data.data.id
+    fetchTenants()
+  }
+  Swal.fire({
+    icon: "success",
+    title: "Created successfully",
+    toast: true,
+    position: "bottom",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
+}
+
 onMounted(async () => {
   Swal.fire({
     title: "Loading!",
@@ -267,18 +294,22 @@ defineExpose({
                 <CCardBody>
                   <div class="mb-3">
                     <CFormLabel>Tenant</CFormLabel>
-                    <CFormSelect
-                      v-model="absorption.abs_tenant_id"
+                    <MSelect
                       :options="tenants.items"
+                      v-model="absorption.abs_tenant_id"
+                      @submitOption="value => createOptionGeneral('abs_tenant_id', value)"
+                      create-option
                       required
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Industry</CFormLabel>
-                    <CFormSelect
-                      v-model="absorption.abs_industry_id"
+                    <MSelect
                       :options="industries.items"
+                      v-model="absorption.abs_industry_id"
+                      @submitOption="value => createOptionGeneral('abs_industry_id', value)"
+                      create-option
                       required
                     />
                   </div>

@@ -84,7 +84,8 @@ watch(activeTab, () => {
         </CRow>
       </CCardBody>
     </CCard>
-
+    <!-- TODO. quitar cuando se detecte error, bug: aveces cuando se da click sobre un tab, no se muestra su contenido, coloco variable para monitorear -->
+    {{ activeTab }}
     <CTabs activeItemKey="DataBuilding">
       <CTabList variant="tabs" class="mt-4">
         <CTab itemKey="DataBuilding" @click="activeTab = 'DataBuilding'">Data Building</CTab>

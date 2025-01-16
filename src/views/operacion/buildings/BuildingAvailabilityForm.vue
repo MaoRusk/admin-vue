@@ -3,6 +3,7 @@ import { onMounted, computed, reactive, ref } from 'vue';
 import Swal from 'sweetalert2';
 import { API } from '../../../services';
 import dayjs from 'dayjs';
+import MSelect from '../../../components/MSelect.vue';
 
 const props = defineProps({
   buildingId: {
@@ -97,7 +98,7 @@ async function fetchBuildingStates() {
     r({
       data: {
         data: [
-          { value: '', label: 'Select' },
+          { value: '', label: 'Select...' },
           { value: 'Availability', label: 'Availability' },
         ]
       }
@@ -112,15 +113,16 @@ async function fetchPhases() {
   const { data } = await API.buildings.getBuildingsPhases();
   phases.loading = false
   phases.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === availability.avl_building_phase }))
-  phases.items.unshift({label: 'Select', value: ''})
+  phases.items.unshift({label: 'Select...', value: ''})
 }
 
+// TODO. existe un endpoint de brokers, pero en el validador solo acepta registros de developers, pero en developers no hay bandera para brokers
 async function fetchBrokers() {
   brokers.loading = true
   const { data } = await API.developers.getDevelopers();
   brokers.loading = false
-  brokers.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === availability.broker_id}))
-  brokers.items.unshift({label: 'Select', value: ''})
+  brokers.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === availability.broker_id})).sort((a, b) => a.label.localeCompare(b.name))
+  brokers.items.unshift({label: 'Select...', value: ''})
 }
 
 async function fetchAvailability() {
@@ -160,6 +162,27 @@ onMounted(async () => {
   Swal.close()
 });
 
+async function createOptionGeneral(field, value) {
+  if (field === 'broker_id') {
+    const { data } = await API.brokers.createBroker({ name: value.name })
+    availability.broker_id = data.data.id
+    fetchBrokers()
+  }
+  Swal.fire({
+    icon: "success",
+    title: "Created successfully",
+    toast: true,
+    position: "bottom",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
+}
+
 defineExpose({
   submit() {
     if (formHtmlElement.value?.reportValidity()) {
@@ -189,9 +212,11 @@ defineExpose({
                 <CCardBody>
                   <div class="mb-3">
                     <CFormLabel>Broker</CFormLabel>
-                    <CFormSelect
+                    <MSelect
+                      :options="brokers.items" 
                       v-model="availability.broker_id"
-                      :options="brokers.items"
+                      @submitOption="value => createOptionGeneral('broker_id', value)"
+                      create-option
                       required
                     />
                   </div>
