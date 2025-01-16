@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { API } from '../../../services';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import MSelect from '../../../components/MSelect.vue';
 
 const router = useRouter()
 
@@ -244,10 +245,10 @@ async function fetchDevelopers() {
   const items = data.data.sort((a, b) => a.name.localeCompare(b.name))
   const firstOption = { value: '', label: 'Select...' }
   const itemsGrouped = items.reduce((group, item) => {
-    if (item.is_owner) group.owners.push({ label: item.name, value: item.id, selected: item.id === building.owner_id })
-    if (item.is_developer) group.developers.push({ label: item.name, value: item.id, selected: item.id === building.developer_id })
-    if (item.is_user_owner) group.userOwners.push({ label: item.name, value: item.id, selected: item.id === building.user_owner_id })
-    if (item.is_builder) group.builders.push({ label: item.name, value: item.id, selected: item.id === building.builder_id })
+    if (item.is_owner) group.owners.push({ label: item.name, value: item.id })
+    if (item.is_developer) group.developers.push({ label: item.name, value: item.id })
+    if (item.is_user_owner) group.userOwners.push({ label: item.name, value: item.id })
+    if (item.is_builder) group.builders.push({ label: item.name, value: item.id })
     return group
   }, { owners: [{...firstOption}], developers: [{...firstOption}], builders: [{...firstOption}], userOwners: [{...firstOption}] })
 
@@ -335,6 +336,35 @@ onMounted(async () => {
   ])
   Swal.close()
 });
+
+async function createOptionGeneral(field, value) {
+  if (['owner_id' , 'builder_id', 'user_owner_id', 'developer_id'].includes(field)) {
+    const developerOptions = {
+      owner_id: { is_developer: false, is_builder: false, is_owner: true, is_user_owner: false },
+      builder: { is_developer: false, is_builder: true, is_owner: false, is_user_owner: false },
+      userOwner: { is_developer: false, is_builder: false, is_owner: false, is_user_owner: true },
+      developer: { is_developer: true, is_builder: false, is_owner: false, is_user_owner: false },
+    }
+    const { data } = await API.developers.createDeveloper({ name: value.name, ...developerOptions[field] })
+    building[field] = data.data.id
+    fetchDevelopers()
+  } else if (field === 'region_id') {
+    // otra opcion
+  }
+  Swal.fire({
+    icon: "success",
+    title: "Created successfully",
+    toast: true,
+    position: "bottom",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
+}
 
 watchEffect(async () => {
   if (building.region_id) {
@@ -539,10 +569,12 @@ defineExpose({
                 <CCol :md="3">
                   <!-- OWNER -->
                   <div class="mt-2">
-                    <CFormSelect
+                    <MSelect
                       label="Owner"
+                      :options="owners.items" 
                       v-model="building.owner_id"
-                      :options="owners.items"
+                      @submitOption="value => createOptionGeneral('owner_id', value)"
+                      create-option
                       size="sm"
                       required
                     />
@@ -551,10 +583,12 @@ defineExpose({
                 <CCol :md="3">
                   <!-- DEVELOPER -->
                   <div class="mt-2">
-                    <CFormSelect
+                    <MSelect
                       label="Developer"
+                      :options="developers.items" 
                       v-model="building.developer_id"
-                      :options="developers.items"
+                      @submitOption="value => createOptionGeneral('developer_id', value)"
+                      create-option
                       size="sm"
                       required
                     />
@@ -563,10 +597,12 @@ defineExpose({
                 <CCol :md="3">    
                   <!-- BUILDER -->
                   <div class="mt-2">
-                    <CFormSelect
+                    <MSelect
                       label="Builder"
+                      :options="builders.items" 
                       v-model="building.builder_id"
-                      :options="builders.items"
+                      @submitOption="value => createOptionGeneral('builder_id', value)"
+                      create-option
                       size="sm"
                       required
                     />
@@ -574,10 +610,12 @@ defineExpose({
                 </CCol>
                 <CCol :md="3">
                   <div class="mt-2">
-                    <CFormSelect
+                    <MSelect
                       label="User Owner"
+                      :options="userOwners.items" 
                       v-model="building.user_owner_id"
-                      :options="userOwners.items"
+                      @submitOption="value => createOptionGeneral('user_owner_id', value)"
+                      create-option
                       size="sm"
                       required
                     />
