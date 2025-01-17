@@ -36,6 +36,7 @@
     "@fullcalendar/vue3": "^6.1.11",
     "@popperjs/core": "^2.11.8",
     "axios": "^1.7.2",
+    "dayjs": "^1.11.13",
     "i18next": "^23.10.1",
     "i18next-browser-languagedetector": "^7.2.0",
     "i18next-http-backend": "^2.5.0",

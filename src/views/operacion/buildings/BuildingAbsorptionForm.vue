@@ -1,132 +1,277 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import { onMounted, computed, reactive, ref } from 'vue';
 import Swal from 'sweetalert2';
-
-const route = useRoute();
-const router = useRouter();
-const loading = ref(false);
-const isNewRecord = computed(() => route.params.id === '0');
-
-// Referencias para los dropdowns
-const tenants = ref([]);
-const industries = ref([]);
-const shelters = ref([]);
-const countries = ref([]);
-const brokers = ref([]);
+import { API } from '../../../services';
+import dayjs from 'dayjs';
+import MSelect from '../../../components/MSelect.vue';
 
 const props = defineProps({
   buildingId: {
     type: Number,
     required: true
-  }
+  },
+  absorptionId: {
+    type: Number,
+  },
 });
 
-const emit = defineEmits(['return']);
+const emit = defineEmits(['return', 'submitting']);
 
-// Form fields
-const formData = ref({
-  abs_tenant_id: null,
-  abs_industry_id: null,
-  abs_shelter_id: null,
-  abs_country_id: null,
-  broker_id: null,
-  building_state: '',
-  abs_building_phase: '',
-  dock_doors: null,
-  drive_in_door: null,
-  floor_thickness: null,
-  floor_resistance: '',
-  truck_court: null,
+const isNewRecord = computed(() => !props.absorptionId);
+
+const absorptionObj = {
+  building_id: props.buildingId,
+  abs_tenant_id: '', // id
+  abs_industry_id: '', // id
+  abs_country_id: '', // id
+  broker_id: '', // id
+  dock_doors: '', // number
+  drive_in_door: '', // number
+  floor_thickness: '', // number
+  floor_resistance: '', // string,
+  truck_court: '', // number
   has_crossdock: false,
   shared_truck: false,
   new_construction: false,
   is_starting_construction: false,
-  bay_size: '',
-  columns_spacing: '',
-  abs_lease_term_month: null,
-  knockouts_docks: null,
-  parking_space: null,
-  abs_asking_rate_shell: null,
-  abs_closing_rate: null,
-  abs_closing_date: false,
-  abs_lease_up: false,
-  abs_month: false,
-  abs_final_use: '',
-  abs_company_type: '',
-  abs_sale_price: null
-});
+  bay_size: '', // string
+  columns_spacing: '', // string
+  abs_lease_term_month: '', // number
+  knockouts_docks: '', // number
+  parking_space: '', // number
+  abs_asking_rate_shell: '', // number
+  abs_closing_rate: '', // number
+  abs_closing_date: '', // string date
+  abs_lease_up: '', // string date
+  abs_month: '', // string date
+  abs_sale_price: '', // number
+  building_state: '', // string enum
+  abs_building_phase: '', // string enum
+  abs_final_use: '', // string
+  abs_company_type: '', // string
+}
 
-// Options for dropdowns
-const buildingStates = [
-  { value: 'Available', label: 'Available' },
-  { value: 'Under Construction', label: 'Under Construction' },
-  { value: 'Partially Available', label: 'Partially Available' }
-];
+const absorption = reactive({...absorptionObj})
+const formHtmlElement = ref(null)
 
-const buildingPhases = [
-  { value: 'Phase 1', label: 'Phase 1' },
-  { value: 'Phase 2', label: 'Phase 2' },
-  { value: 'Phase 3', label: 'Phase 3' }
-];
+const tenants = reactive({ loading: false, items: []})
+const industries = reactive({ loading: false, items: []})
+const countries = reactive({ loading: false, items: []})
+const brokers = reactive({ loading: false, items: []})
+const phases = reactive({ loading: false, items: []})
+const buildingStates = reactive({ loading: false, items: []})
+const finalUses = reactive({ loading: false, items: []})
+const companyTypes = reactive({ loading: false, items: []})
 
-const finalUses = [
-  { value: 'Manufacturing', label: 'Manufacturing' },
-  { value: 'Distribution', label: 'Distribution' },
-  { value: 'Warehouse', label: 'Warehouse' }
-];
+// TODO, no encontre catalogo en backend
+async function fetchCompanyTypes() {
+  companyTypes.loading = true
+  const { data } = await new Promise(r => {
+    r({
+      data: {
+        data: [
+          { value: '', label: 'Select' },
+          { value: 'Existing Company', label: 'Existing Company' },
+          { value: 'New Company in Market', label: 'New Company in Market' },
+          { value: 'New Company in Mexico', label: 'New Company in Mexico' }
+        ]
+      }
+    })
+  });
+  companyTypes.loading = false
+  companyTypes.items = data.data.map(({ value, label }) => ({ label: label, value: value, selected: value === absorption.abs_company_type}))
+}
 
-const companyTypes = [
-  { value: 'Type 1', label: 'Type 1' },
-  { value: 'Type 2', label: 'Type 2' },
-  { value: 'Type 3', label: 'Type 3' }
-];
+// TODO, no encontre catalogo en backend
+async function fetchFinalUses() {
+  finalUses.loading = true
+  const { data } = await new Promise(r => {
+    r({
+      data: {
+        data: [
+          { value: '', label: 'Select' },
+          { value: 'Manufacturing', label: 'Manufacturing' },
+          { value: 'Logistic', label: 'Logistic' },
+        ]
+      }
+    })
+  });
+  finalUses.loading = false
+  finalUses.items = data.data.map(({ value, label }) => ({ label: label, value: value, selected: value === absorption.abs_final_use}))
+}
+
+// TODO. este catalogo es de backend? y solo tendra siempre un valor?
+async function fetchBuildingStates() {
+  buildingStates.loading = true
+  const { data } = await new Promise(r => {
+    r({
+      data: {
+        data: [
+          { value: '', label: 'Select...' },
+          { value: 'Absorption', label: 'Absorption' },
+        ]
+      }
+    })
+  });
+  buildingStates.loading = false
+  buildingStates.items = data.data.map(({ value, label }) => ({ label: label, value: value, selected: value === absorption.building_state}))
+}
+
+async function fetchPhases() {
+  phases.loading = true
+  const { data } = await API.buildings.getBuildingsPhases();
+  phases.loading = false
+  phases.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === absorption.abs_building_phases }))
+  phases.items.unshift({label: 'Select...', value: ''})
+}
+
+async function fetchTenants() {
+  tenants.loading = true
+  const { data } = await API.tenants.getTenants();
+  tenants.loading = false
+  tenants.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_tenant_id})).sort((a, b) => a.label.localeCompare(b.label))
+  tenants.items.unshift({label: 'Select...', value: ''})
+}
+
+async function fetchIndustries() {
+  industries.loading = true
+  const { data } = await API.industries.getIndustries();
+  industries.loading = false
+  industries.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_industry_id})).sort((a, b) => a.label.localeCompare(b.label))
+  industries.items.unshift({label: 'Select...', value: ''})
+}
+
+async function fetchCountries() {
+  countries.loading = true
+  const { data } = await API.countries.getCountries();
+  countries.loading = false
+  countries.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_country_id}))
+  countries.items.unshift({label: 'Select...', value: ''})
+}
+
+// TODO, falta verificar si el brokers sera la tabla brokers o developers, ya que la validacion corresponde a developers, pero en developers no hay bandera para is_broker
+async function fetchBrokers() {
+  brokers.loading = true
+  const { data } = await API.developers.getDevelopers();
+  brokers.loading = false
+  brokers.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.broker_id}))
+  brokers.items.unshift({label: 'Select...', value: ''})
+}
 
 const handleReturn = () => {
+  for (const prop in absorption) {
+    absorption[prop] = absorptionObj[prop]
+  }
   emit('return');
 };
 
-const saveAbsorption = async () => {
+async function saveAbsorption() {
+  emit('submitting', true)
   try {
-    loading.value = true;
-    console.log('Saving absorption:', formData.value);
-    
+    const body = {
+      ...absorption,
+      abs_closing_date: absorption.abs_closing_date ? dayjs(absorption.abs_closing_date).format('YYYY-MM-DD') : '',
+      abs_lease_up: absorption.abs_lease_up ? dayjs(absorption.abs_lease_up).format('YYYY-MM-DD') : '',
+      abs_month: absorption.abs_month ? dayjs(absorption.abs_month).format('YYYY-MM-DD') : '',
+    }
+    let data;
+    if (isNewRecord.value) {
+      ({ data } = await API.buildingsAbsorption.createAbsorptionBuilding(props.buildingId, body));
+    } else {
+      ({ data } = await API.buildingsAbsorption.updateAbsorptionBuilding(props.absorptionId, props.buildingId, body));
+    }
     Swal.fire({
       icon: 'success',
       title: 'Success',
-      text: `Absorption successfully ${isNewRecord.value ? 'created' : 'updated'}`
+      text: data.message
     });
-    
     handleReturn();
+  } catch (error) {
+    console.error(error)
+    Swal.fire({
+      icon: 'error',
+      title: error.response.data.message,
+      text: JSON.stringify(error.response.data.errors)
+    });
+  } finally {
+    emit('submitting', false)
+  }
+}
+
+async function fetchAbsorption() {
+  try {
+    const { data } = await API.buildingsAbsorption.getAbsorptionBuilding(props.absorptionId, props.buildingId);
+    ['abs_tenant_id', 'abs_industry_id', 'abs_country_id', 'broker_id', 'dock_doors', 'drive_in_door', 'floor_thickness', 'floor_resistance', 'truck_court', 'bay_size', 'columns_spacing', 'abs_lease_term_month', 'knockouts_docks', 'parking_space', 'abs_asking_rate_shell', 'abs_closing_rate', 'abs_closing_date', 'abs_lease_up', 'abs_month', 'abs_sale_price', 'building_state', 'abs_building_phase', 'abs_final_use', 'abs_company_type']
+    .forEach(prop => absorption[prop] = `${data.data[prop] ?? ''}`);
+    ['has_crossdock', 'shared_truck', 'new_construction', 'is_starting_construction']
+    .forEach(prop => absorption[prop] = Boolean(data.data[prop]))
+    console.log(data)
   } catch (error) {
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: 'Failed to save absorption'
+      text: 'Failed to load building data: ' + error.message,
     });
-  } finally {
-    loading.value = false;
   }
-};
+}
 
-// Fetch dropdown data
-const fetchDropdownData = async () => {
-  try {
-    // Simulated data for dropdowns
-    tenants.value = [{ value: 1, label: 'Tenant 1' }];
-    industries.value = [{ value: 1, label: 'Industry 1' }];
-    shelters.value = [{ value: 1, label: 'Shelter 1' }];
-    countries.value = [{ value: 1, label: 'Country 1' }];
-    brokers.value = [{ value: 1, label: 'Broker 1' }];
-  } catch (error) {
-    console.error('Error fetching dropdown data:', error);
+async function createOptionGeneral(field, value) {
+  if (field === 'abs_industry_id') {
+    const { data } = await API.industries.createIndustry({ name: value.name })
+    absorption[field] = data.data.id
+    fetchIndustries()
+  } else if (field === 'abs_tenant_id') {
+    const { data } = await API.tenants.createTenant({ name: value.name })
+    absorption[field] = data.data.id
+    fetchTenants()
   }
-};
+  Swal.fire({
+    icon: "success",
+    title: "Created successfully",
+    toast: true,
+    position: "bottom",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
+}
 
-onMounted(() => {
-  fetchDropdownData();
+onMounted(async () => {
+  Swal.fire({
+    title: "Loading!",
+    didOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+  })
+  if (!isNewRecord.value) {
+    await fetchAbsorption();
+  }
+  await Promise.all([
+    fetchCompanyTypes(),
+    fetchFinalUses(),
+    fetchBuildingStates(),
+    fetchPhases(),
+    fetchTenants(),
+    fetchIndustries(),
+    fetchCountries(),
+    fetchBrokers(),
+  ])
+  Swal.close()
 });
+
+defineExpose({
+  submit() {
+    if (formHtmlElement.value?.reportValidity()) {
+      formHtmlElement.value?.requestSubmit()
+    }
+  }
+})
 </script>
 
 <template>
@@ -135,12 +280,12 @@ onMounted(() => {
       <CCardHeader class="d-flex justify-content-between align-items-center">
         <h3>{{ isNewRecord ? 'New Absorption' : 'Edit Absorption' }}</h3>
         <CButton color="primary" variant="outline" @click="handleReturn">
-          Return
+          List
         </CButton>
       </CCardHeader>
       
       <CCardBody>
-        <CForm @submit.prevent="saveAbsorption">
+        <form @submit.prevent="saveAbsorption" ref="formHtmlElement">
           <div class="row">
             <!-- Basic Information -->
             <div class="col-md-6">
@@ -149,66 +294,59 @@ onMounted(() => {
                 <CCardBody>
                   <div class="mb-3">
                     <CFormLabel>Tenant</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.abs_tenant_id"
-                      :options="tenants"
-                      :multiple="false"
+                    <MSelect
+                      :options="tenants.items"
+                      v-model="absorption.abs_tenant_id"
+                      @submitOption="value => createOptionGeneral('abs_tenant_id', value)"
+                      create-option
                       required
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Industry</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.abs_industry_id"
-                      :options="industries"
-                      :multiple="false"
+                    <MSelect
+                      :options="industries.items"
+                      v-model="absorption.abs_industry_id"
+                      @submitOption="value => createOptionGeneral('abs_industry_id', value)"
+                      create-option
                       required
                     />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Shelter</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.abs_shelter_id"
-                      :options="shelters"
-                      :multiple="false"
-                    />
-                  </div>
-
-                  <div class="mb-3">
                     <CFormLabel>Country</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.abs_country_id"
-                      :options="countries"
-                      :multiple="false"
+                    <CFormSelect
+                      v-model="absorption.abs_country_id"
+                      :options="countries.items"
+                      required
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Broker</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.broker_id"
-                      :options="brokers"
-                      :multiple="false"
+                    <CFormSelect
+                      v-model="absorption.broker_id"
+                      :options="brokers.items"
+                      required
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Building State</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.building_state"
-                      :options="buildingStates"
-                      :multiple="false"
+                    <CFormSelect
+                      v-model="absorption.building_state"
+                      :options="buildingStates.items"
+                      required
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Building Phase</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.abs_building_phase"
-                      :options="buildingPhases"
-                      :multiple="false"
+                    <CFormSelect
+                      v-model="absorption.abs_building_phase"
+                      :options="phases.items"
+                      required
                     />
                   </div>
                 </CCardBody>
@@ -222,37 +360,37 @@ onMounted(() => {
                 <CCardBody>
                   <div class="mb-3">
                     <CFormLabel>Dock Doors</CFormLabel>
-                    <CFormInput type="number" v-model="formData.dock_doors" />
+                    <CFormInput type="number" v-model="absorption.dock_doors" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Drive-in Door</CFormLabel>
-                    <CFormInput type="number" v-model="formData.drive_in_door" />
+                    <CFormInput type="number" v-model="absorption.drive_in_door" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Floor Thickness</CFormLabel>
-                    <CFormInput type="number" v-model="formData.floor_thickness" />
+                    <CFormInput type="number" v-model="absorption.floor_thickness" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Floor Resistance</CFormLabel>
-                    <CFormInput type="text" v-model="formData.floor_resistance" />
+                    <CFormInput type="text" v-model="absorption.floor_resistance" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Truck Court</CFormLabel>
-                    <CFormInput type="number" v-model="formData.truck_court" />
+                    <CFormInput type="number" v-model="absorption.truck_court" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Bay Size</CFormLabel>
-                    <CFormInput type="text" v-model="formData.bay_size" />
+                    <CFormInput type="text" v-model="absorption.bay_size" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Columns Spacing</CFormLabel>
-                    <CFormInput type="text" v-model="formData.columns_spacing" />
+                    <CFormInput type="text" v-model="absorption.columns_spacing" />
                   </div>
                 </CCardBody>
               </CCard>
@@ -267,25 +405,26 @@ onMounted(() => {
                 <div class="col-md-6">
                   <div class="mb-3">
                     <CFormLabel>Lease Term (months)</CFormLabel>
-                    <CFormInput type="number" v-model="formData.abs_lease_term_month" />
+                    <CFormInput type="number" v-model="absorption.abs_lease_term_month" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Knockouts Docks</CFormLabel>
-                    <CFormInput type="number" v-model="formData.knockouts_docks" />
+                    <CFormInput type="number" v-model="absorption.knockouts_docks" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Parking Space</CFormLabel>
-                    <CFormInput type="number" v-model="formData.parking_space" />
+                    <CFormInput type="number" v-model="absorption.parking_space" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Asking Rate Shell</CFormLabel>
                     <CFormInput 
                       type="number" 
-                      v-model="formData.abs_asking_rate_shell"
+                      v-model="absorption.abs_asking_rate_shell"
                       step="0.01" 
+                      required
                     />
                   </div>
 
@@ -293,8 +432,9 @@ onMounted(() => {
                     <CFormLabel>Closing Rate</CFormLabel>
                     <CFormInput 
                       type="number" 
-                      v-model="formData.abs_closing_rate"
+                      v-model="absorption.abs_closing_rate"
                       step="0.01" 
+                      required
                     />
                   </div>
                 </div>
@@ -302,19 +442,19 @@ onMounted(() => {
                 <div class="col-md-6">
                   <div class="mb-3">
                     <CFormLabel>Final Use</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.abs_final_use"
-                      :options="finalUses"
-                      :multiple="false"
+                    <CFormSelect
+                      v-model="absorption.abs_final_use"
+                      :options="finalUses.items"
+                      required
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Company Type</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.abs_company_type"
-                      :options="companyTypes"
-                      :multiple="false"
+                    <CFormSelect
+                      v-model="absorption.abs_company_type"
+                      :options="companyTypes.items"
+                      required
                     />
                   </div>
 
@@ -322,7 +462,7 @@ onMounted(() => {
                     <CFormLabel>Sale Price</CFormLabel>
                     <CFormInput 
                       type="number" 
-                      v-model="formData.abs_sale_price"
+                      v-model="absorption.abs_sale_price"
                       step="0.01" 
                     />
                   </div>
@@ -339,12 +479,12 @@ onMounted(() => {
                       <h6 class="mb-3">Construction Status</h6>
                       <div class="d-flex flex-column gap-3">
                         <CFormSwitch
-                          v-model="formData.new_construction"
+                          v-model="absorption.new_construction"
                           label="New Construction"
                           size="lg"
                         />
                         <CFormSwitch
-                          v-model="formData.is_starting_construction"
+                          v-model="absorption.is_starting_construction"
                           label="Starting Construction"
                           size="lg"
                         />
@@ -356,12 +496,12 @@ onMounted(() => {
                       <h6 class="mb-3">Building Features</h6>
                       <div class="d-flex flex-column gap-3">
                         <CFormSwitch
-                          v-model="formData.has_crossdock"
+                          v-model="absorption.has_crossdock"
                           label="Has Crossdock"
                           size="lg"
                         />
                         <CFormSwitch
-                          v-model="formData.shared_truck"
+                          v-model="absorption.shared_truck"
                           label="Shared Truck"
                           size="lg"
                         />
@@ -372,20 +512,17 @@ onMounted(() => {
                     <div class="col-md-4 mb-4">
                       <h6 class="mb-3">Dates & Status</h6>
                       <div class="d-flex flex-column gap-3">
-                        <CFormSwitch
-                          v-model="formData.abs_closing_date"
-                          label="Closing Date"
-                          size="lg"
+                        <CFormLabel>Closing Date</CFormLabel>
+                        <CDatePicker
+                          v-model:date="absorption.abs_closing_date"
                         />
-                        <CFormSwitch
-                          v-model="formData.abs_lease_up"
-                          label="Lease Up"
-                          size="lg"
+                        <CFormLabel>Lease Up</CFormLabel>
+                        <CDatePicker
+                          v-model:date="absorption.abs_lease_up"
                         />
-                        <CFormSwitch
-                          v-model="formData.abs_month"
-                          label="Month"
-                          size="lg"
+                        <CFormLabel>Month</CFormLabel>
+                        <CDatePicker
+                          v-model:date="absorption.abs_month"
                         />
                       </div>
                     </div>
@@ -394,17 +531,7 @@ onMounted(() => {
               </CCard>
             </CCardBody>
           </CCard>
-
-          <!-- Form Actions -->
-          <div class="d-flex justify-content-end gap-2">
-            <CButton color="secondary" @click="handleReturn" :disabled="loading">
-              Cancel
-            </CButton>
-            <CButton color="primary" type="submit" :disabled="loading">
-              {{ loading ? 'Saving...' : (isNewRecord ? 'Create' : 'Update') }}
-            </CButton>
-          </div>
-        </CForm>
+        </form>
       </CCardBody>
     </CCard>
   </div>

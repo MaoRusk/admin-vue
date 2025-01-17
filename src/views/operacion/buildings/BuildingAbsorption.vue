@@ -1,49 +1,77 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
-import { useRouter } from 'vue-router';
-import BuildingAbsorptionForm from './BuildingAbsorptionForm.vue';
 import { CIcon } from '@coreui/icons-vue';
 import { cilPencil, cilTrash, cilPlus } from '@coreui/icons';
 
-const router = useRouter();
+import BuildingAbsorptionForm from './BuildingAbsorptionForm.vue';
+import { BUILDINGS_ITEMS_PER_PAGE } from '../../../constants';
+import { useLocalStorage } from '../../../composables/useLocalStorage';
+import { API } from '../../../services';
+
+const props = defineProps({
+  buildingId: {
+    type: Number,
+    required: true
+  }
+})
+const emit = defineEmits(['submitting', 'changeShowForm'])
+
+const storage = useLocalStorage()
+
 const absorptions = ref([]);
-const loading = ref(false);
+const loading = ref(false)
+const totalItems = ref(0)
+const totalPages = ref(0)
+const page = ref(1)
+const itemsPerPage = ref(storage.getItem(BUILDINGS_ITEMS_PER_PAGE) ?? 10)
+const columnFilter = ref({})
+const columnSorter = ref({})
+const tableSearch = ref('')
+
 const showForm = ref(false);
 const selectedAbsorptionId = ref(null);
 
-// Mock data for development
-const mockAbsorptions = [
-  {
-    id: 1,
-    building_id: 'BLDG-001',
-    abs_tenant_id: 'TNT-001',
-    abs_industry_id: 'IND-001',
-    abs_lease_term_month: 60,
-    abs_closing_date: '2024-03-15',
-    abs_final_use: 'Warehouse',
-    abs_sale_price: 1500000.00
-  }
+const columns = [
+  { key: 'tenantName', label: 'Tenant' },
+  { key: 'industryName', label: 'Industry' },
+  { key: 'abs_lease_term_month', label: 'Lease Term' },
+  { key: 'abs_closing_date', label: 'Closing Date' },
+  { key: 'abs_final_use', label: 'Final Use' },
+  { key: 'abs_sale_price', label: 'Sale Price' },
+  { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
 
-const fetchAbsorptions = async () => {
-  loading.value = true;
+async function fetchAbsorptions() {
+  loading.value = true
   try {
-    absorptions.value = mockAbsorptions;
+    const { data } = await API.buildingsAbsorption.getAbsorptionBuildings(props.buildingId, {
+      page: page.value,
+      size: itemsPerPage.value,
+      search: tableSearch.value,
+    }, columnFilter.value, columnSorter.value);
+    page.value = data.data.current_page
+    totalItems.value = data.data.total
+    totalPages.value = data.data.last_page
+    absorptions.value = data.data.data.map(item => ({
+      ...item,
+      abs_lease_term_month: item.abs_lease_term_month ?? '',
+      abs_closing_date: item.abs_closing_date ?? '',
+      abs_final_use: item.abs_final_use ?? '',
+      abs_sale_price: item.abs_sale_price ?? '',
+      industryName: item.industry.name,
+      tenantName: item.tenant.name,
+    }))
+    loading.value = false
   } catch (error) {
-    console.error('Error fetching absorptions:', error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Failed to load absorption data'
-    });
+    console.error('Error fetching buildings:', error);
+    absorptions.value = [];
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
-const handleEdit = (absorptionId) => {
+const handleEdit = ({ id: absorptionId }) => {
   selectedAbsorptionId.value = absorptionId;
   showForm.value = true;
 };
@@ -54,28 +82,27 @@ const handleReturn = () => {
   fetchAbsorptions(); // Refresh the data when returning
 };
 
-const handleDelete = async (absorptionId) => {
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: "You won't be able to revert this!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete it!'
-  });
-
-  if (result.isConfirmed) {
-    try {
-      // Simulate delete operation
-      absorptions.value = absorptions.value.filter(b => b.id !== absorptionId);
-      Swal.fire('Deleted!', 'Absorption has been deleted.', 'success');
-    } catch (error) {
-      console.error('Error deleting absorption:', error);
-      Swal.fire('Error!', 'Failed to delete absorption.', 'error');
+async function removeAbsorption(absorptionId) {
+  try {
+    const { isConfirmed } = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    })
+    if (isConfirmed) {
+      const { data } = await API.buildingsAbsorption.deleteAbsorptionBuilding(absorptionId, props.buildingId);
+      Swal.fire('Deleted!', data.message, 'success')
+      fetchAbsorptions()
     }
+  } catch (error) {
+    console.error('Error fetching buildings:', error);
+    Swal.fire('Failed!', error.message, 'error')
   }
-};
+}
 
 const handleAddAbsorption = () => {
   selectedAbsorptionId.value = 0; // 0 indicates new record
@@ -85,8 +112,23 @@ const handleAddAbsorption = () => {
 onMounted(() => {
   fetchAbsorptions();
 });
-</script>
 
+watch(showForm, (newValue) => {
+  emit('changeShowForm', newValue)
+})
+
+const formAbsorptionRef = ref(null)
+
+watch([page, itemsPerPage, tableSearch], fetchAbsorptions)
+watch([columnSorter, columnFilter], fetchAbsorptions, { deep: true })
+
+defineExpose({
+  showForm,
+  submit() {
+    formAbsorptionRef.value?.submit?.()
+  }
+})
+</script>
 <template>
   <div class="building-absorption">
     <div v-if="!showForm">
@@ -102,44 +144,62 @@ onMounted(() => {
       <!-- Absorptions Table -->
       <CCard>
         <CCardBody>
-          <CTable hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Building ID</CTableHeaderCell>
-                <CTableHeaderCell>Tenant</CTableHeaderCell>
-                <CTableHeaderCell>Industry</CTableHeaderCell>
-                <CTableHeaderCell>Lease Term</CTableHeaderCell>
-                <CTableHeaderCell>Closing Date</CTableHeaderCell>
-                <CTableHeaderCell>Final Use</CTableHeaderCell>
-                <CTableHeaderCell>Sale Price</CTableHeaderCell>
-                <CTableHeaderCell>Actions</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              <CTableRow v-if="loading">
-                <CTableDataCell colspan="8" class="text-center">Loading...</CTableDataCell>
-              </CTableRow>
-              <CTableRow v-else v-for="absorption in absorptions" :key="absorption.id">
-                <CTableDataCell>{{ absorption.building_id }}</CTableDataCell>
-                <CTableDataCell>{{ absorption.abs_tenant_id }}</CTableDataCell>
-                <CTableDataCell>{{ absorption.abs_industry_id }}</CTableDataCell>
-                <CTableDataCell>{{ absorption.abs_lease_term_month }} months</CTableDataCell>
-                <CTableDataCell>{{ new Date(absorption.abs_closing_date).toLocaleDateString() }}</CTableDataCell>
-                <CTableDataCell>{{ absorption.abs_final_use }}</CTableDataCell>
-                <CTableDataCell>${{ absorption.abs_sale_price.toLocaleString() }}</CTableDataCell>
-                <CTableDataCell>
-                  <CButtonGroup>
-                    <CButton color="info" size="sm" @click="handleEdit(absorption.id)" class="me-2">
-                      <CIcon :icon="cilPencil" />
-                    </CButton>
-                    <CButton color="danger" size="sm" @click="handleDelete(absorption.id)">
-                      <CIcon :icon="cilTrash" />
-                    </CButton>
-                  </CButtonGroup>
-                </CTableDataCell>
-              </CTableRow>
-            </CTableBody>
-          </CTable>
+          <CSmartTable
+            :pagination="{ external: true }"
+            :column-filter="{ external: true }"
+            :column-sorter="{ external: true }"
+            :table-filter="{ external: true }"
+            :loading="loading"
+            :items="absorptions"
+            :paginationProps="{
+              activePage: page,
+              pages: totalPages
+            }"
+            :columns="columns"
+            cleaner
+            footer
+            header
+            items-per-page-select
+            :items-per-page="itemsPerPage"
+            :table-props="{
+              hover: true,
+              striped: true,
+              responsive: true,
+            }"
+            @active-page-change="(_activePage) => {
+              page = _activePage
+            }"
+            @items-per-page-change="(_itemsPerPage) => {
+              activePage = 1
+              itemsPerPage = _itemsPerPage
+              storage.setItem(BUILDINGS_ITEMS_PER_PAGE, _itemsPerPage)
+            }"
+            @sorter-change="(sorter) => {
+              columnSorter = sorter
+            }"
+            @table-filter-change="(filter) => {
+              activePage = 1
+              tableSearch = filter
+            }"
+            @column-filter-change="(filter) => {
+              activePage = 1
+              columnFilter = filter
+            }"
+          >
+            <template #actions="{ item }">
+              <td class="d-flex gap-1">
+                <CButton color="primary" variant="outline" square size="sm" >
+                  <CIcon :content="cilPencil" size="sm" @click="handleEdit(item)" />
+                </CButton>
+                <CButton color="danger" variant="outline" square size="sm" @click="removeAbsorption(item.id)">
+                  <CIcon :content="cilTrash" size="sm" />
+                </CButton>
+              </td>
+            </template>
+          </CSmartTable>
+          <div>
+            Total records {{ totalItems }}
+          </div>
         </CCardBody>
       </CCard>
     </div>
@@ -147,8 +207,11 @@ onMounted(() => {
     <!-- Show form when editing -->
     <div v-else>
       <BuildingAbsorptionForm 
-        :buildingId="selectedAbsorptionId"
+        :buildingId="props.buildingId"
+        :absorptionId="selectedAbsorptionId"
         @return="handleReturn"
+        @submitting="(value) => emit('submitting', value)"
+        ref="formAbsorptionRef"
       />
     </div>
   </div>

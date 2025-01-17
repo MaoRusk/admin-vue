@@ -1,10 +1,5 @@
 <script setup>
 import { useTranslation } from 'i18next-vue'
-import avatar1 from '@/assets/images/avatars/1.jpg'
-import avatar2 from '@/assets/images/avatars/2.jpg'
-import avatar3 from '@/assets/images/avatars/3.jpg'
-import avatar4 from '@/assets/images/avatars/4.jpg'
-import avatar5 from '@/assets/images/avatars/5.jpg'
 
 const { t } = useTranslation()
 const itemsCount = 7
@@ -31,7 +26,7 @@ const itemsCount = 7
       </CDropdownHeader>
       <CDropdownItem href="#">
         <div class="d-flex">
-          <CAvatar class="flex-shrink-0 my-3 me-3" :src="avatar1" status="success" />
+          <CAvatar class="flex-shrink-0 my-3 me-3" color="success">A</CAvatar>
           <div class="message text-wrap">
             <div class="d-flex justify-content-between mt-1">
               <div class="small text-body-secondary">Jessica Williams</div>
@@ -49,7 +44,7 @@ const itemsCount = 7
       </CDropdownItem>
       <CDropdownItem href="#">
         <div class="d-flex">
-          <CAvatar class="flex-shrink-0 my-3 me-3" :src="avatar2" status="warning" />
+          <CAvatar class="flex-shrink-0 my-3 me-3" color="warning">B</CAvatar>
           <div class="message text-wrap">
             <div class="d-flex justify-content-between mt-1">
               <div class="small text-body-secondary">Richard Johnson</div>
@@ -67,7 +62,7 @@ const itemsCount = 7
       </CDropdownItem>
       <CDropdownItem href="#">
         <div class="d-flex">
-          <CAvatar class="flex-shrink-0 my-3 me-3" :src="avatar4" status="secondary" />
+          <CAvatar class="flex-shrink-0 my-3 me-3" color="secondary">C</CAvatar>
           <div class="message text-wrap">
             <div class="d-flex justify-content-between mt-1">
               <div class="small text-body-secondary">Angela Rodriguez</div>
@@ -83,7 +78,7 @@ const itemsCount = 7
       </CDropdownItem>
       <CDropdownItem href="#">
         <div class="d-flex">
-          <CAvatar class="flex-shrink-0 my-3 me-3" :src="avatar5" status="success" />
+          <CAvatar class="flex-shrink-0 my-3 me-3" color="success">E</CAvatar>
           <div class="message text-wrap">
             <div class="d-flex justify-content-between mt-1">
               <div class="small text-body-secondary">Jane Lewis</div>
@@ -93,22 +88,6 @@ const itemsCount = 7
             <div class="small text-body-secondary">
               Team, it&#39;s time for our monthly inventory check. Accurate counts ensure smooth
               operations. Let&#39;s nail it...
-            </div>
-          </div>
-        </div>
-      </CDropdownItem>
-      <CDropdownItem href="#">
-        <div class="d-flex">
-          <CAvatar class="flex-shrink-0 my-3 me-3" :src="avatar3" status="secondary" />
-          <div class="message text-wrap">
-            <div class="d-flex justify-content-between mt-1">
-              <div class="small text-body-secondary">Ryan Miller</div>
-              <div class="small text-body-secondary">3 days ago</div>
-            </div>
-            <div class="fw-semibold">Customer Feedback Results</div>
-            <div class="small text-body-secondary">
-              Our latest customer feedback is in. Let&#39;s analyze and discuss improvements for an
-              even better service...
             </div>
           </div>
         </div>

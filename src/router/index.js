@@ -9,7 +9,6 @@ import { AUTH_TOKEN } from '../constants'
 
 import EmployeeDetalle from '../views/operacion/employees/EmployeeDetalle.vue'
 import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue'
-import BuildingDetalle from '../views/operacion/buildings/BuildingDetalle.vue'
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
 import Login from '../views/pages/Login.vue'
@@ -30,21 +29,15 @@ const routes = [
       {
         path: '/operacion',
         name: ROUTE_NAMES.OPERATIONS,
-        component: {
-          render() {
-            return h(resolveComponent('router-view'))
-          },
-        },
+        meta: { requiresAuth: true },
         children: [
           {
             path: '/operacion/polizas',
-            meta: { requiresAuth: true },
             name: 'Polizas',
             component: () => import('@/views/operacion/polizas/Polizas.vue'),
           },
           {
             path: '/operacion/poliza/:id', // Nueva ruta para PolizaDetalle
-            meta: { requiresAuth: true },
             name: 'PolizaDetalle',
             component: PolizaDetalle,
             props: true, // Permitir pasar parámetros como props
@@ -52,13 +45,11 @@ const routes = [
 
           {
             path: '/operacion/empresas',
-            meta: { requiresAuth: true },
             name: 'Empresas',
             component: () => import('@/views/operacion/empresas/Empresas.vue'),
           },
           {
             path: '/operacion/empresa/:id',
-            meta: { requiresAuth: true },
             name: 'Empresa Detalle',
             component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
             props: true,
@@ -66,35 +57,29 @@ const routes = [
 
           {
             path: '/operacion/employees',
-            meta: { requiresAuth: true },
             name: 'Employees',
             component: () => import('@/views/operacion/employees/Employees.vue'),
           },
           {
             path: '/operacion/employee/:id',
-            meta: { requiresAuth: true },
             name: 'EmployeeDetalle',
             component: EmployeeDetalle,
             props: true,
           },
           {
             path: '/operacion/buildings',
-            name: 'Buildings',
+            name: ROUTE_NAMES.BUILDINGS,
             component: Buildings,
           },
           {
-            path: '/operacion/building/:id',
-            meta: { requiresAuth: true },
-            name: 'BuildingDetalle',
-            component: BuildingDetalle,
-            props: true,
-            children: [
-              {
-                path: 'absorption',
-                name: 'BuildingAbsorption',
-                component: () => import('@/views/operacion/buildings/BuildingAbsorption.vue'),
-              },
-            ],
+            path: '/operacion/building/create',
+            name: ROUTE_NAMES.BUILDINGS_CREATE,
+            component: () => import('@/views/operacion/buildings/BuildingDetalle.vue'),
+          },
+          {
+            path: '/operacion/building/:buildingId/edit',
+            name: ROUTE_NAMES.BUILDINGS_UPDATE,
+            component: () => import('@/views/operacion/buildings/BuildingDetalle.vue'),
           },
           {
             path: 'buildings/pending-approvals',
