@@ -16,13 +16,12 @@ const props = defineProps({
 });
 
 const userRoles = ref([]);
-const selectedRole = ref([]);  // Inicializar como array vacío en lugar de string
-const submitRoleInput = ref('');
+const selectedRole = ref(null);  // Inicializar como array vacío en lugar de string
 const loading = ref(false);
 const marketsCbo = ref([]);
-const modulesCbo = ref([
-  { value: '1', label: 'Buildings' },
-]);
+// const modulesCbo = ref([
+//   { value: '1', label: 'Buildings' },
+// ]);
 
 // Form data
 const formData = ref({
@@ -35,14 +34,15 @@ const formData = ref({
   email: '',     
   status: 'Activo', // Por defecto Activo
   userTypeId: '',
-  modules: [],
+  // modules: [],
   markets: [],
 });
 
 
-const selectedValues = ref([]);
+const selectedValues = ref(null);
 const selectedUserType = ref('');
-const selectedMarket = ref('');
+const selectedMarket = ref(null);
+
 const submitUserTypeInput = ref('');
 
 // Computed properties
@@ -142,7 +142,7 @@ async function fetchUserData() {
         email: '',
         status: 'Activo',
         roleId: '',
-        modules: [],
+        // modules: [],
         markets: []
       };
     
@@ -150,12 +150,10 @@ async function fetchUserData() {
     await fetchRoles();
 
     if (!isNewRecord.value) {
-      const { data: response } = await API.users.getUser(props.id);
-      
+      const { data: response } = await API.users.getUser(props.id);      
       // Agregar console.log para ver la respuesta completa
       console.log('Respuesta completa del usuario:', response);
       console.log('Datos del usuario:', response.data);
-      
       if (response.success) {
         const userData = response.data;
         
@@ -169,23 +167,13 @@ async function fetchUserData() {
           email: userData.email || '',
           status: userData.status === 'Active' ? 'Activo' : 'Inactivo',
           roleId: userData.role_id || '',
-          modules: [],
+          // modules: [],
           markets: []
         };
 
+    
         if (userData.role_id) {
-          const { data: roleResponse } = await API.roles.getRoleById(userData.role_id);
-          console.log('Respuesta del rol:', roleResponse); // Ver datos del rol
-          
-          if (roleResponse.success) {
-            const matchingRole = userRoles.value.find(
-              role => role.value === roleResponse.data.id.toString()
-            );
-
-            if (matchingRole) {
-              selectedRole.value = [matchingRole];
-            }
-          }
+          selectedRole.value = userData.role_id.toString();
         }
       }
     }
@@ -211,7 +199,6 @@ async function fetchRoles() {
     
     if (response.success) {
       userRoles.value = [
-        { value: 'New', label: 'Add role' },
         ...response.data.map(role => ({
           value: role.id.toString(), // Asegurarse que sea string
           label: role.name,
@@ -250,13 +237,28 @@ async function submitRole(roleName) {
 
   try {
     const { data: response } = await API.roles.createRole({
-      name: roleName.trim()
+      name: roleName.trim(),
+      guard_name: 'web'
     });
 
     if (response.success) {
-      await fetchRoles();
-      submitRoleInput.value = '';
-      selectedRole.value = '';
+      // Recargar roles
+      const { data: rolesResponse } = await API.roles.getAllRoles();
+      
+      if (rolesResponse.success) {
+        // Actualizar la lista de roles
+        userRoles.value = [
+          { value: 'New', label: 'Add role' },
+          ...rolesResponse.data.map(role => ({
+            value: role.id.toString(),
+            label: role.name,
+            guardName: role.guard_name
+          }))
+        ];
+
+        // Seleccionar el nuevo rol
+        selectedRole.value = response.data.id.toString();
+      }
 
       Swal.fire({
         title: 'Success',
@@ -294,7 +296,7 @@ async function handleSubmit() {
       user_name: formData.value.userName,
       email: formData.value.email,
       status: formData.value.status === 'Activo' ? 'Active' : 'Inactive',
-      role_id: selectedRole.value[0]?.value ? parseInt(selectedRole.value[0].value) : null,
+      role_id: selectedRole.value ? parseInt(selectedRole.value) : null,
       company_id: 1,
       password: formData.value.password,
       created_at: new Date().toISOString(),
@@ -313,7 +315,8 @@ async function handleSubmit() {
       response = await API.users.updateUser(props.id, userData);
     }
 
-    if (response.data.success) {
+    // Check if response exists and has data property
+    if (response && response.data) {
       await Swal.fire({
         title: 'Success',
         text: `User ${props.id === 0 ? 'created' : 'updated'} successfully`,
@@ -379,11 +382,14 @@ async function handleDelete() {
 }
 
 // Event handlers
+// const handleModulesCbo = (newValue) => {
+//   selectedValues.value = newValue;
+//   formData.value.modules = Array.isArray(newValue) ? newValue : [newValue];
+// };
 const handleModulesCbo = (newValue) => {
   selectedValues.value = newValue;
-  formData.value.modules = Array.isArray(newValue) ? newValue : [newValue];
+  formData.value.modules = newValue ? [newValue] : [];
 };
-
 // const handleUserTypeChange = (value) => {
 //   selectedUserType.value = value[0]?.value;
 //   fetchMarkets();
@@ -399,12 +405,12 @@ onMounted(() => {
   fetchUserData();
 });
 
-// Add this helper function for creating new options
 async function createOptionGeneral(field, value) {
   if (field === 'role') {
     await submitRole(value.name);
+    // Forzar recarga de roles después de crear uno nuevo
+    await fetchRoles();
   }
-  // Add other option creation handlers as needed
 }
 </script>
 
@@ -413,10 +419,10 @@ async function createOptionGeneral(field, value) {
 
       <div style="display: flex; justify-content: right;">
         <div>
-          <router-link to="../employees">
+          <router-link :to="{ name: 'Users' }">
             <CButton color="primary" variant="outline">
               <CIcon :content="cilArrowCircleLeft" size="sm" />
-              return
+              Return
             </CButton>
           </router-link>
         </div>
@@ -458,34 +464,16 @@ async function createOptionGeneral(field, value) {
                 </div>
             </CCol>
             <CCol>
-              
               <MSelect
                 label="Select Role *"
                 :options="userRoles"
                 v-model="selectedRole"
+                @update:modelValue="handleRoleChange"
                 @submitOption="value => createOptionGeneral('role', value)"
                 create-option
                 size="sm"
                 required
-              />
-
-              <CInputGroup v-if="selectedRole === 'New'" class="mb-3 mt-2">
-                <CFormInput 
-                  placeholder="New Role.." 
-                  aria-label="New Role.." 
-                  aria-describedby="button-addon2" 
-                  v-model="submitRoleInput"
-                />
-                <CButton 
-                  type="button" 
-                  color="success" 
-                  variant="outline" 
-                  id="button-addon2" 
-                  @click="submitRole"
-                >
-                  Save
-                </CButton>
-              </CInputGroup>                        
+              />               
             </CCol>
             <CCol>
               <MSelect
@@ -493,7 +481,7 @@ async function createOptionGeneral(field, value) {
                 label="Select Markets *"
                 :options="marketsCbo"
                 v-model="selectedMarket"
-                @change="handleMarketsChange"
+                @update:modelValue="handleMarketsChange"
                 size="sm"
                 required
               />
@@ -502,13 +490,13 @@ async function createOptionGeneral(field, value) {
             <CCol>
             </CCol>
             <CCol>
-              <MSelect 
+              <!-- <MSelect 
                 label="Select Admin Modules"
                 :options="modulesCbo"
                 v-model="selectedValues"
                 @update:modelValue="handleModulesCbo"
                 size="sm"
-              />
+              /> -->
             </CCol>
             </CCol>
             <CCol :md="6">

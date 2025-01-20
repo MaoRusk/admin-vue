@@ -7,5 +7,6 @@ export const ROUTE_NAMES = {
   BUILDINGS_CREATE: 'Create Buildings',
   BUILDINGS_UPDATE: 'Edit Buildings',
   USERS: 'Users',
-  USER_DETAIL: 'UserDetail',
+  USERS_CREATE: 'CreateUser',
+  USERS_UPDATE: 'UpdateUser'
 }

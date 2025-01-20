@@ -2,8 +2,16 @@ import httpClient from '../../plugins/axios'
 
 const USERS_BASE_URL = '/users'
 
-async function getUsers(params = {}, filters = {}, sorter = {}) {
-  return httpClient.get(USERS_BASE_URL, { params: { ...params, filters, sorter } })
+async function getUsers(query, filters = {}, sorter = {}) {
+  return httpClient.get(USERS_BASE_URL, {
+    params: {
+      page: query?.page || null,
+      size: query?.size || null,
+      search: query?.search || null,
+      ...filters,
+      ...sorter,
+    },
+  })
 }
 
 async function getUser(id) {

@@ -102,8 +102,17 @@ const routes = [
                 },
               },
               {
+                path: 'usuarios/create',
+                name: ROUTE_NAMES.USERS_CREATE,
+                component: UserDetail,
+                props: { id: 0 },  // Para nuevo usuario
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
                 path: 'usuarios/:id',
-                name: ROUTE_NAMES.USER_DETAIL,
+                name: ROUTE_NAMES.USERS_UPDATE,
                 component: UserDetail,
                 props: true,
                 meta: {

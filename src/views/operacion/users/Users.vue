@@ -1,10 +1,12 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { cilPlus } from '@coreui/icons';
+import Swal from 'sweetalert2';
+import { cilPlus, cilTrash, cilEyedropper } from '@coreui/icons';
 import { API } from '../../../services';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
-import { USERS_ITEMS_PER_PAGE, AUTH_TOKEN } from '../../../constants';
+import { USERS_ITEMS_PER_PAGE } from '../../../constants';
+import { ROUTE_NAMES } from '../../../router/routeNames';
 
 const router = useRouter();
 const storage = useLocalStorage();
@@ -19,89 +21,81 @@ const columnFilter = ref({});
 const columnSorter = ref({});
 const tableSearch = ref('');
 
-const selectedStatus = ref('All');
-
-const statusOptions = computed(() => ['All', ...new Set(users.value.map(user => user.typeName))]);
-
-const filteredUsers = computed(() => {
-  if (selectedStatus.value === 'All') {
-    return users.value;
-  }
-  return users.value.filter(user => user.typeName === selectedStatus.value);
-});
-
 const columns = [
-  { key: 'id', label: 'ID' },
+  { key: 'status', label: 'Status' },
   { key: 'name', label: 'Name' },
   { key: 'lastName', label: 'Last Name' },
   { key: 'userName', label: 'User Name' },
-  { key: 'typeName', label: 'Position' },
-  { key: 'status', label: 'Status' },
+  { key: 'email', label: 'Email' },
+  { key: 'roleName', label: 'Role' },
   { key: 'actions', label: 'Actions', sorter: false, filter: false },
 ];
 
-const showUserDetails = (item) => {
-  router.push({
-    name: 'UserDetail',
-    params: { id: Number(item.id) },
-  });
-};
-
-const addUser = () => {
-  router.push({
-    name: 'UserDetail',
-    params: { id: 0 },
-  });
-};
+async function removeUser(id) {
+  try {
+    const { isConfirmed } = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    });
+    
+    if (isConfirmed) {
+      const { data } = await API.users.deleteUser(id);
+      Swal.fire('Deleted!', data.message, 'success');
+      fetchUsers();
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    Swal.fire('Error!', 'Failed to delete user', 'error');
+  }
+}
 
 async function fetchUsers() {
   loading.value = true;
   try {
-    const response = await API.users.getUsers({
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      router.push({ name: 'Login' });
+      return;
+    }
+
+    const { data: response } = await API.users.getUsers({
       page: page.value,
       size: itemsPerPage.value,
       search: tableSearch.value,
     }, columnFilter.value, columnSorter.value);
 
-    const { success, data: userData } = response.data;
+    if (response.success) {
+      page.value = response.current_page;
+      totalItems.value = response.total;
+      totalPages.value = response.last_page;
 
-    if (!success) {
-      throw new Error('Error al obtener usuarios');
-    }
-
-    // Adaptar el formato de respuesta
-    const adaptedData = {
-      data: {
-        current_page: page.value,
-        data: userData.map(item => ({
+      // Obtener todos los roles una sola vez
+      const { data: rolesResponse } = await API.roles.getAllRoles();
+      const roles = rolesResponse.success ? rolesResponse.data : [];
+      
+      // Mapear usuarios con sus roles
+      users.value = response.data.map((item) => {
+        const userRole = roles.find(role => role.id === item.role_id);
+        return {
           id: item.id,
           name: item.name,
           lastName: item.last_name,
           userName: item.user_name,
-          typeName: item.role_id ? 'Admin' : 'User',
-          status: item.status
-        })),
-        total: userData.length,
-        last_page: 1
-      }
-    };
-
-    page.value = adaptedData.data.current_page;
-    totalItems.value = adaptedData.data.total;
-    totalPages.value = adaptedData.data.last_page;
-    users.value = adaptedData.data.data;
-
+          email: item.email,
+          status: item.status,
+          roleName: userRole?.name || 'No Role',
+        };
+      });
+    }
   } catch (error) {
-    console.error('Error en fetchUsers:', {
-      mensaje: error.message,
-      tipo: error.name,
-      stack: error.stack
-    });
-    
+    console.error('Error fetching users:', error);
     users.value = [];
-    
     if (error.response?.status === 401) {
-      localStorage.removeItem(AUTH_TOKEN);
       router.push({ name: 'Login' });
     }
   } finally {
@@ -119,16 +113,14 @@ watch([columnSorter, columnFilter], fetchUsers, { deep: true });
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="addUser">
+    <CButton 
+      color="success" 
+      variant="outline" 
+      @click="$router.push({ name: ROUTE_NAMES.USERS_CREATE })"
+    >
       <CIcon :content="cilPlus" size="sm" />
-      Add User
+      New User
     </CButton>
-  </div>
-
-  <div class="d-flex justify-content-end align-items-center mb-3">
-    <div>
-      <CFormSelect v-model="selectedStatus" :options="statusOptions" style="width: 200px;" />
-    </div>
   </div>
 
   <CSmartTable
@@ -137,7 +129,7 @@ watch([columnSorter, columnFilter], fetchUsers, { deep: true });
     :column-sorter="{ external: true }"
     :table-filter="{ external: true }"
     :loading="loading"
-    :items="filteredUsers"
+    :items="users"
     :paginationProps="{
       activePage: page,
       pages: totalPages
@@ -174,9 +166,27 @@ watch([columnSorter, columnFilter], fetchUsers, { deep: true });
     }"
   >
     <template #actions="{ item }">
-      <td class="py-2">
-        <CButton color="primary" variant="outline" square size="sm" @click="showUserDetails(item)">
-          Details
+      <td class="d-flex gap-1">
+        <CButton 
+          color="primary" 
+          variant="outline" 
+          square 
+          size="sm" 
+          @click="$router.push({ 
+            name: ROUTE_NAMES.USERS_UPDATE, 
+            params: { id: item.id } 
+          })"
+        >
+          <CIcon :content="cilEyedropper" size="sm" />
+        </CButton>
+        <CButton 
+          color="danger" 
+          variant="outline" 
+          square 
+          size="sm" 
+          @click="removeUser(item.id)"
+        >
+          <CIcon :content="cilTrash" size="sm" />
         </CButton>
       </td>
     </template>
