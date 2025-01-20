@@ -1,108 +1,195 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import { onMounted, computed, reactive, ref } from 'vue';
 import Swal from 'sweetalert2';
-
-const route = useRoute();
-const router = useRouter();
-const loading = ref(false);
-const isNewRecord = computed(() => route.params.id === '0');
-const brokers = ref([]);
+import { API } from '../../../services';
+import dayjs from 'dayjs';
+import MSelect from '../../../components/MSelect.vue';
 
 const props = defineProps({
   buildingId: {
     type: Number,
     required: true
-  }
+  },
+  availabilityId: {
+    type: Number,
+  },
 });
 
-const emit = defineEmits(['return']);
+const emit = defineEmits(['return', 'submitting']);
 
-// Form fields
-const formData = ref({
-  broker_id: null,
-  building_state: '',
-  avl_size_sf: null,
-  avl_building_dimensions: '',
-  avl_building_phase: '',
-  avl_minimum_space_sf: null,
-  avl_expansion_up_to_sf: null,
-  dock_doors: null,
-  drive_in_door: null,
-  floor_thickness: null,
-  floor_resistance: '',
-  truck_court: null,
+const isNewRecord = computed(() => !props.availabilityId);
+
+const availabilityObj = {
+  building_id: props.buildingId, // id
+  broker_id: '', //  id
+  avl_size_sf: '', // number,
+  avl_building_dimensions: '', // '50x100',
+  avl_minimum_space_sf: '', // number
+  avl_expansion_up_to_sf: '', // number
+  dock_doors: '', // number
+  drive_in_door: '', // number
+  floor_thickness: '', // number
+  floor_resistance: '', // string
+  truck_court: '', // number
   has_crossdock: false,
   shared_truck: false,
   new_construction: false,
   is_starting_construction: false,
-  bay_size: '',
-  columns_spacing: '',
-  avl_date: '',
-  knockouts_docks: null,
-  parking_space: null,
-  avl_min_lease: null,
-  avl_max_lease: null
-});
+  bay_size: '', //'25x50',
+  columns_spacing: '', // '20x20',
+  avl_date: null, // string fecha,
+  knockouts_docks: '', // number
+  parking_space: '', // number
+  avl_min_lease: '', // number
+  avl_max_lease: '', // number
+  building_state: '', // enum
+  avl_building_phase: '', // enum
+}
 
-// Options for dropdowns
-const buildingStates = [
-  { value: 'Available', label: 'Available' },
-  { value: 'Under Construction', label: 'Under Construction' },
-  { value: 'Partially Available', label: 'Partially Available' }
-];
-
-const buildingPhases = [
-  { value: 'Phase 1', label: 'Phase 1' },
-  { value: 'Phase 2', label: 'Phase 2' },
-  { value: 'Phase 3', label: 'Phase 3' }
-];
+const availability = reactive({...availabilityObj})
+const formHtmlElement = ref(null)
 
 const handleReturn = () => {
+  for (const prop in availability) {
+    availability[prop] = availabilityObj[prop]
+  }
   emit('return');
 };
 
-const saveBuilding = async () => {
+async function saveAvailability() {
+  emit('submitting', true)
   try {
-    loading.value = true;
-    console.log('Saving building:', formData.value);
-    
+    const body = {
+      ...availability,
+      avl_date: availability.avl_date ? dayjs(availability.avl_date).format('YYYY-MM-DD') : '',
+    }
+    let data;
+    if (isNewRecord.value) {
+      ({ data } = await API.buildingsAvailability.createAvailableBuilding(props.buildingId, body));
+    } else {
+      ({ data } = await API.buildingsAvailability.updateAvailableBuilding(props.availabilityId, props.buildingId, body));
+    }
     Swal.fire({
       icon: 'success',
       title: 'Success',
-      text: `Building successfully ${isNewRecord.value ? 'created' : 'updated'}`
+      text: data.message
     });
-    
     handleReturn();
+  } catch (error) {
+    console.error(error)
+    Swal.fire({
+      icon: 'error',
+      title: error.response.data.message,
+      text: JSON.stringify(error.response.data.errors)
+    });
+  } finally {
+    emit('submitting', false)
+  }
+}
+
+const brokers = reactive({ loading: false, items: []})
+const phases = reactive({ loading: false, items: []})
+const buildingStates = reactive({ loading: false, items: []})
+
+// TODO, no encontre catalogo en backend, solo tendra un valor?
+async function fetchBuildingStates() {
+  buildingStates.loading = true
+  const { data } = await new Promise(r => {
+    r({
+      data: {
+        data: [
+          { value: '', label: 'Select...' },
+          { value: 'Availability', label: 'Availability' },
+        ]
+      }
+    })
+  });
+  buildingStates.loading = false
+  buildingStates.items = data.data
+}
+
+async function fetchPhases() {
+  phases.loading = true
+  const { data } = await API.buildings.getBuildingsPhases();
+  phases.loading = false
+  phases.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === availability.avl_building_phase }))
+  phases.items.unshift({label: 'Select...', value: ''})
+}
+
+// TODO. existe un endpoint de brokers, pero en el validador solo acepta registros de developers, pero en developers no hay bandera para brokers
+async function fetchBrokers() {
+  brokers.loading = true
+  const { data } = await API.developers.getDevelopers();
+  brokers.loading = false
+  brokers.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === availability.broker_id})).sort((a, b) => a.label.localeCompare(b.name))
+  brokers.items.unshift({label: 'Select...', value: ''})
+}
+
+async function fetchAvailability() {
+  try {
+    const { data } = await API.buildingsAvailability.getAvailableBuilding(props.availabilityId, props.buildingId);
+    ['broker_id', 'avl_size_sf', 'avl_building_dimensions', 'avl_minimum_space_sf', 'avl_expansion_up_to_sf', 'dock_doors', 'drive_in_door', 'floor_thickness', 'floor_resistance', 'truck_court', 'bay_size', 'columns_spacing', 'avl_date', 'knockouts_docks', 'parking_space', 'avl_min_lease', 'avl_max_lease', 'building_state', 'avl_building_phase']
+    .forEach(prop => availability[prop] = `${data.data[prop] ?? ''}`);
+    ['has_crossdock', 'shared_truck', 'new_construction', 'is_starting_construction']
+    .forEach(prop => availability[prop] = Boolean(data.data[prop]))
   } catch (error) {
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: 'Failed to save building'
+      text: 'Failed to load building data: ' + error.message,
     });
-  } finally {
-    loading.value = false;
   }
-};
+}
 
-// Fetch brokers for dropdown
-const fetchBrokers = async () => {
-  try {
-    // Simulated broker data
-    brokers.value = [
-      { value: 1, label: 'Broker 1' },
-      { value: 2, label: 'Broker 2' },
-      { value: 3, label: 'Broker 3' }
-    ];
-  } catch (error) {
-    console.error('Error fetching brokers:', error);
+onMounted(async () => {
+  Swal.fire({
+    title: "Loading!",
+    didOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+  })
+  if (!isNewRecord.value) {
+    await fetchAvailability();
   }
-};
+  await Promise.all([
+    fetchBrokers(),
 
-onMounted(() => {
-  fetchBrokers();
+    fetchPhases(),
+    fetchBuildingStates()
+  ])
+  Swal.close()
 });
+
+async function createOptionGeneral(field, value) {
+  if (field === 'broker_id') {
+    const { data } = await API.brokers.createBroker({ name: value.name })
+    availability.broker_id = data.data.id
+    fetchBrokers()
+  }
+  Swal.fire({
+    icon: "success",
+    title: "Created successfully",
+    toast: true,
+    position: "bottom",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
+}
+
+defineExpose({
+  submit() {
+    if (formHtmlElement.value?.reportValidity()) {
+      formHtmlElement.value?.requestSubmit()
+    }
+  }
+})
 </script>
 
 <template>
@@ -111,12 +198,12 @@ onMounted(() => {
       <CCardHeader class="d-flex justify-content-between align-items-center">
         <h3>{{ isNewRecord ? 'New Availability' : 'Edit Availability' }}</h3>
         <CButton color="primary" variant="outline" @click="handleReturn">
-          Return
+          List
         </CButton>
       </CCardHeader>
       
       <CCardBody>
-        <CForm @submit.prevent="saveBuilding">
+        <form @submit.prevent="saveAvailability" ref="formHtmlElement">
           <div class="row">
             <!-- Basic Information -->
             <div class="col-md-6">
@@ -125,30 +212,29 @@ onMounted(() => {
                 <CCardBody>
                   <div class="mb-3">
                     <CFormLabel>Broker</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.broker_id"
-                      :options="brokers"
-                      :multiple="false"
+                    <MSelect
+                      :options="brokers.items" 
+                      v-model="availability.broker_id"
+                      @submitOption="value => createOptionGeneral('broker_id', value)"
+                      create-option
                       required
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Building State</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.building_state"
-                      :options="buildingStates"
-                      :multiple="false"
+                    <CFormSelect
+                      v-model="availability.building_state"
+                      :options="buildingStates.items"
                       required
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Building Phase</CFormLabel>
-                    <CMultiSelect
-                      v-model="formData.avl_building_phase"
-                      :options="buildingPhases"
-                      :multiple="false"
+                    <CFormSelect
+                      v-model="availability.avl_building_phase"
+                      :options="phases.items"
                       required
                     />
                   </div>
@@ -157,7 +243,7 @@ onMounted(() => {
                     <CFormLabel>Size (SF)</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.avl_size_sf"
+                      v-model="availability.avl_size_sf"
                       required
                     />
                   </div>
@@ -166,7 +252,8 @@ onMounted(() => {
                     <CFormLabel>Building Dimensions</CFormLabel>
                     <CFormInput
                       type="text"
-                      v-model="formData.avl_building_dimensions"
+                      v-model="availability.avl_building_dimensions"
+                      required
                     />
                   </div>
 
@@ -174,7 +261,7 @@ onMounted(() => {
                     <CFormLabel>Minimum Space (SF)</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.avl_minimum_space_sf"
+                      v-model="availability.avl_minimum_space_sf"
                     />
                   </div>
 
@@ -182,7 +269,7 @@ onMounted(() => {
                     <CFormLabel>Expansion Up To (SF)</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.avl_expansion_up_to_sf"
+                      v-model="availability.avl_expansion_up_to_sf"
                     />
                   </div>
                 </CCardBody>
@@ -198,7 +285,7 @@ onMounted(() => {
                     <CFormLabel>Dock Doors</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.dock_doors"
+                      v-model="availability.dock_doors"
                     />
                   </div>
 
@@ -206,7 +293,7 @@ onMounted(() => {
                     <CFormLabel>Drive-in Door</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.drive_in_door"
+                      v-model="availability.drive_in_door"
                     />
                   </div>
 
@@ -214,7 +301,7 @@ onMounted(() => {
                     <CFormLabel>Floor Thickness</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.floor_thickness"
+                      v-model="availability.floor_thickness"
                     />
                   </div>
 
@@ -222,7 +309,7 @@ onMounted(() => {
                     <CFormLabel>Floor Resistance</CFormLabel>
                     <CFormInput
                       type="text"
-                      v-model="formData.floor_resistance"
+                      v-model="availability.floor_resistance"
                     />
                   </div>
 
@@ -230,7 +317,7 @@ onMounted(() => {
                     <CFormLabel>Truck Court</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.truck_court"
+                      v-model="availability.truck_court"
                     />
                   </div>
 
@@ -238,7 +325,7 @@ onMounted(() => {
                     <CFormLabel>Bay Size</CFormLabel>
                     <CFormInput
                       type="text"
-                      v-model="formData.bay_size"
+                      v-model="availability.bay_size"
                     />
                   </div>
 
@@ -246,7 +333,7 @@ onMounted(() => {
                     <CFormLabel>Columns Spacing</CFormLabel>
                     <CFormInput
                       type="text"
-                      v-model="formData.columns_spacing"
+                      v-model="availability.columns_spacing"
                     />
                   </div>
                 </CCardBody>
@@ -263,8 +350,7 @@ onMounted(() => {
                   <div class="mb-3">
                     <CFormLabel>Availability Date</CFormLabel>
                     <CDatePicker
-                      v-model="formData.avl_date"
-                      selectionType="year"
+                      v-model:date="availability.avl_date"
                     />
                   </div>
 
@@ -272,7 +358,7 @@ onMounted(() => {
                     <CFormLabel>Knockouts Docks</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.knockouts_docks"
+                      v-model="availability.knockouts_docks"
                     />
                   </div>
 
@@ -280,7 +366,7 @@ onMounted(() => {
                     <CFormLabel>Parking Space</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.parking_space"
+                      v-model="availability.parking_space"
                     />
                   </div>
                 </div>
@@ -290,8 +376,9 @@ onMounted(() => {
                     <CFormLabel>Minimum Lease</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.avl_min_lease"
+                      v-model="availability.avl_min_lease"
                       step="0.01"
+                      required
                     />
                   </div>
 
@@ -299,8 +386,9 @@ onMounted(() => {
                     <CFormLabel>Maximum Lease</CFormLabel>
                     <CFormInput
                       type="number"
-                      v-model="formData.avl_max_lease"
+                      v-model="availability.avl_max_lease"
                       step="0.01"
+                      required
                     />
                   </div>
                 </div>
@@ -310,42 +398,32 @@ onMounted(() => {
               <div class="row mt-3">
                 <div class="col-md-3">
                   <CFormSwitch
-                    v-model="formData.has_crossdock"
+                    v-model="availability.has_crossdock"
                     label="Has Crossdock"
                   />
                 </div>
                 <div class="col-md-3">
                   <CFormSwitch
-                    v-model="formData.shared_truck"
+                    v-model="availability.shared_truck"
                     label="Shared Truck"
                   />
                 </div>
                 <div class="col-md-3">
                   <CFormSwitch
-                    v-model="formData.new_construction"
+                    v-model="availability.new_construction"
                     label="New Construction"
                   />
                 </div>
                 <div class="col-md-3">
                   <CFormSwitch
-                    v-model="formData.is_starting_construction"
+                    v-model="availability.is_starting_construction"
                     label="Starting Construction"
                   />
                 </div>
               </div>
             </CCardBody>
           </CCard>
-
-          <!-- Form Actions -->
-          <div class="d-flex justify-content-end gap-2">
-            <CButton color="secondary" @click="handleReturn" :disabled="loading">
-              Cancel
-            </CButton>
-            <CButton color="primary" type="submit" :disabled="loading">
-              {{ loading ? 'Saving...' : (isNewRecord ? 'Create' : 'Update') }}
-            </CButton>
-          </div>
-        </CForm>
+        </form>
       </CCardBody>
     </CCard>
   </div>

@@ -1,4 +1,5 @@
 import Auth from './Auth'
+import Brokers from './Brokers'
 import Buildings from './Buildings'
 import Builders from './Builders'
 import Countries from './Countries'
