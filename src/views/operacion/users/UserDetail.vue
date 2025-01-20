@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { cilArrowCircleLeft, cilTrash, cilPencil, cilPlus } from '@coreui/icons';
 import { API } from '../../../services';
+import MSelect from '../../../components/MSelect.vue';
 
 const router = useRouter();
 
@@ -32,11 +33,12 @@ const formData = ref({
   password: '',
   confirmPassword: '',
   email: '',     
-  status: 'Activo',
+  status: 'Activo', // Por defecto Activo
   userTypeId: '',
   modules: [],
   markets: [],
 });
+
 
 const selectedValues = ref([]);
 const selectedUserType = ref('');
@@ -128,28 +130,31 @@ async function fetchUserRole(roleId) {
 }
 
 async function fetchUserData() {
-  loading.value = true;
-  try {
-    formData.value = {
-      name: '',
-      middleName: '',
-      lastName: '',
-      userName: '',
-      password: '',
-      confirmPassword: '',
-      email: '',
-      status: 'Activo',
-      roleId: '',
-      modules: [],
-      markets: []
-    };
+    loading.value = true;
+    try {
+      formData.value = {
+        name: '',
+        middleName: '',
+        lastName: '',
+        userName: '',
+        password: '',
+        confirmPassword: '',
+        email: '',
+        status: 'Activo',
+        roleId: '',
+        modules: [],
+        markets: []
+      };
     
     // Cargar roles primero
     await fetchRoles();
 
     if (!isNewRecord.value) {
       const { data: response } = await API.users.getUser(props.id);
-      // console.log('Usuario obtenido:', response.data); // Debug log
+      
+      // Agregar console.log para ver la respuesta completa
+      console.log('Respuesta completa del usuario:', response);
+      console.log('Datos del usuario:', response.data);
       
       if (response.success) {
         const userData = response.data;
@@ -162,7 +167,7 @@ async function fetchUserData() {
           password: '********',
           confirmPassword: '********',
           email: userData.email || '',
-          status: userData.status || 'Activo',
+          status: userData.status === 'Active' ? 'Activo' : 'Inactivo',
           roleId: userData.role_id || '',
           modules: [],
           markets: []
@@ -170,17 +175,15 @@ async function fetchUserData() {
 
         if (userData.role_id) {
           const { data: roleResponse } = await API.roles.getRoleById(userData.role_id);
-          // console.log('Rol específico obtenido:', roleResponse.data); // Debug log
+          console.log('Respuesta del rol:', roleResponse); // Ver datos del rol
           
           if (roleResponse.success) {
-            // Buscar el rol en las opciones disponibles
             const matchingRole = userRoles.value.find(
               role => role.value === roleResponse.data.id.toString()
             );
 
             if (matchingRole) {
               selectedRole.value = [matchingRole];
-              // console.log('Rol seleccionado:', selectedRole.value); // Debug log
             }
           }
         }
@@ -235,8 +238,8 @@ async function handleRoleChange(value) {
   }
 }
 
-async function submitRole() {
-  if (!submitRoleInput.value.trim()) {
+async function submitRole(roleName) {
+  if (!roleName?.trim()) {
     Swal.fire({
       title: 'Validation Error',
       text: 'Role name is required',
@@ -247,7 +250,7 @@ async function submitRole() {
 
   try {
     const { data: response } = await API.roles.createRole({
-      name: submitRoleInput.value.trim()
+      name: roleName.trim()
     });
 
     if (response.success) {
@@ -290,19 +293,20 @@ async function handleSubmit() {
       last_name: formData.value.lastName,
       user_name: formData.value.userName,
       email: formData.value.email,
-      status: formData.value.status,
+      status: formData.value.status === 'Activo' ? 'Active' : 'Inactive',
       role_id: selectedRole.value[0]?.value ? parseInt(selectedRole.value[0].value) : null,
       company_id: 1,
-      password: formData.value.password // Siempre incluir para nuevos usuarios
+      password: formData.value.password,
+      created_at: new Date().toISOString(),
+      created_by: 1,
+      deleted_at: "",
+      deleted_by: 0
     };
 
     let response;
     if (props.id === 0) {
-      console.log('Creando nuevo usuario con POST...');
       response = await API.users.createUser(userData);
     } else {
-      console.log('Actualizando usuario existente con PUT...');
-      // Solo incluir password si se cambió
       if (formData.value.password === '********') {
         delete userData.password;
       }
@@ -377,6 +381,7 @@ async function handleDelete() {
 // Event handlers
 const handleModulesCbo = (newValue) => {
   selectedValues.value = newValue;
+  formData.value.modules = Array.isArray(newValue) ? newValue : [newValue];
 };
 
 // const handleUserTypeChange = (value) => {
@@ -393,6 +398,14 @@ onMounted(() => {
   fetchRoles();
   fetchUserData();
 });
+
+// Add this helper function for creating new options
+async function createOptionGeneral(field, value) {
+  if (field === 'role') {
+    await submitRole(value.name);
+  }
+  // Add other option creation handlers as needed
+}
 </script>
 
 <template>
@@ -446,64 +459,57 @@ onMounted(() => {
             </CCol>
             <CCol>
               
-              <CMultiSelect
-                  label="Select Role *"
-                  v-model="selectedRole"
-                  :multiple="false"
-                  :options="userRoles"
-                  optionsStyle="text"
-                  @change="handleRoleChange"
-                  :class="{'is-invalid': !selectedRole.length && !isNewRecord}"
+              <MSelect
+                label="Select Role *"
+                :options="userRoles"
+                v-model="selectedRole"
+                @submitOption="value => createOptionGeneral('role', value)"
+                create-option
+                size="sm"
+                required
+              />
+
+              <CInputGroup v-if="selectedRole === 'New'" class="mb-3 mt-2">
+                <CFormInput 
+                  placeholder="New Role.." 
+                  aria-label="New Role.." 
+                  aria-describedby="button-addon2" 
+                  v-model="submitRoleInput"
+                />
+                <CButton 
+                  type="button" 
+                  color="success" 
+                  variant="outline" 
+                  id="button-addon2" 
+                  @click="submitRole"
                 >
-                  <template #options="{ option }">
-                    <div class="d-flex">
-                      <CIcon 
-                        v-if="option.value === 'New'" 
-                        class="me-1 mt-1" 
-                        :icon="cilPlus" 
-                        size="sm"
-                      /> 
-                      {{option.label}}
-                    </div>
-                  </template>
-                </CMultiSelect>
-
-    <CInputGroup v-if="selectedRole === 'New'" class="mb-3 mt-2">
-      <CFormInput 
-        placeholder="New Role.." 
-        aria-label="New Role.." 
-        aria-describedby="button-addon2" 
-        v-model="submitRoleInput"
-      />
-      <CButton 
-        type="button" 
-        color="success" 
-        variant="outline" 
-        id="button-addon2" 
-        @click="submitRole"
-      >
-        Save
-      </CButton>
-    </CInputGroup>                        
+                  Save
+                </CButton>
+              </CInputGroup>                        
             </CCol>
             <CCol>
-              <CMultiSelect
-              v-if="selectedUserType === '5'"
-                  label="Select Markets *"
-                  @change="handleMarketsChange"
-                  :options="marketsCbo"
-                  />
+              <MSelect
+                v-if="selectedUserType === '5'"
+                label="Select Markets *"
+                :options="marketsCbo"
+                v-model="selectedMarket"
+                @change="handleMarketsChange"
+                size="sm"
+                required
+              />
             </CCol>
 
             <CCol>
             </CCol>
             <CCol>
-              <CMultiSelect 
-              label="Select Admin Modules"
-              :options="modulesCbo"
-              @change="handleModulesCbo($event)"
-              selectionType="text" />
-          </CCol>
+              <MSelect 
+                label="Select Admin Modules"
+                :options="modulesCbo"
+                v-model="selectedValues"
+                @update:modelValue="handleModulesCbo"
+                size="sm"
+              />
+            </CCol>
             </CCol>
             <CCol :md="6">
               
@@ -551,29 +557,31 @@ onMounted(() => {
               </div>
             </CCol>
             <CCol>
-                <div style="display: flex; justify-content: left; align-items: center;">
-                  <label for="status">Status</label>
-                  <div style="margin-left: 1rem; padding-top: 1rem;">
-                    <CFormCheck 
-                      inline 
-                      type="radio" 
-                      name="inlineRadioOptions" 
-                      id="inlineCheckbox1" 
-                      value="Activo" 
-                      label="Activo"
-                      :checked="formData.status === 'Activo'"
-                      @change="formData.status = 'Activo'"                  />
-                    <CFormCheck 
-                      inline 
-                      type="radio" 
-                      name="inlineRadioOptions" 
-                      id="inlineCheckbox2" 
-                      value="Inactivo" 
-                      label="Inactivo"
-                      :checked="formData.status === 'Inactivo'"
-                      @change="formData.status = 'Inactivo'"                  />    
-                  </div>
+              <div style="display: flex; justify-content: left; align-items: center;">
+                <label for="status">Status</label>
+                <div style="margin-left: 1rem; padding-top: 1rem;">
+                  <CFormCheck 
+                    inline 
+                    type="radio" 
+                    name="status" 
+                    id="statusActive" 
+                    value="Activo"
+                    label="Activo"
+                    :checked="formData.status === 'Activo'"
+                    @change="formData.status = 'Activo'"
+                  />
+                  <CFormCheck 
+                    inline 
+                    type="radio" 
+                    name="status" 
+                    id="statusInactive" 
+                    value="Inactivo"
+                    label="Inactivo"
+                    :checked="formData.status === 'Inactivo'"
+                    @change="formData.status = 'Inactivo'"
+                  />    
                 </div>
+              </div>
             </CCol>
             <CCol>
               <CFormInput
