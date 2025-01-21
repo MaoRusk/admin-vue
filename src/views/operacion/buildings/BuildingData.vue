@@ -339,15 +339,30 @@ onMounted(async () => {
 
 async function createOptionGeneral(field, value) {
   if (['owner_id' , 'builder_id', 'user_owner_id', 'developer_id'].includes(field)) {
-    const developerOptions = {
-      owner_id: { is_developer: false, is_builder: false, is_owner: true, is_user_owner: false },
-      builder: { is_developer: false, is_builder: true, is_owner: false, is_user_owner: false },
-      userOwner: { is_developer: false, is_builder: false, is_owner: false, is_user_owner: true },
-      developer: { is_developer: true, is_builder: false, is_owner: false, is_user_owner: false },
+    try {
+      const { data } = await API.developers.createDeveloper(value);
+      if (data.success) {
+        building[field] = data.data.id;
+        await fetchDevelopers();
+        Swal.fire({
+          icon: "success",
+          title: "Created successfully",
+          toast: true,
+          position: "bottom",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+      }
+    } catch (error) {
+      console.error('Error creating developer:', error);
+      Swal.fire({
+        icon: "error",
+        title: "Error creating developer",
+        text: error.response?.data?.message || 'An error occurred',
+      });
     }
-    const { data } = await API.developers.createDeveloper({ name: value.name, ...developerOptions[field] })
-    building[field] = data.data.id
-    fetchDevelopers()
+
   } else if (field === 'industrial_park_id') {
     const { data } = await API.industrialparks.createIndustrialPark({ name: value.name, market_id: building.market_id, submarket_id: building.submarket_id })
     building[field] = data.data.id
@@ -581,6 +596,8 @@ defineExpose({
                       create-option
                       size="sm"
                       required
+                      isDevForm
+                      modalTitle="Create Owner"
                     />
                   </div>
                 </CCol>
@@ -595,6 +612,8 @@ defineExpose({
                       create-option
                       size="sm"
                       required
+                      isDevForm
+                      modalTitle="Create Developer"
                     />
                   </div>
                 </CCol>
@@ -609,6 +628,8 @@ defineExpose({
                       create-option
                       size="sm"
                       required
+                      isDevForm
+                      modalTitle="Create Builder"
                     />
                   </div>
                 </CCol>
@@ -622,6 +643,8 @@ defineExpose({
                       create-option
                       size="sm"
                       required
+                      isDevForm
+                      modalTitle="Create User Owner"
                     />
                   </div>
                 </CCol>

@@ -12,19 +12,32 @@ const props = defineProps({
   modalTitle: { type: String, default: 'Create' },
   createOption: { type: Boolean, default: false },
   size: { type: String },
+  isDevForm: { type: Boolean, default: false }
 })
+
 const emit = defineEmits(['update:modelValue', 'submitOption'])
-// select
 const showModal = ref(false)
-// form modal
+
+// Formulario expandido para developers
 const form = reactive({
-  name: ''
+  name: '',
+  is_developer: false,
+  is_builder: false,
+  is_owner: false,
+  is_user_owner: false
 })
+
 function onSubmit() {
   emit('submitOption', form)
   showModal.value = false
+  // Resetear el formulario
+  Object.keys(form).forEach(key => {
+    if (typeof form[key] === 'boolean') form[key] = false;
+    else form[key] = '';
+  });
 }
 </script>
+
 <template>
   <div>
     <label v-if="props.label" class="form-label">{{ props.label }}</label>
@@ -62,6 +75,28 @@ function onSubmit() {
                 />
               </div>
             </div>
+            
+            <div v-if="props.isDevForm" class="row mt-3">
+              <div class="col">
+                <CFormCheck
+                  v-model="form.is_developer"
+                  label="Is Developer"
+                />
+                <CFormCheck
+                  v-model="form.is_builder"
+                  label="Is Builder"
+                />
+                <CFormCheck
+                  v-model="form.is_owner"
+                  label="Is Owner"
+                />
+                <CFormCheck
+                  v-model="form.is_user_owner"
+                  label="Is User Owner"
+                />
+              </div>
+            </div>
+
             <div class="row mt-3">
               <div class="col-auto">
                 <CButton color="success" type="submit" class="text-white fw-bold">{{ props.btnTextSubmit }}</CButton>
