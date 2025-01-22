@@ -39,20 +39,50 @@ const selectedLabel = computed(() => {
   return selected ? selected.label : 'Select...'
 })
 
-function onSubmit() {
-  if (isEditing.value) {
-    emit('editOption', { ...form, id: editingId.value })
-  } else {
-    emit('submitOption', form)
+async function onSubmit() {
+  try {
+    if (isEditing.value) {
+      emit('editOption', { ...form, id: editingId.value })
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated successfully!',
+        text: `${form.name} has been updated.`,
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      })
+    } else {
+      emit('submitOption', form)
+      Swal.fire({
+        icon: 'success',
+        title: 'Created successfully!',
+        text: `${form.name} has been created.`,
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      })
+    }
+    showModal.value = false
+    isEditing.value = false
+    editingId.value = null
+    showDropdown.value = false  // Cerrar el dropdown
+    // Reset form
+    Object.keys(form).forEach(key => {
+      if (typeof form[key] === 'boolean') form[key] = false;
+      else form[key] = '';
+    });
+  } catch (error) {
+    console.error('Error submitting developer:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error submitting developer',
+    })
   }
-  showModal.value = false
-  isEditing.value = false
-  editingId.value = null
-  // Reset form
-  Object.keys(form).forEach(key => {
-    if (typeof form[key] === 'boolean') form[key] = false;
-    else form[key] = '';
-  });
 }
 
 function startEdit(option) {
@@ -69,19 +99,20 @@ function startEdit(option) {
 
 function selectOption(option) {
   emit('update:modelValue', option.value)
-  showDropdown.value = false
+  showDropdown.value = false  // Cerrar el dropdown al seleccionar una opción
 }
 
 async function handleDelete() {
   try {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: 'Delete Developer',
+      text: `Are you sure you want to delete "${form.name}"?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
     })
 
     if (result.isConfirmed) {
@@ -89,11 +120,13 @@ async function handleDelete() {
       showModal.value = false
       isEditing.value = false
       editingId.value = null
+      showDropdown.value = false  // Cerrar el dropdown
       emit('deleteOption')
       
       Swal.fire({
         icon: 'success',
-        title: 'Deleted!',
+        title: 'Deleted successfully!',
+        text: `${form.name} has been deleted.`,
         toast: true,
         position: 'bottom',
         showConfirmButton: false,
