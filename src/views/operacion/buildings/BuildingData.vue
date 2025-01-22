@@ -625,6 +625,7 @@ defineExpose({
                       v-model="building.owner_id"
                       @submitOption="value => createOptionGeneral('owner_id', value)"
                       @editOption="value => editOptionGeneral('owner_id', value)"
+                      @deleteOption="fetchDevelopers"
                       create-option
                       size="sm"
                       required
@@ -660,6 +661,7 @@ defineExpose({
                       v-model="building.builder_id"
                       @submitOption="value => createOptionGeneral('builder_id', value)"
                       @editOption="value => editOptionGeneral('builder_id', value)"
+                      @deleteOption="fetchDevelopers"
                       create-option
                       size="sm"
                       required
@@ -676,6 +678,7 @@ defineExpose({
                       v-model="building.user_owner_id"
                       @submitOption="value => createOptionGeneral('user_owner_id', value)"
                       @editOption="value => editOptionGeneral('user_owner_id', value)"
+                      @deleteOption="fetchDevelopers"
                       create-option
                       size="sm"
                       required

@@ -94,7 +94,6 @@ async function handleDelete() {
       Swal.fire({
         icon: 'success',
         title: 'Deleted!',
-        text: 'The developer has been deleted.',
         toast: true,
         position: 'bottom',
         showConfirmButton: false,
