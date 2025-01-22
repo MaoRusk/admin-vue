@@ -1,7 +1,9 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue';
-import { cilPencil } from '@coreui/icons'
+import { cilPencil, cilTrash } from '@coreui/icons'
 import CIcon from '@coreui/icons-vue'
+import Swal from 'sweetalert2'
+import { API } from '../services'
 
 defineOptions({
   inheritAttrs: false
@@ -17,7 +19,7 @@ const props = defineProps({
   isDevForm: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['update:modelValue', 'submitOption', 'editOption'])
+const emit = defineEmits(['update:modelValue', 'submitOption', 'editOption', 'deleteOption'])
 const showModal = ref(false)
 const isEditing = ref(false)
 const editingId = ref(null)
@@ -70,6 +72,46 @@ function selectOption(option) {
   showDropdown.value = false
 }
 
+async function handleDelete() {
+  try {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    })
+
+    if (result.isConfirmed) {
+      await API.developers.deleteDeveloper(editingId.value)
+      showModal.value = false
+      isEditing.value = false
+      editingId.value = null
+      emit('deleteOption')
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'The developer has been deleted.',
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      })
+    }
+  } catch (error) {
+    console.error('Error deleting developer:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error deleting developer',
+    })
+  }
+}
+
 // Close dropdown when clicking outside
 onMounted(() => {
   document.addEventListener('click', (e) => {
@@ -107,13 +149,13 @@ onMounted(() => {
 
     <CModal
       :visible="showModal"
-      @close="() => { showModal = false; isEditing.value = false }"
+      @close="() => { showModal = false; isEditing = false }"
       alignment="center"
       teleport
       v-if="props.createOption"
     >
       <CModalHeader>
-        <CModalTitle>{{ isEditing.value ? 'Edit' : props.modalTitle }}</CModalTitle>
+        <CModalTitle>{{ isEditing ? 'Edit' : props.modalTitle }}</CModalTitle>
       </CModalHeader>
       <CModalBody>
         <form @submit.prevent="onSubmit" @reset="showModal = false">
@@ -151,11 +193,19 @@ onMounted(() => {
           </div>
 
           <div class="row mt-3">
-            <div class="col-auto">
-              <CButton color="success" type="submit" class="text-white fw-bold">{{ props.btnTextSubmit }}</CButton>
-            </div>
-            <div class="col-auto">
-              <CButton color="dark" type="reset" class="fw-bold">Cancel</CButton>
+            <div class="col d-flex justify-content-between align-items-center">
+              <div>
+                <CButton color="success" type="submit" class="text-white fw-bold me-2">
+                  {{ isEditing ? 'Update' : props.btnTextSubmit }}
+                </CButton>
+                <CButton color="dark" type="reset" class="fw-bold">Cancel</CButton>
+              </div>
+              <div v-if="isEditing">
+                <CButton color="danger" type="button" class="fw-bold" @click="handleDelete">
+                  <CIcon :icon="cilTrash" size="sm" class="me-1" />
+                  Delete
+                </CButton>
+              </div>
             </div>
           </div>
         </form>

@@ -642,6 +642,7 @@ defineExpose({
                       v-model="building.developer_id"
                       @submitOption="value => createOptionGeneral('developer_id', value)"
                       @editOption="value => editOptionGeneral('developer_id', value)"
+                      @deleteOption="fetchDevelopers"
                       create-option
                       size="sm"
                       required
