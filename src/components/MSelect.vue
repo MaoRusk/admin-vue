@@ -55,10 +55,11 @@ function startEdit(option) {
   isEditing.value = true
   editingId.value = option.value
   form.name = option.label
-  form.is_developer = option.is_developer
-  form.is_builder = option.is_builder
-  form.is_owner = option.is_owner
-  form.is_user_owner = option.is_user_owner
+  // Convert numeric values to boolean
+  form.is_developer = Boolean(Number(option.is_developer))
+  form.is_builder = Boolean(Number(option.is_builder))
+  form.is_owner = Boolean(Number(option.is_owner))
+  form.is_user_owner = Boolean(Number(option.is_user_owner))
   showModal.value = true
 }
 

@@ -245,10 +245,19 @@ async function fetchDevelopers() {
   const items = data.data.sort((a, b) => a.name.localeCompare(b.name))
   const firstOption = { value: '', label: 'Select...' }
   const itemsGrouped = items.reduce((group, item) => {
-    if (item.is_owner) group.owners.push({ label: item.name, value: item.id })
-    if (item.is_developer) group.developers.push({ label: item.name, value: item.id })
-    if (item.is_user_owner) group.userOwners.push({ label: item.name, value: item.id })
-    if (item.is_builder) group.builders.push({ label: item.name, value: item.id })
+    const baseItem = { 
+      label: item.name, 
+      value: item.id,
+      is_owner: item.is_owner,
+      is_developer: item.is_developer,
+      is_user_owner: item.is_user_owner,
+      is_builder: item.is_builder
+    }
+
+    if (item.is_owner) group.owners.push(baseItem)
+    if (item.is_developer) group.developers.push(baseItem)
+    if (item.is_user_owner) group.userOwners.push(baseItem)
+    if (item.is_builder) group.builders.push(baseItem)
     return group
   }, { owners: [{...firstOption}], developers: [{...firstOption}], builders: [{...firstOption}], userOwners: [{...firstOption}] })
 
