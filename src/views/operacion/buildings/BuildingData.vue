@@ -340,13 +340,27 @@ onMounted(async () => {
 async function createOptionGeneral(field, value) {
   if (['owner_id' , 'builder_id', 'user_owner_id', 'developer_id'].includes(field)) {
     try {
-      const { data } = await API.developers.createDeveloper(value);
+      let data;
+      if (value.id) {
+        // Edit existing developer
+        ({ data } = await API.developers.updateDeveloper(value.id, {
+          name: value.name,
+          is_developer: Boolean(value.is_developer),
+          is_builder: Boolean(value.is_builder),
+          is_owner: Boolean(value.is_owner),
+          is_user_owner: Boolean(value.is_user_owner),
+        }));
+      } else {
+        // Create new developer
+        ({ data } = await API.developers.createDeveloper(value));
+      }
+      
       if (data.success) {
         building[field] = data.data.id;
         await fetchDevelopers();
         Swal.fire({
           icon: "success",
-          title: "Created successfully",
+          title: value.id ? "Updated successfully" : "Created successfully",
           toast: true,
           position: "bottom",
           showConfirmButton: false,
@@ -355,14 +369,17 @@ async function createOptionGeneral(field, value) {
         });
       }
     } catch (error) {
-      console.error('Error creating developer:', error);
+      console.error('Error with developer:', error);
+      const errorMessage = error.response?.data?.errors 
+        ? Object.values(error.response.data.errors).flat().join('\n')
+        : error.response?.data?.message || 'An error occurred';
+        
       Swal.fire({
         icon: "error",
-        title: "Error creating developer",
-        text: error.response?.data?.message || 'An error occurred',
+        title: value.id ? "Error updating developer" : "Error creating developer",
+        text: errorMessage,
       });
     }
-
   } else if (field === 'industrial_park_id') {
     const { data } = await API.industrialparks.createIndustrialPark({ name: value.name, market_id: building.market_id, submarket_id: building.submarket_id })
     building[field] = data.data.id
@@ -381,6 +398,10 @@ async function createOptionGeneral(field, value) {
       toast.onmouseleave = Swal.resumeTimer;
     }
   });
+}
+
+async function editOptionGeneral(field, value) {
+  await createOptionGeneral(field, value);
 }
 
 watchEffect(async () => {
@@ -544,6 +565,7 @@ defineExpose({
                 :options="industrialParks.items"
                 v-model="building.industrial_park_id"
                 @submitOption="value => createOptionGeneral('industrial_park_id', value)"
+                @editOption="value => editOptionGeneral('industrial_park_id', value)"
                 create-option
                 size="sm"
                 :disabled="!building.submarket_id"
@@ -593,6 +615,7 @@ defineExpose({
                       :options="owners.items" 
                       v-model="building.owner_id"
                       @submitOption="value => createOptionGeneral('owner_id', value)"
+                      @editOption="value => editOptionGeneral('owner_id', value)"
                       create-option
                       size="sm"
                       required
@@ -609,6 +632,7 @@ defineExpose({
                       :options="developers.items" 
                       v-model="building.developer_id"
                       @submitOption="value => createOptionGeneral('developer_id', value)"
+                      @editOption="value => editOptionGeneral('developer_id', value)"
                       create-option
                       size="sm"
                       required
@@ -625,6 +649,7 @@ defineExpose({
                       :options="builders.items" 
                       v-model="building.builder_id"
                       @submitOption="value => createOptionGeneral('builder_id', value)"
+                      @editOption="value => editOptionGeneral('builder_id', value)"
                       create-option
                       size="sm"
                       required
@@ -640,6 +665,7 @@ defineExpose({
                       :options="userOwners.items" 
                       v-model="building.user_owner_id"
                       @submitOption="value => createOptionGeneral('user_owner_id', value)"
+                      @editOption="value => editOptionGeneral('user_owner_id', value)"
                       create-option
                       size="sm"
                       required
