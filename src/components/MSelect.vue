@@ -1,5 +1,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue';
+import { cilPencil } from '@coreui/icons'
+import CIcon from '@coreui/icons-vue'
 
 defineOptions({
   inheritAttrs: false
@@ -95,9 +97,9 @@ onMounted(() => {
              @click="selectOption(option)">
           <span>{{ option.label }}</span>
           <button v-if="props.isDevForm && option.value" 
-                  class="btn btn-sm btn-outline-primary"
+                  class="btn btn-sm btn-link p-0 ms-2"
                   @click.stop="startEdit(option)">
-            Edit
+            <CIcon :icon="cilPencil" size="sm" />
           </button>
         </div>
       </div>
@@ -168,5 +170,11 @@ onMounted(() => {
 }
 .cursor-pointer {
   cursor: pointer;
+}
+.btn-link {
+  color: #321fdb;
+}
+.btn-link:hover {
+  color: #1b1b1b;
 }
 </style>

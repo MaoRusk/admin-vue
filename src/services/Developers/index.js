@@ -25,4 +25,7 @@ export default {
       is_user_owner: is_user_owner ? 1 : 0,
     })
   },
+  deleteDeveloper(developerId) {
+    return httpClient.delete(`/developers/${developerId}`)
+  }
 }
