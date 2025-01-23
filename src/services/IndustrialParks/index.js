@@ -26,4 +26,7 @@ export default {
       submarket_id,
     })
   },
+  deleteIndustrialPark(industrialParkId) {
+    return httpClient.delete(`/industrial-parks/${industrialParkId}`)
+  }
 }
