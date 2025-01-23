@@ -240,6 +240,14 @@ async function createOptionGeneral(field, value) {
   });
 }
 
+async function editOptionGeneral(field, value) {
+  if (field === 'abs_industry_id') {
+    fetchIndustries()
+  } else if (field === 'abs_tenant_id') {
+    fetchTenants()
+  }
+}
+
 onMounted(async () => {
   Swal.fire({
     title: "Loading!",
@@ -309,8 +317,12 @@ defineExpose({
                       :options="industries.items"
                       v-model="absorption.abs_industry_id"
                       @submitOption="value => createOptionGeneral('abs_industry_id', value)"
+                      @editOption="value => editOptionGeneral('abs_industry_id', value)"
+                      @deleteOption="fetchIndustries"
                       create-option
                       required
+                      isIndustryForm
+                      modalTitle="Create Industry"
                     />
                   </div>
 
