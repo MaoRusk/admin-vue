@@ -11,23 +11,23 @@ const httpClient = axios.create({
   },
 })
 
-httpClient.interceptors.request.use(function (config) {
-  const token = localStorage.getItem(AUTH_TOKEN)
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
-httpClient.interceptors.response.use(
-  (response) => {
-    return response
+httpClient.interceptors.request.use(
+  function (config) {
+    const token = localStorage.getItem(AUTH_TOKEN)
+    
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`
+    } else {
+      delete config.headers['Authorization']
+    }
+    
+    return config
   },
   (error) => {
     if (error.response && error.response.status === axios.HttpStatusCode.Unauthorized) {
       router.push({ name: ROUTE_NAMES.LOGIN })
     }
     return Promise.reject(error)
-  },
+  }
 )
 export default httpClient
