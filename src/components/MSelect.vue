@@ -211,7 +211,7 @@ onMounted(() => {
           <span>{{ option.label }}</span>
           <button v-if="(props.isDevForm || props.isIndustrialParkForm || props.isIndustryForm) && option.value" 
                   class="btn btn-sm btn-link p-0 ms-2"
-                  @click.stop="startEdit(option)">
+                  @click.stop.prevent="startEdit(option)">
             <CIcon :icon="cilPencil" size="sm" />
           </button>
         </div>
