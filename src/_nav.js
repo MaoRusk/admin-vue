@@ -76,6 +76,12 @@ export default [
     to: '/operacion/polizas',
     icon: 'cil-list',
   },
+  {
+    component: 'CNavItem',
+    name: 'Industries',
+    to: '/operacion/industries',
+    icon: 'cil-factory',
+  },
 
   // ? CONTENIDO WEB
   {

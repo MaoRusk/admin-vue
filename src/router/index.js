@@ -86,6 +86,22 @@ const routes = [
             name: 'PendingApprovals',
             component: PendingApprovals,
           },
+          {
+            path: '/operacion/industries',
+            name: 'Industries',
+            component: () => import('../views/operacion/industries/Industries.vue'),
+            meta: {
+              requiresAuth: true
+            }
+          },
+          {
+            path: '/operacion/industries/:id',
+            name: 'IndustryDetail',
+            component: () => import('../views/operacion/industries/IndustryDetail.vue'),
+            meta: {
+              requiresAuth: true
+            }
+          },
         ],
       },
       {
