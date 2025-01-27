@@ -1,5 +1,6 @@
 <script>
 import IndustriesService from '@/services/Industries'
+import Swal from 'sweetalert2'
 
 export default {
   data() {
@@ -23,12 +24,7 @@ export default {
           sorter: false,
           filter: false
         }
-      ],
-      toast: {
-        show: false,
-        message: '',
-        color: 'success'
-      }
+      ]
     }
   },
 
@@ -53,24 +49,44 @@ export default {
       this.$router.push({ name: 'IndustryDetail', params: { id: item.id } })
     },
 
-    showToast(message, color = 'success') {
-      this.toast.message = message
-      this.toast.color = color
-      this.toast.show = true
-      setTimeout(() => {
-        this.toast.show = false
-      }, 3000)
-    },
-
     async deleteIndustry(item) {
-      if (confirm('Are you sure you want to delete this industry?')) {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      })
+
+      if (result.isConfirmed) {
         try {
           await IndustriesService.deleteIndustry(item.id)
           await this.fetchIndustries()
-          this.showToast('Industry deleted successfully')
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Deleted successfully!',
+            text: `${item.name} has been deleted.`,
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          })
         } catch (error) {
           console.error('Error deleting industry:', error)
-          this.showToast('Error deleting industry', 'danger')
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Error deleting industry',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          })
         }
       }
     }
@@ -83,21 +99,6 @@ export default {
 </script>
 
 <template>
-  <CToaster placement="top-end">
-    <CToast
-      :autohide="true"
-      :visible="toast.show"
-      :color="toast.color"
-    >
-      <CToastHeader closeButton>
-        <span class="me-auto fw-bold">Notification</span>
-      </CToastHeader>
-      <CToastBody>
-        {{ toast.message }}
-      </CToastBody>
-    </CToast>
-  </CToaster>
-
   <CCard class="mb-4">
     <CRow>
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
