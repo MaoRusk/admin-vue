@@ -10,8 +10,8 @@
             <CFormInput
               label="Name"
               v-model="industry.name"
-              :feedback="nameError"
-              :invalid="!!nameError"
+              :feedback="errors.name"
+              :invalid="!!errors.name"
               required
             />
           </CCol>
@@ -38,6 +38,7 @@
 
 <script>
 import IndustriesService from '@/services/Industries'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'IndustryDetail',
@@ -46,7 +47,9 @@ export default {
       industry: {
         name: ''
       },
-      nameError: ''
+      errors: {
+        name: ''
+      }
     }
   },
   computed: {
@@ -67,19 +70,74 @@ export default {
           }
         } catch (error) {
           console.error('Error loading industry:', error)
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Error loading industry',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          })
         }
       }
     },
+    clearErrors() {
+      this.errors = {
+        name: ''
+      }
+    },
     async saveIndustry() {
+      this.clearErrors()
+      
       try {
         if (this.isNew) {
-          await IndustriesService.createIndustry(this.industry)
+          await IndustriesService.createIndustry({
+            name: this.industry.name.trim()
+          })
+          Swal.fire({
+            icon: 'success',
+            title: 'Created successfully!',
+            text: 'New industry has been created.',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          })
         } else {
-          await IndustriesService.updateIndustry(this.$route.params.id, this.industry)
+          await IndustriesService.updateIndustry(this.$route.params.id, {
+            name: this.industry.name.trim()
+          })
+          Swal.fire({
+            icon: 'success',
+            title: 'Updated successfully!',
+            text: 'Industry has been updated.',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          })
         }
         this.goBack()
       } catch (error) {
         console.error('Error saving industry:', error)
+        if (error.response?.data?.errors) {
+          this.errors = error.response.data.errors
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Error saving industry',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          })
+        }
       }
     },
     goBack() {
