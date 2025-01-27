@@ -76,6 +76,12 @@ export default [
     to: '/operacion/polizas',
     icon: 'cil-list',
   },
+  {
+    component: 'CNavItem',
+    name: 'Developers',
+    to: '/operacion/developers',
+    icon: 'cil-list',
+  },
 
   // ? CONTENIDO WEB
   {

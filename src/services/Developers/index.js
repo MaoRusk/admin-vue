@@ -5,7 +5,19 @@ export default {
     return httpClient.get(`/developers`)
   },
   getDeveloper(developerId) {
-    return httpClient.get(`/developers/${developerId}`)
+    return httpClient.get(`/developers/${developerId}`).then(response => {
+      const data = response.data;
+      return {
+        ...response,
+        data: {
+          ...data,
+          is_developer: Boolean(data.is_developer),
+          is_builder: Boolean(data.is_builder),
+          is_owner: Boolean(data.is_owner),
+          is_user_owner: Boolean(data.is_user_owner),
+        }
+      };
+    });
   },
   createDeveloper({ name, is_developer, is_builder, is_owner, is_user_owner }) {
     return httpClient.post(`/developers`, {

@@ -86,6 +86,22 @@ const routes = [
             name: 'PendingApprovals',
             component: PendingApprovals,
           },
+          {
+            path: '/operacion/developers',
+            name: ROUTE_NAMES.DEVELOPERS,
+            component: () => import('@/views/operacion/developers/Developers.vue'),
+          },
+          {
+            path: '/operacion/developer/create',
+            name: ROUTE_NAMES.DEVELOPERS_CREATE,
+            component: () => import('@/views/operacion/developers/DeveloperDetalle.vue'),
+          },
+          {
+            path: '/operacion/developer/:id',
+            name: ROUTE_NAMES.DEVELOPERS_UPDATE,
+            component: () => import('@/views/operacion/developers/DeveloperDetalle.vue'),
+            props: true,
+          },
         ],
       },
       {
