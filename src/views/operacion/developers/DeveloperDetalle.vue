@@ -103,10 +103,25 @@ const saveDeveloper = async () => {
 <template>
   <CRow>
     <CCol xs="12">
-      <CCard class="mb-4">
+        <CCard>
         <CCardHeader>
-          <strong>{{ isCreating ? 'Nuevo Developer' : 'Editar Developer' }}</strong>
+          <CRow class="align-items-center">
+            <CCol>
+              <div class="d-flex align-items-center justify-content-between">
+                <h5 class="mb-0">
+                  {{ isCreating ? 'Nuevo Developer' : 'Editar Developer' }}
+                </h5>
+                <router-link to="../developers">
+                  <CButton color="primary" variant="outline">
+                    <CIcon icon="cil-arrow-circle-left" class="me-2" />
+                    return
+                  </CButton>
+                </router-link>
+              </div>
+            </CCol>
+          </CRow>
         </CCardHeader>
+
         <CCardBody>
           <div v-if="loading" class="text-center">
             <CSpinner />
