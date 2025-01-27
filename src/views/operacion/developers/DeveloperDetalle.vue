@@ -102,7 +102,7 @@ const saveDeveloper = async () => {
 
 <template>
   <CRow>
-    <CCol xs="12" lg="8" xl="6" class="mx-auto">
+    <CCol xs="12">
       <CCard class="mb-4">
         <CCardHeader>
           <strong>{{ isCreating ? 'Nuevo Developer' : 'Editar Developer' }}</strong>
