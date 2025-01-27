@@ -88,8 +88,19 @@ const routes = [
           },
           {
             path: '/operacion/developers',
-            name: ROUTE_NAMES.DEVELOPERS,
-            component: () => import('@/views/operacion/developers/Developers.vue'),
+            name: 'Developers',
+            component: () => import('../views/operacion/developers/Developers.vue'),
+            meta: {
+              requiresAuth: true
+            }
+          },
+          {
+            path: '/operacion/developers/:id',
+            name: 'DeveloperDetail',
+            component: () => import('../views/operacion/developers/DeveloperDetail.vue'),
+            meta: {
+              requiresAuth: true
+            }
           },
           {
             path: '/operacion/developer/create',
@@ -99,7 +110,10 @@ const routes = [
           {
             path: '/operacion/developer/:id',
             name: ROUTE_NAMES.DEVELOPERS_UPDATE,
-            component: () => import('@/views/operacion/developers/DeveloperDetalle.vue'),
+            component: () => import('../views/operacion/developers/DeveloperDetail.vue'),
+            meta: {
+              requiresAuth: true
+            },
             props: true,
           },
         ],

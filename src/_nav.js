@@ -80,7 +80,7 @@ export default [
     component: 'CNavItem',
     name: 'Developers',
     to: '/operacion/developers',
-    icon: 'cil-list',
+    icon: 'cil-people',
   },
 
   // ? CONTENIDO WEB
