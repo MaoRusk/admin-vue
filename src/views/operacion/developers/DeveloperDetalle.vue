@@ -145,25 +145,25 @@ const saveDeveloper = async () => {
             <CRow class="mb-3">
               <CCol xs="12" sm="6" md="3">
                 <CFormSwitch
-                  label="Is Developer"
+                  label="Developer"
                   v-model="developer.is_developer"
                 />
               </CCol>
               <CCol xs="12" sm="6" md="3">
                 <CFormSwitch
-                  label="Is Builder"
+                  label="Builder"
                   v-model="developer.is_builder"
                 />
               </CCol>
               <CCol xs="12" sm="6" md="3">
                 <CFormSwitch
-                  label="Is Owner"
+                  label="Owner"
                   v-model="developer.is_owner"
                 />
               </CCol>
               <CCol xs="12" sm="6" md="3">
                 <CFormSwitch
-                  label="Is User Owner"
+                  label="User Owner"
                   v-model="developer.is_user_owner"
                 />
               </CCol>
