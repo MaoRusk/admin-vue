@@ -74,10 +74,10 @@ onMounted(() => {
     <CCol :xs="12">
       <CCard class="mb-4">
         <CCardHeader>
-          <div class="d-flex justify-content-between align-items-center">
-            <strong>Developers</strong>
-            <div class="d-flex gap-3 align-items-center">
-              <div class="search-box">
+          <div class="header-container">
+            <strong class="mb-2 mb-md-0">Developers</strong>
+            <div class="controls-container">
+              <div class="search-box mb-2 mb-md-0">
                 <CFormInput
                   type="text"
                   placeholder="Buscar..."
@@ -85,12 +85,14 @@ onMounted(() => {
                   @input="handleSearch"
                 />
               </div>
-              <small class="text-medium-emphasis">
-                Total: {{ filteredDevelopers.length }} registros
-              </small>
-              <CButton color="primary" @click="createDeveloper">
-                <CIcon icon="cil-plus" /> Nuevo
-              </CButton>
+              <div class="d-flex gap-2 align-items-center flex-wrap">
+                <small class="text-medium-emphasis">
+                  Total: {{ filteredDevelopers.length }} registros
+                </small>
+                <CButton color="primary" @click="createDeveloper">
+                  <CIcon icon="cil-plus" /> Nuevo
+                </CButton>
+              </div>
             </div>
           </div>
         </CCardHeader>
@@ -98,78 +100,82 @@ onMounted(() => {
           <div v-if="loading" class="text-center">
             <CSpinner color="primary" />
           </div>
-          <div v-else>
-            <CTable hover responsive>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>ID</CTableHeaderCell>
-                  <CTableHeaderCell>Nombre</CTableHeaderCell>
-                  <CTableHeaderCell class="text-center">Developer</CTableHeaderCell>
-                  <CTableHeaderCell class="text-center">Builder</CTableHeaderCell>
-                  <CTableHeaderCell class="text-center">Owner</CTableHeaderCell>
-                  <CTableHeaderCell class="text-center">User Owner</CTableHeaderCell>
-                  <CTableHeaderCell>Acciones</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                <CTableRow v-for="developer in paginatedDevelopers" :key="developer.id">
-                  <CTableDataCell>{{ developer.id }}</CTableDataCell>
-                  <CTableDataCell>{{ developer.name }}</CTableDataCell>
-                  <CTableDataCell class="text-center">
-                    <CBadge :color="developer.is_developer === 1 ? 'success' : 'danger'">
-                      {{ developer.is_developer === 1 ? 'Sí' : 'No' }}
-                    </CBadge>
-                  </CTableDataCell>
-                  <CTableDataCell class="text-center">
-                    <CBadge :color="developer.is_builder === 1 ? 'success' : 'danger'">
-                      {{ developer.is_builder === 1 ? 'Sí' : 'No' }}
-                    </CBadge>
-                  </CTableDataCell>
-                  <CTableDataCell class="text-center">
-                    <CBadge :color="developer.is_owner === 1 ? 'success' : 'danger'">
-                      {{ developer.is_owner === 1 ? 'Sí' : 'No' }}
-                    </CBadge>
-                  </CTableDataCell>
-                  <CTableDataCell class="text-center">
-                    <CBadge :color="developer.is_user_owner === 1 ? 'success' : 'danger'">
-                      {{ developer.is_user_owner === 1 ? 'Sí' : 'No' }}
-                    </CBadge>
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CButton
-                      color="primary"
-                      size="sm"
-                      class="me-2"
-                      @click="editDeveloper(developer.id)"
-                    >
-                      <CIcon icon="cil-pencil" />
-                    </CButton>
-                    <CButton
-                      color="danger"
-                      size="sm"
-                      @click="deleteDeveloper(developer.id)"
-                    >
-                      <CIcon icon="cil-trash" />
-                    </CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
+          <div v-else class="table-responsive">
+            <div class="table-container">
+              <CTable hover>
+                <CTableHead>
+                  <CTableRow>
+                    <CTableHeaderCell class="min-width">ID</CTableHeaderCell>
+                    <CTableHeaderCell class="min-width-lg">Nombre</CTableHeaderCell>
+                    <CTableHeaderCell class="text-center min-width">Dev</CTableHeaderCell>
+                    <CTableHeaderCell class="text-center min-width">Build</CTableHeaderCell>
+                    <CTableHeaderCell class="text-center min-width">Own</CTableHeaderCell>
+                    <CTableHeaderCell class="text-center min-width">U.Own</CTableHeaderCell>
+                    <CTableHeaderCell class="min-width">Acciones</CTableHeaderCell>
+                  </CTableRow>
+                </CTableHead>
+                <CTableBody>
+                  <CTableRow v-for="developer in paginatedDevelopers" :key="developer.id">
+                    <CTableDataCell>{{ developer.id }}</CTableDataCell>
+                    <CTableDataCell>{{ developer.name }}</CTableDataCell>
+                    <CTableDataCell class="text-center">
+                      <CBadge :color="developer.is_developer === 1 ? 'success' : 'danger'">
+                        {{ developer.is_developer === 1 ? 'Sí' : 'No' }}
+                      </CBadge>
+                    </CTableDataCell>
+                    <CTableDataCell class="text-center">
+                      <CBadge :color="developer.is_builder === 1 ? 'success' : 'danger'">
+                        {{ developer.is_builder === 1 ? 'Sí' : 'No' }}
+                      </CBadge>
+                    </CTableDataCell>
+                    <CTableDataCell class="text-center">
+                      <CBadge :color="developer.is_owner === 1 ? 'success' : 'danger'">
+                        {{ developer.is_owner === 1 ? 'Sí' : 'No' }}
+                      </CBadge>
+                    </CTableDataCell>
+                    <CTableDataCell class="text-center">
+                      <CBadge :color="developer.is_user_owner === 1 ? 'success' : 'danger'">
+                        {{ developer.is_user_owner === 1 ? 'Sí' : 'No' }}
+                      </CBadge>
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      <div class="d-flex gap-2">
+                        <CButton
+                          color="primary"
+                          size="sm"
+                          @click="editDeveloper(developer.id)"
+                        >
+                          <CIcon icon="cil-pencil" />
+                        </CButton>
+                        <CButton
+                          color="danger"
+                          size="sm"
+                          @click="deleteDeveloper(developer.id)"
+                        >
+                          <CIcon icon="cil-trash" />
+                        </CButton>
+                      </div>
+                    </CTableDataCell>
+                  </CTableRow>
+                </CTableBody>
+              </CTable>
+            </div>
 
-            <!-- Paginación -->
             <nav v-if="totalPages > 1" class="mt-3">
-              <CPagination align="center">
+              <CPagination align="center" class="pagination-responsive">
                 <CPaginationItem 
                   :disabled="currentPage === 1"
                   @click="changePage(currentPage - 1)"
                 >
-                  Anterior
+                  <span class="d-none d-sm-block">Anterior</span>
+                  <span class="d-block d-sm-none">&lt;</span>
                 </CPaginationItem>
                 <CPaginationItem
                   v-for="page in totalPages"
                   :key="page"
                   :active="page === currentPage"
                   @click="changePage(page)"
+                  class="d-none d-sm-block"
                 >
                   {{ page }}
                 </CPaginationItem>
@@ -177,9 +183,13 @@ onMounted(() => {
                   :disabled="currentPage === totalPages"
                   @click="changePage(currentPage + 1)"
                 >
-                  Siguiente
+                  <span class="d-none d-sm-block">Siguiente</span>
+                  <span class="d-block d-sm-none">&gt;</span>
                 </CPaginationItem>
               </CPagination>
+              <div class="text-center d-block d-sm-none mt-2">
+                Página {{ currentPage }} de {{ totalPages }}
+              </div>
             </nav>
           </div>
         </CCardBody>
@@ -189,7 +199,62 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.header-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .search-box {
-  min-width: 200px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.min-width {
+  min-width: 80px;
+}
+
+.min-width-lg {
+  min-width: 150px;
+}
+
+@media (min-width: 768px) {
+  .header-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .controls-container {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .search-box {
+    width: auto;
+  }
+}
+
+.pagination-responsive {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+@media (max-width: 576px) {
+  .pagination-responsive .page-link {
+    padding: 0.375rem 0.75rem;
+  }
 }
 </style> 
