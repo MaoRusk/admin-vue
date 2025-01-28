@@ -347,7 +347,7 @@ onMounted(async () => {
 });
 
 async function createOptionGeneral(field, value) {
-  if (['owner_id' , 'builder_id', 'user_owner_id', 'developer_id'].includes(field)) {
+  if (['owner_id', 'builder_id', 'user_owner_id', 'developer_id'].includes(field)) {
     try {
       let data;
       if (value.id) {
@@ -390,9 +390,13 @@ async function createOptionGeneral(field, value) {
       });
     }
   } else if (field === 'industrial_park_id') {
-    const { data } = await API.industrialparks.createIndustrialPark({ name: value.name, market_id: building.market_id, submarket_id: building.submarket_id })
+    const { data } = await API.industrialparks.createIndustrialPark({ 
+      name: value.name, 
+      market_id: building.market_id, 
+      submarket_id: building.submarket_id 
+    })
     building[field] = data.data.id
-    fetchIndustrialParks()
+    fetchIndustrialParks(building.market_id, building.submarket_id)
   }
   Swal.fire({
     icon: "success",
@@ -410,7 +414,13 @@ async function createOptionGeneral(field, value) {
 }
 
 async function editOptionGeneral(field, value) {
-  await createOptionGeneral(field, value);
+  if (field === 'industrial_park_id') {
+    // Just refresh the list after edit
+    fetchIndustrialParks(building.market_id, building.submarket_id)
+  } else {
+    // Handle other types of edits
+    await createOptionGeneral(field, value);
+  }
 }
 
 watchEffect(async () => {
@@ -575,10 +585,14 @@ defineExpose({
                 v-model="building.industrial_park_id"
                 @submitOption="value => createOptionGeneral('industrial_park_id', value)"
                 @editOption="value => editOptionGeneral('industrial_park_id', value)"
+                @deleteOption="() => fetchIndustrialParks(building.market_id, building.submarket_id)"
                 create-option
                 size="sm"
                 :disabled="!building.submarket_id"
                 required
+                isIndustrialParkForm
+                :marketId="building.market_id"
+                :submarketId="building.submarket_id"
               />
             </div>
           </div>

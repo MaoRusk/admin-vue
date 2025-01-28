@@ -16,7 +16,10 @@ const props = defineProps({
   modalTitle: { type: String, default: 'Create' },
   createOption: { type: Boolean, default: false },
   size: { type: String },
-  isDevForm: { type: Boolean, default: false }
+  isDevForm: { type: Boolean, default: false },
+  isIndustrialParkForm: { type: Boolean, default: false },
+  marketId: { type: String },
+  submarketId: { type: String }
 })
 
 const emit = defineEmits(['update:modelValue', 'submitOption', 'editOption', 'deleteOption'])
@@ -25,9 +28,12 @@ const isEditing = ref(false)
 const editingId = ref(null)
 const showDropdown = ref(false)
 
-// Formulario expandido para developers
+// Modified form for industrial parks
 const form = reactive({
   name: '',
+  market_id: '',
+  submarket_id: '',
+  // Keep developer fields but only use them when isDevForm is true
   is_developer: false,
   is_builder: false,
   is_owner: false,
@@ -41,46 +47,46 @@ const selectedLabel = computed(() => {
 
 async function onSubmit() {
   try {
-    if (isEditing.value) {
-      emit('editOption', { ...form, id: editingId.value })
-      Swal.fire({
-        icon: 'success',
-        title: 'Updated successfully!',
-        text: `${form.name} has been updated.`,
-        toast: true,
-        position: 'bottom',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true
-      })
+    if (props.isIndustrialParkForm) {
+      // Set market and submarket IDs from props
+      form.market_id = props.marketId
+      form.submarket_id = props.submarketId
+
+      if (isEditing.value) {
+        // Update existing industrial park
+        const { data } = await API.industrialparks.updateIndustrialPark(editingId.value, form)
+        emit('editOption', { ...form, id: editingId.value })
+        // Actualizar el valor seleccionado después de editar
+        emit('update:modelValue', editingId.value)
+      } else {
+        // Create new industrial park - Emitir solo el form, no hacer la llamada API aquí
+        emit('submitOption', form)
+      }
     } else {
-      emit('submitOption', form)
-      Swal.fire({
-        icon: 'success',
-        title: 'Created successfully!',
-        text: `${form.name} has been created.`,
-        toast: true,
-        position: 'bottom',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true
-      })
+      // Existing developer handling code
+      if (isEditing.value) {
+        emit('editOption', { ...form, id: editingId.value })
+      } else {
+        emit('submitOption', form)
+      }
     }
+    
     showModal.value = false
     isEditing.value = false
     editingId.value = null
-    showDropdown.value = false  // Cerrar el dropdown
+    showDropdown.value = false
+    
     // Reset form
     Object.keys(form).forEach(key => {
       if (typeof form[key] === 'boolean') form[key] = false;
       else form[key] = '';
     });
   } catch (error) {
-    console.error('Error submitting developer:', error)
+    console.error('Error submitting:', error)
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: error.response?.data?.message || 'Error submitting developer',
+      text: error.response?.data?.message || 'Error submitting',
     })
   }
 }
@@ -89,11 +95,21 @@ function startEdit(option) {
   isEditing.value = true
   editingId.value = option.value
   form.name = option.label
-  // Convert numeric values to boolean
-  form.is_developer = Boolean(Number(option.is_developer))
-  form.is_builder = Boolean(Number(option.is_builder))
-  form.is_owner = Boolean(Number(option.is_owner))
-  form.is_user_owner = Boolean(Number(option.is_user_owner))
+  
+  if (props.isDevForm) {
+    // Handle developer specific fields
+    form.is_developer = Boolean(Number(option.is_developer))
+    form.is_builder = Boolean(Number(option.is_builder))
+    form.is_owner = Boolean(Number(option.is_owner))
+    form.is_user_owner = Boolean(Number(option.is_user_owner))
+  }
+  
+  if (props.isIndustrialParkForm) {
+    // Handle industrial park specific fields
+    form.market_id = props.marketId
+    form.submarket_id = props.submarketId
+  }
+  
   showModal.value = true
 }
 
@@ -104,8 +120,9 @@ function selectOption(option) {
 
 async function handleDelete() {
   try {
+    const entityType = props.isIndustrialParkForm ? 'Industrial Park' : 'Developer'
     const result = await Swal.fire({
-      title: 'Delete Developer',
+      title: `Delete ${entityType}`,
       text: `Are you sure you want to delete "${form.name}"?`,
       icon: 'warning',
       showCancelButton: true,
@@ -116,11 +133,16 @@ async function handleDelete() {
     })
 
     if (result.isConfirmed) {
-      await API.developers.deleteDeveloper(editingId.value)
+      if (props.isIndustrialParkForm) {
+        await API.industrialparks.deleteIndustrialPark(editingId.value)
+      } else {
+        await API.developers.deleteDeveloper(editingId.value)
+      }
+      
       showModal.value = false
       isEditing.value = false
       editingId.value = null
-      showDropdown.value = false  // Cerrar el dropdown
+      showDropdown.value = false
       emit('deleteOption')
       
       Swal.fire({
@@ -135,11 +157,11 @@ async function handleDelete() {
       })
     }
   } catch (error) {
-    console.error('Error deleting developer:', error)
+    console.error('Error deleting:', error)
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: error.response?.data?.message || 'Error deleting developer',
+      text: error.response?.data?.message || 'Error deleting item',
     })
   }
 }
@@ -170,7 +192,7 @@ onMounted(() => {
              class="d-flex justify-content-between align-items-center p-2 hover-bg-light cursor-pointer"
              @click="selectOption(option)">
           <span>{{ option.label }}</span>
-          <button v-if="props.isDevForm && option.value" 
+          <button v-if="(props.isDevForm || props.isIndustrialParkForm) && option.value" 
                   class="btn btn-sm btn-link p-0 ms-2"
                   @click.stop="startEdit(option)">
             <CIcon :icon="cilPencil" size="sm" />
@@ -203,6 +225,7 @@ onMounted(() => {
             </div>
           </div>
           
+          <!-- Developer specific fields -->
           <div v-if="props.isDevForm" class="row mt-3">
             <div class="col">
               <CFormCheck
