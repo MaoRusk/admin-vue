@@ -4,6 +4,9 @@ export default {
   getTenants() {
     return httpClient.get(`/tenants`)
   },
+  getTenant(tenantId) {
+    return httpClient.get(`/tenants/${tenantId}`)
+  },
   createTenant({ name }) {
     return httpClient.post(`/tenants`, {
       name,
