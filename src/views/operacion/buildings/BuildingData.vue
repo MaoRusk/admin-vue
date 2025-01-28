@@ -245,10 +245,19 @@ async function fetchDevelopers() {
   const items = data.data.sort((a, b) => a.name.localeCompare(b.name))
   const firstOption = { value: '', label: 'Select...' }
   const itemsGrouped = items.reduce((group, item) => {
-    if (item.is_owner) group.owners.push({ label: item.name, value: item.id })
-    if (item.is_developer) group.developers.push({ label: item.name, value: item.id })
-    if (item.is_user_owner) group.userOwners.push({ label: item.name, value: item.id })
-    if (item.is_builder) group.builders.push({ label: item.name, value: item.id })
+    const baseItem = { 
+      label: item.name, 
+      value: item.id,
+      is_owner: item.is_owner,
+      is_developer: item.is_developer,
+      is_user_owner: item.is_user_owner,
+      is_builder: item.is_builder
+    }
+
+    if (item.is_owner) group.owners.push(baseItem)
+    if (item.is_developer) group.developers.push(baseItem)
+    if (item.is_user_owner) group.userOwners.push(baseItem)
+    if (item.is_builder) group.builders.push(baseItem)
     return group
   }, { owners: [{...firstOption}], developers: [{...firstOption}], builders: [{...firstOption}], userOwners: [{...firstOption}] })
 
@@ -339,15 +348,47 @@ onMounted(async () => {
 
 async function createOptionGeneral(field, value) {
   if (['owner_id' , 'builder_id', 'user_owner_id', 'developer_id'].includes(field)) {
-    const developerOptions = {
-      owner_id: { is_developer: false, is_builder: false, is_owner: true, is_user_owner: false },
-      builder: { is_developer: false, is_builder: true, is_owner: false, is_user_owner: false },
-      userOwner: { is_developer: false, is_builder: false, is_owner: false, is_user_owner: true },
-      developer: { is_developer: true, is_builder: false, is_owner: false, is_user_owner: false },
+    try {
+      let data;
+      if (value.id) {
+        // Edit existing developer
+        ({ data } = await API.developers.updateDeveloper(value.id, {
+          name: value.name,
+          is_developer: Boolean(value.is_developer),
+          is_builder: Boolean(value.is_builder),
+          is_owner: Boolean(value.is_owner),
+          is_user_owner: Boolean(value.is_user_owner),
+        }));
+      } else {
+        // Create new developer
+        ({ data } = await API.developers.createDeveloper(value));
+      }
+      
+      if (data.success) {
+        building[field] = data.data.id;
+        await fetchDevelopers();
+        Swal.fire({
+          icon: "success",
+          title: value.id ? "Updated successfully" : "Created successfully",
+          toast: true,
+          position: "bottom",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+      }
+    } catch (error) {
+      console.error('Error with developer:', error);
+      const errorMessage = error.response?.data?.errors 
+        ? Object.values(error.response.data.errors).flat().join('\n')
+        : error.response?.data?.message || 'An error occurred';
+        
+      Swal.fire({
+        icon: "error",
+        title: value.id ? "Error updating developer" : "Error creating developer",
+        text: errorMessage,
+      });
     }
-    const { data } = await API.developers.createDeveloper({ name: value.name, ...developerOptions[field] })
-    building[field] = data.data.id
-    fetchDevelopers()
   } else if (field === 'industrial_park_id') {
     const { data } = await API.industrialparks.createIndustrialPark({ name: value.name, market_id: building.market_id, submarket_id: building.submarket_id })
     building[field] = data.data.id
@@ -366,6 +407,10 @@ async function createOptionGeneral(field, value) {
       toast.onmouseleave = Swal.resumeTimer;
     }
   });
+}
+
+async function editOptionGeneral(field, value) {
+  await createOptionGeneral(field, value);
 }
 
 watchEffect(async () => {
@@ -529,6 +574,7 @@ defineExpose({
                 :options="industrialParks.items"
                 v-model="building.industrial_park_id"
                 @submitOption="value => createOptionGeneral('industrial_park_id', value)"
+                @editOption="value => editOptionGeneral('industrial_park_id', value)"
                 create-option
                 size="sm"
                 :disabled="!building.submarket_id"
@@ -578,9 +624,13 @@ defineExpose({
                       :options="owners.items" 
                       v-model="building.owner_id"
                       @submitOption="value => createOptionGeneral('owner_id', value)"
+                      @editOption="value => editOptionGeneral('owner_id', value)"
+                      @deleteOption="fetchDevelopers"
                       create-option
                       size="sm"
                       required
+                      isDevForm
+                      modalTitle="Create Owner"
                     />
                   </div>
                 </CCol>
@@ -592,9 +642,13 @@ defineExpose({
                       :options="developers.items" 
                       v-model="building.developer_id"
                       @submitOption="value => createOptionGeneral('developer_id', value)"
+                      @editOption="value => editOptionGeneral('developer_id', value)"
+                      @deleteOption="fetchDevelopers"
                       create-option
                       size="sm"
                       required
+                      isDevForm
+                      modalTitle="Create Developer"
                     />
                   </div>
                 </CCol>
@@ -606,9 +660,13 @@ defineExpose({
                       :options="builders.items" 
                       v-model="building.builder_id"
                       @submitOption="value => createOptionGeneral('builder_id', value)"
+                      @editOption="value => editOptionGeneral('builder_id', value)"
+                      @deleteOption="fetchDevelopers"
                       create-option
                       size="sm"
                       required
+                      isDevForm
+                      modalTitle="Create Builder"
                     />
                   </div>
                 </CCol>
@@ -619,9 +677,13 @@ defineExpose({
                       :options="userOwners.items" 
                       v-model="building.user_owner_id"
                       @submitOption="value => createOptionGeneral('user_owner_id', value)"
+                      @editOption="value => editOptionGeneral('user_owner_id', value)"
+                      @deleteOption="fetchDevelopers"
                       create-option
                       size="sm"
                       required
+                      isDevForm
+                      modalTitle="Create User Owner"
                     />
                   </div>
                 </CCol>
