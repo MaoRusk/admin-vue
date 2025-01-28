@@ -63,8 +63,15 @@ const getBadge = (status) => {
     }"
   >
     <template #status="{ item }">
-      <td>
-        <CBadge :color="getBadge(item.status)">{{ item.status }}</CBadge>
+      <td class="text-center">
+        <CBadge :color="typeof item.status === 'boolean' ? (item.status ? 'success' : 'danger') : getBadge(item.status)">
+          <template v-if="typeof item.status === 'boolean'">
+            {{ item.status ? 'Sí' : 'No' }}
+          </template>
+          <template v-else>
+            {{ item.status }}
+          </template>
+        </CBadge>
       </td>
     </template>
     <template #select="{ item }">

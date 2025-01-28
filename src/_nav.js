@@ -73,6 +73,12 @@ export default [
   },
   {
     component: 'CNavItem',
+    name: 'Developers',
+    to: '/operacion/developers',
+    icon: 'cil-people',
+  },
+  {
+    component: 'CNavItem',
     name: 'Industries',
     to: '/operacion/industries',
     icon: 'cil-factory',

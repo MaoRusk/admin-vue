@@ -8,5 +8,8 @@ export const ROUTE_NAMES = {
   BUILDINGS_UPDATE: 'Edit Buildings',
   USERS: 'Users',
   USERS_CREATE: 'CreateUser',
-  USERS_UPDATE: 'UpdateUser'
+  USERS_UPDATE: 'UpdateUser',
+  DEVELOPERS: 'Developers',
+  DEVELOPERS_CREATE: 'Create Developer',
+  DEVELOPERS_UPDATE: 'Edit Developer',
 }
