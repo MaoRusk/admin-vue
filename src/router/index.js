@@ -12,6 +12,8 @@ import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue'
 import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
 import Buildings from '@/views/operacion/buildings/Buildings.vue'
 import Login from '../views/pages/Login.vue'
+import Users from '../views/operacion/users/Users.vue'
+import UserDetail from '../views/operacion/users/UserDetail.vue'
 
 const routes = [
   {
@@ -85,6 +87,55 @@ const routes = [
             path: 'buildings/pending-approvals',
             name: 'PendingApprovals',
             component: PendingApprovals,
+          },
+          {
+            path: '/seguridad',
+            name: 'Seguridad',
+            meta: { requiresAuth: true },
+            children: [
+              {
+                path: 'usuarios',
+                name: ROUTE_NAMES.USERS,
+                component: Users,
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
+                path: 'usuarios/create',
+                name: ROUTE_NAMES.USERS_CREATE,
+                component: UserDetail,
+                props: { id: 0 },  // Para nuevo usuario
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
+                path: 'usuarios/:id',
+                name: ROUTE_NAMES.USERS_UPDATE,
+                component: UserDetail,
+                props: true,
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+            ],
+          },
+          {
+            path: '/operacion/industries',
+            name: 'Industries',
+            component: () => import('../views/operacion/industries/Industries.vue'),
+            meta: {
+              requiresAuth: true
+            }
+          },
+          {
+            path: '/operacion/industries/:id',
+            name: 'IndustryDetail',
+            component: () => import('../views/operacion/industries/IndustryDetail.vue'),
+            meta: {
+              requiresAuth: true
+            }
           },
           {
             path: '/operacion/developers',
