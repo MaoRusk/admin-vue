@@ -15,6 +15,8 @@ import Submarkets from './Submarkets'
 import Tenants from './Tenants'
 import BuildingsAvailability from './BuildingsAvailability'
 import BuildingsAbsorption from './BuildingsAbsorption'
+import Users from './Users'
+import Roles from './Roles'
 
 export const API = {
   auth: Auth,
@@ -34,4 +36,6 @@ export const API = {
   tenants: Tenants,
   buildingsAvailability: BuildingsAvailability,
   buildingsAbsorption: BuildingsAbsorption,
+  users: Users,
+  roles: Roles,
 }
