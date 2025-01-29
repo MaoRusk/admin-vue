@@ -194,29 +194,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.table-responsive {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 768px) {
-  .table-responsive {
-    margin-bottom: 1rem;
-  }
-  
-  :deep(.table) th,
-  :deep(.table) td {
-    white-space: nowrap;
-    min-width: 100px;
-  }
-  
-  :deep(.table) th:first-child,
-  :deep(.table) td:first-child {
-    position: sticky;
-    left: 0;
-    background: white;
-    z-index: 1;
-  }
-}
-</style> 
