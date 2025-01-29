@@ -14,6 +14,8 @@ import Buildings from '@/views/operacion/buildings/Buildings.vue'
 import Login from '../views/pages/Login.vue'
 import Users from '../views/operacion/users/Users.vue'
 import UserDetail from '../views/operacion/users/UserDetail.vue'
+import Roles from '../views/operacion/roles/Roles.vue'
+import RoleDetail from '../views/operacion/roles/RoleDetail.vue'
 
 const routes = [
   {
@@ -114,6 +116,32 @@ const routes = [
                 path: 'usuarios/:id',
                 name: ROUTE_NAMES.USERS_UPDATE,
                 component: UserDetail,
+                props: true,
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
+                path: 'roles',
+                name: ROUTE_NAMES.ROLES,
+                component: Roles,
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
+                path: 'roles/create',
+                name: ROUTE_NAMES.ROLES_CREATE,
+                component: RoleDetail,
+                props: { id: 0 },
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
+                path: 'roles/:id',
+                name: ROUTE_NAMES.ROLES_UPDATE,
+                component: RoleDetail,
                 props: true,
                 meta: {
                   requiresAuth: true,

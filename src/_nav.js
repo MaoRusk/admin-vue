@@ -24,6 +24,11 @@ export default [
     items: [
       {
         component: 'CNavItem',
+        name: 'Roles',
+        to: '/seguridad/roles',
+      },
+      {
+        component: 'CNavItem',
         name: 'Perfiles',
         to: '/seguridad/perfiles',
       },

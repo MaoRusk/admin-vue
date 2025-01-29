@@ -12,4 +12,7 @@ export const ROUTE_NAMES = {
   DEVELOPERS: 'Developers',
   DEVELOPERS_CREATE: 'Create Developer',
   DEVELOPERS_UPDATE: 'Edit Developer',
+  ROLES: 'Roles',
+  ROLES_CREATE: 'CreateRole',
+  ROLES_UPDATE: 'UpdateRole',
 }
