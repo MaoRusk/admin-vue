@@ -75,9 +75,9 @@ export default {
           _style: { minWidth: '200px' }
         },
         {
-          key: 'description',
-          label: 'Description',
-          _style: { minWidth: '300px' }
+          key: 'guard_name',
+          label: 'Guard Name',
+          _style: { minWidth: '150px' }
         },
         {
           key: 'actions',

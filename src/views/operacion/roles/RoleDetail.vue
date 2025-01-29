@@ -17,14 +17,15 @@
           </CCol>
         </CRow>
         <CRow class="mt-3">
-          <CCol :md="12">
-            <CFormTextarea
-              label="Description"
-              v-model="role.description"
-              :feedback="errors.description"
-              :invalid="!!errors.description"
-              rows="3"
+          <CCol :md="6">
+            <CFormInput
+              label="Guard Name"
+              v-model="role.guard_name"
+              :feedback="errors.guard_name"
+              :invalid="!!errors.guard_name"
               required
+              :disabled="!isNew"
+              :value="isNew ? 'web' : role.guard_name"
             />
           </CCol>
         </CRow>
@@ -64,11 +65,12 @@ export default {
     return {
       role: {
         name: '',
-        description: ''
+        guard_name: 'web',
+        permissions: []
       },
       errors: {
         name: '',
-        description: ''
+        guard_name: ''
       }
     }
   },
@@ -83,9 +85,11 @@ export default {
         try {
           const response = await RolesService.getRole(this.id)
           if (response.data.data) {
+            const { name, guard_name, permissions } = response.data.data
             this.role = {
-              name: response.data.data.name,
-              description: response.data.data.description
+              name,
+              guard_name,
+              permissions: permissions || []
             }
           }
         } catch (error) {
@@ -106,15 +110,20 @@ export default {
     clearErrors() {
       this.errors = {
         name: '',
-        description: ''
+        guard_name: ''
       }
     },
     async saveRole() {
       this.clearErrors()
       
       try {
+        const roleData = {
+          name: this.role.name,
+          guard_name: this.role.guard_name
+        }
+
         if (this.isNew) {
-          await RolesService.createRole(this.role)
+          await RolesService.createRole(roleData)
           Swal.fire({
             icon: 'success',
             title: 'Created successfully!',
@@ -126,7 +135,7 @@ export default {
             timerProgressBar: true
           })
         } else {
-          await RolesService.updateRole(this.id, this.role)
+          await RolesService.updateRole(this.id, roleData)
           Swal.fire({
             icon: 'success',
             title: 'Updated successfully!',
