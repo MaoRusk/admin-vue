@@ -69,6 +69,8 @@ export default {
   name: 'IndustrialParkDetail',
   data() {
     return {
+      isLoading: true,
+      previousMarketId: null,
       industrialPark: {
         name: '',
         market_id: '',
@@ -131,6 +133,7 @@ export default {
     async loadIndustrialPark() {
       if (!this.isNew) {
         try {
+          this.isLoading = true
           const response = await IndustrialParksService.getIndustrialPark(this.$route.params.id)
           if (response.data.data) {
             this.industrialPark = {
@@ -138,6 +141,7 @@ export default {
               market_id: response.data.data.market_id,
               submarket_id: response.data.data.submarket_id
             }
+            this.previousMarketId = response.data.data.market_id
           }
         } catch (error) {
           console.error('Error loading industrial park:', error)
@@ -151,7 +155,11 @@ export default {
             timer: 3000,
             timerProgressBar: true
           })
+        } finally {
+          this.isLoading = false
         }
+      } else {
+        this.isLoading = false
       }
     },
     clearErrors() {
@@ -214,8 +222,11 @@ export default {
     }
   },
   watch: {
-    'industrialPark.market_id'() {
-      this.industrialPark.submarket_id = ''
+    'industrialPark.market_id'(newValue) {
+      if (!this.isLoading && this.previousMarketId !== null && newValue !== this.previousMarketId) {
+        this.industrialPark.submarket_id = ''
+      }
+      this.previousMarketId = newValue
     }
   },
   async mounted() {
