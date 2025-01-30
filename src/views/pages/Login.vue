@@ -31,10 +31,10 @@
                     />
                   </CInputGroup>
                   <CRow>
-                    <CLoadingButton :loading="submitting" color="primary" class="px-4" type="submit"> Login </CLoadingButton>
+                    <CLoadingButton :loading="submitting" :disabled="submitting" color="primary" class="px-4" type="submit"> Login </CLoadingButton>
                   </CRow>
                   <!-- Espacio para mostrar mensajes de error -->
-                  <p v-if="errorMessage" class="text-danger mt-2">{{ errorMessage }}</p>
+                  <p v-if="errorMessage" class="text-center text-white mt-3 p-2 bg-danger rounded">{{ errorMessage }}</p>
                 </CForm>
               </CCardBody>
             </CCard>
@@ -79,6 +79,7 @@ async function login() {
     router.push({ name: ROUTE_NAMES.HOME })
   } catch (err) {
     errorMessage.value = err.response?.data?.message || 'Error al iniciar sesión'
+    submitting.value = false
   }
 }
 </script>
