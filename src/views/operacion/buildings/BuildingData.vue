@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watchEffect } from 'vue';
+import { computed, onMounted, reactive, ref, watchEffect } from 'vue';
 import Swal from 'sweetalert2';
 import { API } from '../../../services';
 import { useRouter } from 'vue-router';
@@ -22,24 +22,18 @@ const buildingEmpty = {
   industrial_park_id: '', 
   developer_id: '', 
   owner_id: '', 
-  user_owner_id: '', 
   building_name: '', 
   building_size_sf: '', 
   latitud: '', 
   longitud: '', 
   year_built: '', 
-  clear_height: '', 
-  total_land: '', 
-  offices_space: '', 
+  clear_height_ft: '', 
+  total_land_sf: '', 
+  offices_space_ft: '', 
   has_crane: false,
-  has_hvac: false,
   has_rail_spur: false,
-  has_sprinklers: false,
-  has_office: false,
   has_leed: false,
-  has_expansion_land: false,
   ventilation: '', 
-  transformer_capacity: '', 
   construction_state: '', 
   roof_system: '', 
   skylights_sf: '', 
@@ -56,16 +50,29 @@ const buildingEmpty = {
   deal: '', 
   loading_door: '', 
   above_market_tis: '', 
-  status: '', 
+  status: 'Active',
+  floor_thickness_ft: '',
+  floor_resistance: '',
+  expansion_up_to_sf: '',
 
   hvacProduction: '',
   hvacArea: '',
+
+  transformer_capacity_value_1: '',
+  transformer_capacity_value_2: '',
+
+  columns_spacing_value_1: '',
+  columns_spacing_value_2: '',
+
+  bay_size_value_1: '',
+  bay_size_value_2: '',
+
   sfSm: false, // TODO, esta variable no esta en building
 }
 
-const building = reactive(buildingEmpty)
+const building = reactive({...buildingEmpty})
 const formHtmlElement = ref(null)
-const HVAC_SEPARATOR = ' x '
+const VALUE_SEPARATOR = ' x '
 
 const validateRangeInputs = (model, field1, field2, fieldName) => {
   if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
@@ -86,7 +93,9 @@ const validateHvacRange = () => {
     'hvacArea',
     'HVAC Production Area'
   );
-};
+}
+
+const coverage = computed(() => building.building_size_sf && building.total_land_sf ? (+building.building_size_sf * +building.total_land_sf) : '')
 
 async function onSubmit() {
   emit('submitting', true)
@@ -94,7 +103,11 @@ async function onSubmit() {
     let data;
     const body = {
       ...building,
-      hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${HVAC_SEPARATOR}${building.hvacArea}` : '',
+      hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${VALUE_SEPARATOR}${building.hvacArea}` : '',
+      transformer_capacity: (building.transformer_capacity_value_1 && building.transformer_capacity_value_2) ? `${building.transformer_capacity_value_1}${VALUE_SEPARATOR}${building.transformer_capacity_value_2}` : '',
+      columns_spacing_ft: (building.columns_spacing_value_1 && building.columns_spacing_value_2) ? `${building.columns_spacing_value_1}${VALUE_SEPARATOR}${building.columns_spacing_value_2}` : '',
+      bay_size: (building.bay_size_value_1 && building.bay_size_value_2) ? `${building.bay_size_value_1}${VALUE_SEPARATOR}${building.bay_size_value_2}` : '',
+      coverage: coverage.value
     }
     if (props.buildingId) {
       ({ data } = await API.buildings.updateBuilding(props.buildingId, body));
@@ -118,16 +131,23 @@ const fetchBuildingData = async () => {
   try {
     const buildingId = props.buildingId;
     const { data } = await API.buildings.getBuilding(buildingId);
-    ['region_id', 'market_id', 'submarket_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id', 'user_owner_id', 'building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height', 'total_land', 'offices_space', 'ventilation', 'transformer_capacity', 'construction_state', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'fire_protection_system', 'deal', 'loading_door', 'above_market_tis', 'status']
+    ['region_id', 'market_id', 'submarket_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id', 'building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height_ft', 'total_land_sf', 'offices_space_ft', 'ventilation', 'construction_state', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'fire_protection_system', 'deal', 'loading_door', 'above_market_tis', 'status', 'floor_thickness_ft', 'floor_resistance']
     .forEach(prop => building[prop] = data.data[prop] ? `${data.data[prop]}` : '');
-    ['has_crane', 'has_hvac', 'has_rail_spur', 'has_sprinklers', 'has_office', 'has_leed', 'has_expansion_land']
-    .forEach(prop => building[prop] = Boolean(data.data[prop]))
+    ['has_crane', 'has_rail_spur', 'has_leed']
+    .forEach(prop => building[prop] = Boolean(data.data[prop]));
 
     building.year_built = `${data.data.year_built}`
-    if (data.data.hvac_production_area && data.data.hvac_production_area.length > HVAC_SEPARATOR.length) {
-      const [hvacProduction, hvacArea] = data.data.hvac_production_area.split(HVAC_SEPARATOR)
-      building.hvacProduction = hvacProduction
-      building.hvacArea = hvacArea
+    if (data.data.hvac_production_area && data.data.hvac_production_area.length > VALUE_SEPARATOR.length) {
+      ([building.hvacProduction, building.hvacArea] = data.data.hvac_production_area.split(VALUE_SEPARATOR))
+    }
+    if (data.data.transformer_capacity && data.data.transformer_capacity.length > VALUE_SEPARATOR.length) {
+      ([building.transformer_capacity_value_1, building.transformer_capacity_value_2] = data.data.transformer_capacity.split(VALUE_SEPARATOR))
+    }
+    if (data.data.columns_spacing && data.data.columns_spacing.length > VALUE_SEPARATOR.length) {
+      ([building.columns_spacing_value_1, building.columns_spacing_value_2] = data.data.columns_spacing.split(VALUE_SEPARATOR))
+    }
+    if (data.data.bay_size && data.data.bay_size.length > VALUE_SEPARATOR.length) {
+      ([building.bay_size_value_1, building.bay_size_value_2] = data.data.bay_size.split(VALUE_SEPARATOR))
     }
     building.sfSm = false // TODO, esta variable no esta en building
   } catch (error) {
@@ -149,7 +169,6 @@ const submarkets = reactive({ loading: false, items: []})
 const owners = reactive({ loading: false, items: []})
 const developers = reactive({ loading: false, items: []})
 const builders = reactive({ loading: false, items: []})
-const userOwners = reactive({ loading: false, items: []})
 const currencies = reactive({ loading: false, items: []})
 const tenancies = reactive({ loading: false, items: []})
 const deals = reactive({ loading: false, items: []})
@@ -163,7 +182,7 @@ async function fetchBuildingStatuses() {
   statuses.loading = true
   const { data } = await API.buildings.getBuildingsStatus()
   statuses.loading = false
-  statuses.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.status }))
+  statuses.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.status }))
   statuses.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -171,7 +190,7 @@ async function fetchBuildingTechnicalImprovements() {
   technicalImprovements.loading = true
   const { data } = await API.buildings.getBuildingsTechnicalImprovements();
   technicalImprovements.loading = false
-  technicalImprovements.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.above_market_tis }))
+  technicalImprovements.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.above_market_tis }))
   technicalImprovements.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -179,7 +198,7 @@ async function fetchBuildingLoadingDoors() {
   loadingDoors.loading = true
   const { data } = await API.buildings.getBuildingsLoadingDoors();
   loadingDoors.loading = false
-  loadingDoors.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.loading_door }))
+  loadingDoors.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.loading_door }))
   loadingDoors.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -187,7 +206,7 @@ async function fetchBuildingTypesLightnings() {
   typesLightnings.loading = true
   const { data } = await API.buildings.getBuildingsTypesLightnings();
   typesLightnings.loading = false
-  typesLightnings.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.lightning }))
+  typesLightnings.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.lightning }))
   typesLightnings.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -195,7 +214,7 @@ async function fetchBuildingTypeGenerations() {
   generationsTypes.loading = true
   const { data } = await API.buildings.getBuildingsTypesGeneration();
   generationsTypes.loading = false
-  generationsTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.type_generation }))
+  generationsTypes.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.type_generation }))
   generationsTypes.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -203,7 +222,7 @@ async function fetchTenancies() {
   tenancies.loading = true
   const { data } = await API.buildings.getBuildingsTenancies();
   tenancies.loading = false
-  tenancies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.tenancy }))
+  tenancies.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.tenancy }))
   tenancies.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -211,7 +230,7 @@ async function fetchCurrencies() {
   currencies.loading = true
   const { data } = await API.currencies.getCurrencies();
   currencies.loading = false
-  currencies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.currency }))
+  currencies.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.currency }))
   currencies.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -219,7 +238,7 @@ async function fetchBuildingContructionTypes() {
   constructionTypes.loading = true
   const { data } = await API.buildings.getBuildingsTypesConstruction();
   constructionTypes.loading = false
-  constructionTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.construction_type }))
+  constructionTypes.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.construction_type }))
   constructionTypes.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -227,44 +246,35 @@ async function fetchBuildingDeals() {
   deals.loading = true
   const { data } = await API.buildings.getBuildingsTypesDeals();
   deals.loading = false
-  deals.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.deal }))
+  deals.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.deal }))
   deals.items.unshift({ value: '', label: 'Select...' })
 }
 
-async function fetchDevelopers() {
+async function fetchDevelopers(marketId, submarketId) {
   developers.loading = true
-  owners.loading = true
-  builders.loading = true
-  userOwners.loading = true
-  const { data } = await API.developers.getDevelopers();
+  const { data } = await API.developers.getDevelopers({ is_developer: true, marketId, submarketId });
   developers.loading = false
-  owners.loading = false
+  const items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.developer_id })).sort((a, b) => a.label.localeCompare(b.label))
+  items.unshift({ value: '', label: 'Select...' })
+  developers.items = items
+}
+
+async function fetchBuilders(marketId, submarketId) {
+  builders.loading = true
+  const { data } = await API.developers.getDevelopers({ is_builder: true, marketId, submarketId });
   builders.loading = false
-  userOwners.loading = false
+  const items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.builder_id })).sort((a, b) => a.label.localeCompare(b.label))
+  items.unshift({ value: '', label: 'Select...' })
+  builders.items = items
+}
 
-  const items = data.data.sort((a, b) => a.name.localeCompare(b.name))
-  const firstOption = { value: '', label: 'Select...' }
-  const itemsGrouped = items.reduce((group, item) => {
-    const baseItem = { 
-      label: item.name, 
-      value: item.id,
-      is_owner: item.is_owner,
-      is_developer: item.is_developer,
-      is_user_owner: item.is_user_owner,
-      is_builder: item.is_builder
-    }
-
-    if (item.is_owner) group.owners.push(baseItem)
-    if (item.is_developer) group.developers.push(baseItem)
-    if (item.is_user_owner) group.userOwners.push(baseItem)
-    if (item.is_builder) group.builders.push(baseItem)
-    return group
-  }, { owners: [{...firstOption}], developers: [{...firstOption}], builders: [{...firstOption}], userOwners: [{...firstOption}] })
-
-  developers.items = itemsGrouped.developers
-  owners.items = itemsGrouped.owners
-  builders.items = itemsGrouped.builders
-  userOwners.items = itemsGrouped.userOwners
+async function fetchOwners(marketId, submarketId) {
+  owners.loading = true
+  const { data } = await API.developers.getDevelopers({ is_owner: true, marketId, submarketId });
+  owners.loading = false
+  const items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.owner_id })).sort((a, b) => a.label.localeCompare(b.label))
+  items.unshift({ value: '', label: 'Select...' })
+  owners.items = items
 }
 
 async function fetchIndustrialParks(marketId, submarketId) {
@@ -295,7 +305,7 @@ async function fetchClasses() {
   classes.loading = true
   const { data } = await API.buildings.getBuildingsClasses();
   classes.loading = false
-  classes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.class }))
+  classes.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.class }))
   classes.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -303,7 +313,7 @@ async function fetchFireProtectionSystems() {
   fireProtectionSystems.loading = true
   const { data } = await API.buildings.getBuildingsFireProtectionSystems();
   fireProtectionSystems.loading = false
-  fireProtectionSystems.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.fire_protection_system }))
+  fireProtectionSystems.items = Object.values(data.data).map(value => ({ value, label: value, selected: value === building.fire_protection_system }))
   fireProtectionSystems.items.unshift({ value: '', label: 'Select...' })
 }
 
@@ -330,9 +340,7 @@ onMounted(async () => {
   await Promise.all([
     fetchClasses(),
     fetchRegions(),
-    fetchDevelopers(),
     fetchTenancies(),
-    
     fetchCurrencies(),
     fetchFireProtectionSystems(),
     fetchBuildingDeals(),
@@ -347,7 +355,7 @@ onMounted(async () => {
 });
 
 async function createOptionGeneral(field, value) {
-  if (['owner_id', 'builder_id', 'user_owner_id', 'developer_id'].includes(field)) {
+  if (['owner_id', 'builder_id', 'developer_id'].includes(field)) {
     try {
       let data;
       if (value.id) {
@@ -439,10 +447,20 @@ watchEffect(async () => {
 
 watchEffect(async () => {
   if (building.submarket_id) {
-    await fetchIndustrialParks(building.market_id, building.submarket_id)
+    await Promise.all([
+      fetchIndustrialParks(building.market_id, building.submarket_id),
+      fetchOwners(building.market_id, building.submarket_id),
+      fetchBuilders(building.market_id, building.submarket_id),
+      fetchDevelopers(building.market_id, building.submarket_id),
+    ])
     building.industrial_park_id = props.buildingId ? building.industrial_park_id : ''
+    building.owner_id = props.buildingId ? building.owner_id : ''
+    building.builder_id = props.buildingId ? building.builder_id : ''
+    building.developer_id = props.buildingId ? building.developer_id : ''
   }
 })
+
+
 
 defineExpose({
   submit() {
@@ -493,21 +511,41 @@ defineExpose({
                     <CFormInput 
                       type="number"
                       size="sm"
-                      class="no-spinner"
                       v-model="building.building_size_sf"
                       label="Building Size (SF)"
                       required
                     />
                   </div>
                 </CCol>
-                <CCol :md="3">
+                <CCol md="3">
                   <div class="mt-2">
                     <CFormInput 
                       type="number"
                       size="sm"
-                      class="no-spinner"
                       v-model="building.expansion_land"
-                      label="Expansion Land"
+                      label="Expansion Land (SF)"
+                      required
+                    />
+                  </div>
+                </CCol>
+                <!-- TOTAL LAND -->
+                <div class="col-md-3">
+                  <div class="mt-2">
+                    <CFormInput 
+                      type="number" 
+                      size="sm"
+                      v-model="building.total_land_sf"
+                      label="Total Land (SF)"
+                    />
+                  </div>
+                </div>
+                <CCol md="3">
+                  <div class="mt-2">
+                    <CFormInput 
+                      type="number"
+                      size="sm"
+                      v-model="building.expansion_up_to_sf"
+                      label="Expansion up to SF"
                       required
                     />
                   </div>
@@ -528,6 +566,15 @@ defineExpose({
                     />
                   </div>
                 </CCol>
+                <div class="col-md-3">
+                  <div class="mt-2">
+                    <label class="form-label">SF/SM</label>
+                    <CFormSwitch
+                      size="lg"
+                      v-model="building.sfSm"
+                    />
+                  </div>
+                </div>
               </CRow>
             </CCardBody>
           </CCard>
@@ -630,7 +677,7 @@ defineExpose({
           <CCard class="card-customer-buildings">
             <CCardBody>
               <CRow>
-                <CCol :md="3">
+                <CCol md>
                   <!-- OWNER -->
                   <div class="mt-2">
                     <MSelect
@@ -645,10 +692,11 @@ defineExpose({
                       required
                       isDevForm
                       modalTitle="Create Owner"
+                      :disabled="!building.submarket_id"
                     />
                   </div>
                 </CCol>
-                <CCol :md="3">
+                <CCol md>
                   <!-- DEVELOPER -->
                   <div class="mt-2">
                     <MSelect
@@ -663,10 +711,11 @@ defineExpose({
                       required
                       isDevForm
                       modalTitle="Create Developer"
+                      :disabled="!building.submarket_id"
                     />
                   </div>
                 </CCol>
-                <CCol :md="3">    
+                <CCol md>
                   <!-- BUILDER -->
                   <div class="mt-2">
                     <MSelect
@@ -681,23 +730,7 @@ defineExpose({
                       required
                       isDevForm
                       modalTitle="Create Builder"
-                    />
-                  </div>
-                </CCol>
-                <CCol :md="3">
-                  <div class="mt-2">
-                    <MSelect
-                      label="User Owner"
-                      :options="userOwners.items" 
-                      v-model="building.user_owner_id"
-                      @submitOption="value => createOptionGeneral('user_owner_id', value)"
-                      @editOption="value => editOptionGeneral('user_owner_id', value)"
-                      @deleteOption="fetchDevelopers"
-                      create-option
-                      size="sm"
-                      required
-                      isDevForm
-                      modalTitle="Create User Owner"
+                      :disabled="!building.submarket_id"
                     />
                   </div>
                 </CCol>
@@ -774,17 +807,9 @@ defineExpose({
                     <CFormInput 
                       type="number" 
                       size="sm"
-                      v-model="building.clear_height"
-                      label="Clear Height"
-                    />
-                  </div>
-                  <!-- TOTAL LAND -->
-                  <div class="mt-2">
-                    <CFormInput 
-                      type="number" 
-                      size="sm"
-                      v-model="building.total_land"
-                      label="Total Land"
+                      v-model="building.clear_height_ft"
+                      label="Clear Height FT"
+                      max="99"
                     />
                   </div>
                   <!-- COVERAGE -->
@@ -792,16 +817,18 @@ defineExpose({
                     <CFormInput 
                       type="number" 
                       size="sm"
-                      v-model="building.coverage"
-                      label="Coverage %"
+                      :value="coverage"
+                      label="Coverage % (read only)"
+                      readonly
                     />
+                    <small class="text-secondary">Building Size (SF) * Total Land (SF)</small>
                   </div>
                   <div class="mt-2">
                     <CFormInput 
                       type="number" 
                       size="sm"
-                      v-model="building.offices_space"
-                      label="Offices Space"
+                      v-model="building.offices_space_ft"
+                      label="Offices Space SF"
                     />
                   </div>
                   <div class="mt-2">
@@ -812,6 +839,15 @@ defineExpose({
                       size="sm"
                       required
                     />
+                  </div>
+                  <div class="mt-2">
+                    <label class="form-label">Floor Thickness FT</label>
+                    <CInputGroup size="sm">
+                      <CFormInput
+                        type="number"
+                        v-model="building.floor_thickness_ft"
+                      />
+                    </CInputGroup>
                   </div>
                 </CCol>
 
@@ -854,12 +890,14 @@ defineExpose({
                     />
                   </div>
                   <div class="mt-2">
-                    <CFormInput
-                      type="number"
-                      size="sm"
-                      v-model="building.skylights_sf"
-                      label="Skylights SF"
-                    />
+                    <label class="form-label">Skylights SF</label>
+                    <CInputGroup size="sm">
+                      <CFormInput
+                        type="number"
+                        v-model="building.skylights_sf"
+                      />
+                      <CInputGroupText>%</CInputGroupText>
+                    </CInputGroup>
                   </div>
                   <div class="mt-2">
                     <CFormSelect
@@ -870,19 +908,19 @@ defineExpose({
                       required
                     />
                   </div>
+                  <div class="mt-2">
+                    <label class="form-label">Floor Resistance</label>
+                    <CInputGroup size="sm">
+                      <CFormInput
+                        type="number"
+                        v-model="building.floor_resistance"
+                      />
+                    </CInputGroup>
+                  </div>
                 </CCol>
 
                 <!-- Tercera columna: Sistemas eléctricos y ambientales -->
                 <CCol :md="3">
-                  <!-- TRANSFORMER CAPACITY -->
-                  <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="building.transformer_capacity"
-                      label="Transformer Capacity"
-                    />
-                  </div>
                   <!-- LIGHTING -->
                   <div class="mt-2">
                     <CFormSelect
@@ -895,12 +933,14 @@ defineExpose({
                   </div>
                   <!-- VENTILATION -->
                   <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="building.ventilation"
-                      label="Ventilation System"
-                    />
+                    <label class="form-label">Ventilation System</label>
+                    <CInputGroup size="sm">
+                      <CFormInput
+                        type="number"
+                        v-model="building.ventilation"
+                      />
+                      <CInputGroupText>CH/PH</CInputGroupText>
+                    </CInputGroup>
                   </div>
                   <div class="mt-2">
                     <CFormInput
@@ -910,28 +950,73 @@ defineExpose({
                       label="KVAS"
                     />
                   </div>
-                  <!-- HVAC PRODUCTION AREA -->
+                  <!-- bay_size -->
                   <div class="mt-2">
-                    <label>HVAC Production Area</label>
-                    <CInputGroup class="mb-3">
+                    <label class="form-label">Bay Size</label>
+                    <CInputGroup size="sm">
                       <CFormInput 
                         type="number" 
-                        size="sm"
-                        class="no-spinner"
+                        v-model="building.bay_size_value_1"
+                        placeholder="value 1"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        v-model="building.bay_size_value_2"
+                        placeholder="value 2"
+                      />
+                    </CInputGroup>
+                  </div>
+                  <!-- TRANSFORMER CAPACITY -->
+                  <div class="mt-2">
+                    <label class="form-label">Transformer Capacity</label>
+                    <CInputGroup size="sm">
+                      <CFormInput 
+                        type="number" 
+                        v-model="building.transformer_capacity_value_1"
+                        placeholder="value 1"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        v-model="building.transformer_capacity_value_2"
+                        placeholder="value 2"
+                      />
+                    </CInputGroup>
+                  </div>
+                  <!-- HVAC PRODUCTION AREA -->
+                  <div class="mt-2">
+                    <label class="form-label">HVAC Production Area (TON)</label>
+                    <CInputGroup size="sm">
+                      <CFormInput 
+                        type="number" 
                         v-model="building.hvacProduction"
                         placeholder="Production"
-                        aria-label="Production"
                         @blur="validateHvacRange"
                       />
                       <CInputGroupText>@</CInputGroupText>
                       <CFormInput 
                         type="number"
-                        size="sm"
-                        class="no-spinner"
                         v-model="building.hvacArea"
                         placeholder="Area"
-                        aria-label="Area"
                         @blur="validateHvacRange"
+                      />
+                    </CInputGroup>
+                  </div>
+
+                  <div class="mt-2">
+                    <label class="form-label">Column Spacing FT</label>
+                    <CInputGroup size="sm">
+                      <CFormInput 
+                        type="number" 
+                        v-model="building.columns_spacing_value_1"
+                        placeholder="value 1"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        v-model="building.columns_spacing_value_2"
+                        placeholder="value 2"
                       />
                     </CInputGroup>
                   </div>
@@ -940,44 +1025,12 @@ defineExpose({
                 <!-- Cuarta columna: Switches de características -->
                 <CCol :md="3">
                   <div class="switches-container">
-                    <!-- SF/SM SWITCH -->
-                    <div class="switch-item">
-                      <label class="switch-label">SF/SM</label>
-                      <CFormSwitch 
-                        size="lg"
-                        v-model="building.sfSm"
-                      />
-                    </div>
-                    <!-- OFFICE -->
-                    <div class="switch-item">
-                      <label class="switch-label">Office</label>
-                      <CFormSwitch 
-                        size="lg"
-                        v-model="building.has_office"
-                      />
-                    </div>
-                    <!-- SPRINKLERS -->
-                    <div class="switch-item">
-                      <label class="switch-label">Sprinklers</label>
-                      <CFormSwitch 
-                        size="lg"
-                        v-model="building.has_sprinklers"
-                      />
-                    </div>
                     <!-- CRANE -->
                     <div class="switch-item">
                       <label class="switch-label">Crane</label>
                       <CFormSwitch 
                         size="lg"
                         v-model="building.has_crane"
-                      />
-                    </div>
-                    <!-- HVAC -->
-                    <div class="switch-item">
-                      <label class="switch-label">HVAC</label>
-                      <CFormSwitch 
-                        size="lg"
-                        v-model="building.has_hvac"
                       />
                     </div>
                     <!-- LEED -->

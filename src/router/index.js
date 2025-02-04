@@ -69,17 +69,17 @@ const routes = [
             props: true,
           },
           {
-            path: '/operacion/buildings',
+            path: '/operacion/market-size',
             name: ROUTE_NAMES.BUILDINGS,
             component: Buildings,
           },
           {
-            path: '/operacion/building/create',
+            path: '/operacion/market-size/create',
             name: ROUTE_NAMES.BUILDINGS_CREATE,
             component: () => import('@/views/operacion/buildings/BuildingDetalle.vue'),
           },
           {
-            path: '/operacion/building/:buildingId/edit',
+            path: '/operacion/market-size/:buildingId/edit',
             name: ROUTE_NAMES.BUILDINGS_UPDATE,
             component: () => import('@/views/operacion/buildings/BuildingDetalle.vue'),
           },
@@ -105,7 +105,7 @@ const routes = [
                 path: 'usuarios/create',
                 name: ROUTE_NAMES.USERS_CREATE,
                 component: UserDetail,
-                props: { id: 0 },  // Para nuevo usuario
+                props: { id: 0 }, // Para nuevo usuario
                 meta: {
                   requiresAuth: true,
                 },
@@ -125,33 +125,25 @@ const routes = [
             path: '/operacion/industries',
             name: 'Industries',
             component: () => import('../views/operacion/industries/Industries.vue'),
-            meta: {
-              requiresAuth: true
-            }
+            meta: { requiresAuth: true },
           },
           {
             path: '/operacion/industries/:id',
             name: 'IndustryDetail',
             component: () => import('../views/operacion/industries/IndustryDetail.vue'),
-            meta: {
-              requiresAuth: true
-            }
+            meta: { requiresAuth: true },
           },
           {
             path: '/operacion/developers',
             name: 'Developers',
             component: () => import('../views/operacion/developers/Developers.vue'),
-            meta: {
-              requiresAuth: true
-            }
+            meta: { requiresAuth: true },
           },
           {
             path: '/operacion/developers/:id',
             name: 'DeveloperDetail',
             component: () => import('../views/operacion/developers/DeveloperDetail.vue'),
-            meta: {
-              requiresAuth: true
-            }
+            meta: { requiresAuth: true },
           },
           {
             path: '/operacion/developer/create',
@@ -162,9 +154,7 @@ const routes = [
             path: '/operacion/developer/:id',
             name: ROUTE_NAMES.DEVELOPERS_UPDATE,
             component: () => import('../views/operacion/developers/DeveloperDetail.vue'),
-            meta: {
-              requiresAuth: true
-            },
+            meta: { requiresAuth: true },
             props: true,
           },
         ],

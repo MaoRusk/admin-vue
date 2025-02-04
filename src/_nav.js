@@ -49,18 +49,18 @@ export default [
   },
   {
     component: 'CNavGroup',
-    name: 'Buildings',
+    name: 'Market Size',
     to: '/operacion',
     icon: 'cil-building',
     items: [
       {
         component: 'CNavItem',
-        name: 'Buildings',
+        name: 'Market Size',
         to: { name: ROUTE_NAMES.BUILDINGS },
       },
       {
         component: 'CNavItem',
-        name: 'Pending Approvals',
+        name: 'Pending for Approval',
         to: '/operacion/buildings/pending-approvals',
       },
     ],
