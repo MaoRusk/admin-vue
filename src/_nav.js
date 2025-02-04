@@ -4,7 +4,7 @@ import { ROUTE_NAMES } from './router/routeNames'
 export default [
   {
     component: 'CNavItem',
-    name: () => i18next.t('dashboard'),
+    name: 'Dashboard',
     to: { name: ROUTE_NAMES.DASHBOARD },
     icon: 'cil-speedometer',
     badge: {
@@ -14,22 +14,23 @@ export default [
 
   {
     component: 'CNavTitle',
-    name: 'Configuración',
+    name: 'Management',
   },
   {
     component: 'CNavGroup',
-    name: 'Seguridad',
+    name: 'Security',
     to: '/seguridad',
     icon: 'cil-lock-locked',
     items: [
       {
         component: 'CNavItem',
-        name: 'Perfiles',
-        to: '/seguridad/perfiles',
+        name: 'Profile',
+        to: { name: ROUTE_NAMES.PROFILE },
+        icon: 'cil-user',
       },
       {
         component: 'CNavItem',
-        name: 'Usuarios',
+        name: 'Users',
         to: { name: ROUTE_NAMES.USERS },
         icon: 'cil-user',
       },
@@ -39,13 +40,13 @@ export default [
   // ? OPERACIÓN
   {
     component: 'CNavTitle',
-    name: 'Operación',
+    name: 'Operation',
   },
   {
     component: 'CNavItem',
     name: 'Companies',
-    to: '/operacion/empresas',
-    icon: 'cil-list',
+    to: { name: ROUTE_NAMES.COMPANIES },
+    icon: 'cil-briefcase',
   },
   {
     component: 'CNavGroup',

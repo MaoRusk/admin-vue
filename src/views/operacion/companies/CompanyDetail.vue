@@ -1,11 +1,13 @@
 <script>
   import axios from 'axios';
   import Swal from 'sweetalert2';
+  import { defineComponent } from 'vue';
+  import { ROUTE_NAMES } from '@/router/routeNames';
 
-  export default {
+  export default defineComponent({
+    name: 'CompanyDetail',
     props: {
       id: {
-        // type: String,
         type: Number,
         required: true
       }
@@ -33,20 +35,35 @@
       this.fetchCompanyDetails();
     },
 
+    computed: {
+      imageUrl() {
+        const logoUrl = this.company.logoUrl
+        // Si la URL ya es una URL completa, retornarla directamente
+        if (logoUrl && logoUrl.match(/^(http|https):\/\//)) {
+          return logoUrl
+        }
+        // Si es una ruta relativa y no contiene ya la URL base
+        else if (logoUrl && !logoUrl.includes('laravel-back-production-9320.up.railway.app')) {
+          return `https://laravel-back-production-9320.up.railway.app/storage/${logoUrl}`
+        }
+        // Si no hay URL, retornar null o una imagen por defecto
+        return null
+      }
+    },
+
     methods: {
       fetchCompanyDetails() {
-
-        if (this.id != 0) {
+        if (this.id !== 0) {
           axios.get(`https://laravel-back-production-9320.up.railway.app/api/companies/${this.id}`).then(response => {
             this.company = response.data;
           }).catch(error => {
-              Swal.fire({
+            Swal.fire({
               title: "Error!",
-              text: "Error has been ocurred to get the details.",
+              text: "Error getting company details.",
               icon: "error",
               showConfirmButton: false,
               timer: 1500
-            })
+            });
           });
         }
       },
@@ -57,28 +74,27 @@
       },
 
       handleSubmitCustom01(event) {
-        const form = event.currentTarget
+        const form = event.currentTarget;
         if (form.checkValidity() === false) {
-          event.preventDefault()
-          event.stopPropagation()
+          event.preventDefault();
+          event.stopPropagation();
         } else {
-          if (this.id == 0) {
+          if (this.id === 0) {
             this.addCompany();
           } else {
             this.updateCompanyDetails();
           }
         }
-        this.validatedCustom01 = true
+        this.validatedCustom01 = true;
       },
 
       addCompany() {
-
         const formData = new FormData();
         formData.append('nameCompany', this.company.nameCompany);
         formData.append('website', this.company.website);
         formData.append('primaryColor', this.company.primaryColor);
         formData.append('secondaryColor', this.company.secondaryColor);
-        formData.append('status', 'Activo');
+        formData.append('status', 'Active');
         formData.append('address', this.company.address);
         formData.append('postalCode', this.company.postalCode);
         formData.append('logoUrl', this.company.image);
@@ -94,9 +110,8 @@
             showConfirmButton: false,
             timer: 1500
           }).then(() => {
-            this.$router.push('/operacion/empresas');
+            this.$router.push({ name: ROUTE_NAMES.COMPANIES });
           });
-
         }).catch(error => {
           Swal.fire({
             title: "Error!",
@@ -109,14 +124,12 @@
       },
 
       updateCompanyDetails() {
-
         const formData = new FormData();
-
         formData.append('nameCompany', this.company.nameCompany);
         formData.append('website', this.company.website);
         formData.append('primaryColor', this.company.primaryColor);
         formData.append('secondaryColor', this.company.secondaryColor);
-        formData.append('status', 'Activo');
+        formData.append('status', 'Active');
         formData.append('address', this.company.address);
         formData.append('postalCode', this.company.postalCode);
         formData.append('city', this.company.city);
@@ -124,7 +137,7 @@
         formData.append('country', this.company.country);
         formData.append('_method', "put");
 
-        if (this.company.image) {
+        if (this.company.image instanceof File) {
           formData.append('logoUrl', this.company.image);
         }
 
@@ -136,7 +149,7 @@
             showConfirmButton: false,
             timer: 1500
           }).then(() => {
-            this.$router.push('/operacion/empresas');
+            this.$router.push({ name: ROUTE_NAMES.COMPANIES });
           });
         }).catch(error => {
           Swal.fire({
@@ -150,7 +163,6 @@
       },
 
       deleteCompany() {
-
         Swal.fire({
           title: "Are you sure?",
           text: "You won't be able to revert this!",
@@ -169,9 +181,8 @@
                 showConfirmButton: false,
                 timer: 1500
               }).then(() => {
-                this.$router.push('/operacion/empresas');
+                this.$router.push({ name: ROUTE_NAMES.COMPANIES });
               });
-              
             }).catch(error => {
               Swal.fire({
                 title: "Error!",
@@ -187,8 +198,16 @@
         this.company.image = null;
         this.company.logoUrl = null;
       },
+
+      cancel() {
+        this.$router.push({ name: ROUTE_NAMES.COMPANIES });
+      },
+
+      goBack() {
+        this.$router.push({ name: ROUTE_NAMES.COMPANIES });
+      },
     }
-  };
+  });
 </script>
 
 <template>
@@ -197,11 +216,9 @@
       <CCol :xs="12" :xl="10"></CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <router-link to="../empresas">
-            <CButton color="primary" type="submit" variant="outline">
-              <CIcon icon="cil-arrow-left" class="me-2" />Go Back
-            </CButton>
-          </router-link>
+          <CButton color="primary" type="submit" variant="outline" @click="goBack">
+            <CIcon icon="cil-arrow-left" class="me-2" />Go Back
+          </CButton>
         </CCardBody>
       </CCol>
     </CRow>
@@ -217,7 +234,7 @@
         enctype="multipart/form-data"
       >
         <CCol md="6">
-          <CFormLabel for="validationCustomNameCompany">Name Company</CFormLabel>
+          <CFormLabel for="validationCustomNameCompany">Company Name</CFormLabel>
           <CInputGroup class="has-validation">
             <CFormInput 
               v-model="company.nameCompany"
@@ -232,7 +249,7 @@
           <CFormInput 
             v-model="company.website"
             id="validationCustomWebSite"
-            label="Web Site"
+            label="Website"
             placeholder="www.marketanalysis.mx"
             required
           />
@@ -251,7 +268,11 @@
 
         <CCol md="6" class="mb-3" v-else>
           <CFormLabel></CFormLabel><br>
-          <CAvatar color="secondary" size="xl" :src=company.logoUrl></CAvatar>
+          <CAvatar 
+            color="secondary" 
+            size="xl" 
+            :src="imageUrl"
+          ></CAvatar>
           &nbsp;
           <CButton color="primary" @click="addNewImage">
             <CIcon icon="cil-image-plus" class="me-2" />
@@ -337,16 +358,14 @@
         </CCol>
 
         <CCol :xs="6">
-          <!-- * Para Agregar nuevo -->
-          <CButton color="success" type="submit" variant="outline" v-if="this.id == 0">
+          <CButton color="success" type="submit" variant="outline" v-if="id === 0">
             <CIcon icon="cil-plus" class="me-2" />Add Company
           </CButton>
-          <!-- * Para Editar -->
           <CButton color="success" type="submit" variant="outline" v-else>
             <CIcon icon="cil-pencil" class="me-2" />Update Company
           </CButton>          
           &nbsp;
-          <CButton color="danger" @click="deleteCompany()" variant="outline" v-if="this.id != 0">
+          <CButton color="danger" @click="deleteCompany()" variant="outline" v-if="id !== 0">
             <CIcon icon="cil-trash" class="me-2" />Delete Company
           </CButton>
         </CCol>

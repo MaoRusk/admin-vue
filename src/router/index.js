@@ -44,19 +44,19 @@ const routes = [
             component: PolizaDetalle,
             props: true, // Permitir pasar parámetros como props
           },
-
           {
-            path: '/operacion/empresas',
-            name: 'Empresas',
-            component: () => import('@/views/operacion/empresas/Empresas.vue'),
+            path: '/operacion/companies',
+            name: ROUTE_NAMES.COMPANIES,
+            component: () => import('@/views/operacion/companies/Companies.vue'),
           },
           {
-            path: '/operacion/empresa/:id',
-            name: 'Empresa Detalle',
-            component: () => import('@/views/operacion/empresas/EmpresaDetalle.vue'),
-            props: true,
+            path: '/operacion/company/:id',
+            name: ROUTE_NAMES.COMPANY_DETAIL,
+            component: () => import('@/views/operacion/companies/CompanyDetail.vue'),
+            props: route => ({ 
+              id: Number(route.params.id) // Convertir explícitamente a número
+            })
           },
-
           {
             path: '/operacion/employees',
             name: 'Employees',
@@ -89,12 +89,17 @@ const routes = [
             component: PendingApprovals,
           },
           {
-            path: '/seguridad',
-            name: 'Seguridad',
+            path: '/security',
+            name: ROUTE_NAMES.SECURITY,
             meta: { requiresAuth: true },
+            component: {
+              render() {
+                return h(resolveComponent('router-view'))
+              },
+            },
             children: [
               {
-                path: 'usuarios',
+                path: 'users',
                 name: ROUTE_NAMES.USERS,
                 component: Users,
                 meta: {
@@ -102,16 +107,16 @@ const routes = [
                 },
               },
               {
-                path: 'usuarios/create',
+                path: 'users/create',
                 name: ROUTE_NAMES.USERS_CREATE,
                 component: UserDetail,
-                props: { id: 0 },  // Para nuevo usuario
+                props: { id: 0 },
                 meta: {
                   requiresAuth: true,
                 },
               },
               {
-                path: 'usuarios/:id',
+                path: 'users/:id',
                 name: ROUTE_NAMES.USERS_UPDATE,
                 component: UserDetail,
                 props: true,
