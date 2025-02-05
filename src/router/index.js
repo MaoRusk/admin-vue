@@ -31,7 +31,10 @@ const routes = [
       {
         path: '/operations',
         name: ROUTE_NAMES.OPERATIONS,
-        meta: { requiresAuth: true },
+        meta: { 
+          requiresAuth: true,
+          label: 'Operations'
+        },
         component: {
           render() {
             return h(resolveComponent('router-view'))
@@ -148,34 +151,32 @@ const routes = [
             }
           },
           {
-            path: '/operations/developers',
-            name: 'Developers',
+            path: 'developers',
+            name: ROUTE_NAMES.DEVELOPERS,
             component: () => import('@/views/operations/developers/Developers.vue'),
             meta: {
-              requiresAuth: true
+              requiresAuth: true,
+              label: 'Developers'
             }
           },
           {
-            path: '/operations/developers/:id',
-            name: 'DeveloperDetail',
-            component: () => import('@/views/operations/developers/DeveloperDetail.vue'),
-            meta: {
-              requiresAuth: true
-            }
-          },
-          {
-            path: '/operations/developer/create',
+            path: 'developer/create',
             name: ROUTE_NAMES.DEVELOPERS_CREATE,
             component: () => import('@/views/operations/developers/DeveloperDetalle.vue'),
+            meta: {
+              requiresAuth: true,
+              label: 'Create Developer'
+            }
           },
           {
-            path: '/operations/developer/:id',
+            path: 'developer/:id',
             name: ROUTE_NAMES.DEVELOPERS_UPDATE,
-            component: () => import('@/views/operations/developers/DeveloperDetail.vue'),
-            meta: {
-              requiresAuth: true
-            },
+            component: () => import('@/views/operations/developers/DeveloperDetalle.vue'),
             props: true,
+            meta: {
+              requiresAuth: true,
+              label: 'Edit Developer'
+            }
           },
         ],
       },

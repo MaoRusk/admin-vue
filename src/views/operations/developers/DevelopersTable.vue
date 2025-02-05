@@ -1,6 +1,7 @@
 <script>
 import DevelopersService from '@/services/Developers'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '@/router/routeNames'
 
 export default {
   data() {
@@ -62,11 +63,11 @@ export default {
     },
 
     newDeveloper() {
-      this.$router.push({ name: 'DeveloperDetail', params: { id: 0 } })
+      this.$router.push({ name: ROUTE_NAMES.DEVELOPERS_CREATE })
     },
 
     viewDetails(item) {
-      this.$router.push({ name: 'DeveloperDetail', params: { id: item.id } })
+      this.$router.push({ name: ROUTE_NAMES.DEVELOPERS_UPDATE, params: { id: item.id } })
     },
 
     async deleteDeveloper(item) {
