@@ -7,13 +7,13 @@ import DefaultLayout from '@/layouts/DefaultLayout'
 import { ROUTE_NAMES } from './routeNames'
 import { AUTH_TOKEN } from '../constants'
 
-import EmployeeDetalle from '../views/operacion/employees/EmployeeDetalle.vue'
-import PolizaDetalle from '../views/operacion/polizas/PolizaDetalle.vue'
-import PendingApprovals from '../views/operacion/buildings/PendingApprovals.vue'
-import Buildings from '@/views/operacion/buildings/Buildings.vue'
-import Login from '../views/pages/Login.vue'
-import Users from '../views/operacion/users/Users.vue'
-import UserDetail from '../views/operacion/users/UserDetail.vue'
+import EmployeeDetalle from '@/views/operations/employees/EmployeeDetalle.vue'
+import PolicyDetail from '@/views/operations/policies/PolicyDetail.vue'
+import PendingApprovals from '@/views/operations/buildings/PendingApprovals.vue'
+import Buildings from '@/views/operations/buildings/Buildings.vue'
+import Login from '@/views/pages/Login.vue'
+import Users from '@/views/operations/users/Users.vue'
+import UserDetail from '@/views/operations/users/UserDetail.vue'
 
 const routes = [
   {
@@ -24,64 +24,69 @@ const routes = [
     children: [
       {
         path: '/dashboard',
-        meta: { requiresAuth: true },
         name: ROUTE_NAMES.DASHBOARD,
         component: () => import('@/views/dashboard/Dashboard.vue'),
+        meta: { requiresAuth: true }
       },
       {
-        path: '/operacion',
+        path: '/operations',
         name: ROUTE_NAMES.OPERATIONS,
         meta: { requiresAuth: true },
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          }
+        },
         children: [
           {
-            path: '/operacion/polizas',
-            name: 'Polizas',
-            component: () => import('@/views/operacion/polizas/Polizas.vue'),
+            path: 'policies',
+            name: ROUTE_NAMES.POLICIES,
+            component: () => import('@/views/operations/policies/Policies.vue'),
           },
           {
-            path: '/operacion/poliza/:id', // Nueva ruta para PolizaDetalle
-            name: 'PolizaDetalle',
-            component: PolizaDetalle,
-            props: true, // Permitir pasar parámetros como props
+            path: 'policy/:id',
+            name: ROUTE_NAMES.POLICY_DETAIL,
+            component: PolicyDetail,
+            props: true
           },
           {
-            path: '/operacion/companies',
+            path: '/operations/companies',
             name: ROUTE_NAMES.COMPANIES,
-            component: () => import('@/views/operacion/companies/Companies.vue'),
+            component: () => import('@/views/operations/companies/Companies.vue'),
           },
           {
-            path: '/operacion/company/:id',
+            path: '/operations/company/:id',
             name: ROUTE_NAMES.COMPANY_DETAIL,
-            component: () => import('@/views/operacion/companies/CompanyDetail.vue'),
+            component: () => import('@/views/operations/companies/CompanyDetail.vue'),
             props: route => ({ 
-              id: Number(route.params.id) // Convertir explícitamente a número
+              id: Number(route.params.id)
             })
           },
           {
-            path: '/operacion/employees',
+            path: '/operations/employees',
             name: 'Employees',
-            component: () => import('@/views/operacion/employees/Employees.vue'),
+            component: () => import('@/views/operations/employees/Employees.vue'),
           },
           {
-            path: '/operacion/employee/:id',
+            path: '/operations/employee/:id',
             name: 'EmployeeDetalle',
             component: EmployeeDetalle,
             props: true,
           },
           {
-            path: '/operacion/buildings',
+            path: '/operations/buildings',
             name: ROUTE_NAMES.BUILDINGS,
             component: Buildings,
           },
           {
-            path: '/operacion/building/create',
+            path: '/operations/building/create',
             name: ROUTE_NAMES.BUILDINGS_CREATE,
-            component: () => import('@/views/operacion/buildings/BuildingDetalle.vue'),
+            component: () => import('@/views/operations/buildings/BuildingDetalle.vue'),
           },
           {
-            path: '/operacion/building/:buildingId/edit',
+            path: '/operations/building/:buildingId/edit',
             name: ROUTE_NAMES.BUILDINGS_UPDATE,
-            component: () => import('@/views/operacion/buildings/BuildingDetalle.vue'),
+            component: () => import('@/views/operations/buildings/BuildingDetalle.vue'),
           },
           {
             path: 'buildings/pending-approvals',
@@ -127,46 +132,46 @@ const routes = [
             ],
           },
           {
-            path: '/operacion/industries',
+            path: '/operations/industries',
             name: 'Industries',
-            component: () => import('../views/operacion/industries/Industries.vue'),
+            component: () => import('@/views/operations/industries/Industries.vue'),
             meta: {
               requiresAuth: true
             }
           },
           {
-            path: '/operacion/industries/:id',
+            path: '/operations/industries/:id',
             name: 'IndustryDetail',
-            component: () => import('../views/operacion/industries/IndustryDetail.vue'),
+            component: () => import('@/views/operations/industries/IndustryDetail.vue'),
             meta: {
               requiresAuth: true
             }
           },
           {
-            path: '/operacion/developers',
+            path: '/operations/developers',
             name: 'Developers',
-            component: () => import('../views/operacion/developers/Developers.vue'),
+            component: () => import('@/views/operations/developers/Developers.vue'),
             meta: {
               requiresAuth: true
             }
           },
           {
-            path: '/operacion/developers/:id',
+            path: '/operations/developers/:id',
             name: 'DeveloperDetail',
-            component: () => import('../views/operacion/developers/DeveloperDetail.vue'),
+            component: () => import('@/views/operations/developers/DeveloperDetail.vue'),
             meta: {
               requiresAuth: true
             }
           },
           {
-            path: '/operacion/developer/create',
+            path: '/operations/developer/create',
             name: ROUTE_NAMES.DEVELOPERS_CREATE,
-            component: () => import('@/views/operacion/developers/DeveloperDetalle.vue'),
+            component: () => import('@/views/operations/developers/DeveloperDetalle.vue'),
           },
           {
-            path: '/operacion/developer/:id',
+            path: '/operations/developer/:id',
             name: ROUTE_NAMES.DEVELOPERS_UPDATE,
-            component: () => import('../views/operacion/developers/DeveloperDetail.vue'),
+            component: () => import('@/views/operations/developers/DeveloperDetail.vue'),
             meta: {
               requiresAuth: true
             },
@@ -561,9 +566,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN)
+  const token = localStorage.getItem(AUTH_TOKEN)
 
-  if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
+  if (to.matched.some((record) => record.meta.requiresAuth) && !token) {
     next({ name: ROUTE_NAMES.LOGIN })
   } else {
     next()

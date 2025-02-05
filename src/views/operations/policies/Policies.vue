@@ -1,5 +1,5 @@
 <script setup>
-import SmartTablePolizas from './PolizasTable.vue'  
+import SmartTablePolicies from './PoliciesTable.vue'  
 
 </script>
 
@@ -9,7 +9,7 @@ import SmartTablePolizas from './PolizasTable.vue'
       <CCard class="mb-4">
         <CCardBody>
           <!-- Tabla de Polizas -->
-          <SmartTablePolizas />
+          <SmartTablePolicies />
         </CCardBody>
       </CCard>
     </CCol>

@@ -19,7 +19,7 @@ export default [
   {
     component: 'CNavGroup',
     name: 'Security',
-    to: '/seguridad',
+    to: '/security',
     icon: 'cil-lock-locked',
     items: [
       {
@@ -51,7 +51,7 @@ export default [
   {
     component: 'CNavGroup',
     name: 'Buildings',
-    to: '/operacion',
+    to: '/operations',
     icon: 'cil-building',
     items: [
       {
@@ -62,33 +62,33 @@ export default [
       {
         component: 'CNavItem',
         name: 'Pending Approvals',
-        to: '/operacion/buildings/pending-approvals',
+        to: '/operations/buildings/pending-approvals',
       },
     ],
   },
   {
     component: 'CNavItem',
-    name: 'Pólizas de Acceso',
-    to: '/operacion/polizas',
+    name: 'Access Policies',
+    to: '/operations/policies',
     icon: 'cil-list',
   },
   {
     component: 'CNavItem',
     name: 'Developers',
-    to: '/operacion/developers',
+    to: '/operations/developers',
     icon: 'cil-people',
   },
   {
     component: 'CNavItem',
     name: 'Industries',
-    to: '/operacion/industries',
+    to: '/operations/industries',
     icon: 'cil-factory',
   },
 
   // ? CONTENIDO WEB
   {
     component: 'CNavTitle',
-    name: 'Contenido Web',
+    name: 'Web Content',
   },
   {
     component: 'CNavGroup',
@@ -98,24 +98,24 @@ export default [
     items: [
       {
         component: 'CNavGroup',
-        name: 'Páginas',
-        to: '/marketing/paginas',
+        name: 'Pages',
+        to: '/marketing/pages',
         icon: 'cil-code',
         items: [
           {
             component: 'CNavItem',
-            name: 'Categorías',
-            to: '/marketing/paginas/categorias',
+            name: 'Categories',
+            to: '/marketing/pages/categories',
           },
           {
             component: 'CNavItem',
-            name: 'Páginas',
-            to: '/marketing/paginas/paginas',
+            name: 'Pages',
+            to: '/marketing/pages/pages',
           },
           {
             component: 'CNavItem',
-            name: 'Imágenes',
-            to: '/marketing/paginas/imagenes',
+            name: 'Images',
+            to: '/marketing/pages/images',
           },
         ],
       },
@@ -127,32 +127,32 @@ export default [
       },
       {
         component: 'CNavItem',
-        name: 'Fotogalerías',
-        to: '/marketing/fotogalerias',
+        name: 'Photo Galleries',
+        to: '/marketing/photo-galleries',
         icon: 'cil-check-circle',
       },
       {
         component: 'CNavItem',
-        name: 'Configuración',
-        to: '/marketing/configuracion',
+        name: 'Settings',
+        to: '/marketing/settings',
         icon: 'cil-options',
       },
       {
         component: 'CNavItem',
-        name: 'Boletín',
-        to: '/marketing/boletin',
+        name: 'Newsletter',
+        to: '/marketing/newsletter',
         icon: 'cil-check-circle',
       },
       {
         component: 'CNavItem',
-        name: 'Carga de Documentos',
-        to: '/marketing/cargadedocumentos',
+        name: 'Document Upload',
+        to: '/marketing/document-upload',
         icon: 'cil-file',
       },
       {
         component: 'CNavItem',
-        name: 'Registros Newsletter',
-        to: '/marketing/registrosnewsletter',
+        name: 'Newsletter Registrations',
+        to: '/marketing/newsletter-registrations',
         icon: 'cil-pencil',
       },
     ],
@@ -161,48 +161,48 @@ export default [
   // ? ESTADÍSTICAS
   {
     component: 'CNavTitle',
-    name: 'Estadísticas',
+    name: 'Statistics',
   },
   {
     component: 'CNavGroup',
-    name: 'Graficas',
-    to: '/Graficas',
+    name: 'Charts',
+    to: '/charts',
     icon: 'cil-chartPie',
     items: [
       {
         component: 'CNavItem',
-        name: 'Visitas Por Mes',
-        to: '/estadisticas/visitaspormes',
+        name: 'Visits per Month',
+        to: '/statistics/visits-per-month',
         icon: 'cil-chart-pie',
       },
       {
         component: 'CNavItem',
-        name: 'Visitas Por Usuario',
-        to: '/estadisticas/visitasporusuario',
+        name: 'Visits per User',
+        to: '/statistics/visits-per-user',
         icon: 'cil-chart-pie',
       },
       {
         component: 'CNavItem',
-        name: 'Clicks Por Ciudad Y País',
-        to: '/estadisticas/clicksporciudadypais',
+        name: 'Clicks by City and Country',
+        to: '/statistics/clicks-by-city-country',
         icon: 'cil-chart-pie',
       },
       {
         component: 'CNavItem',
-        name: 'Visitas Por Empresa',
-        to: '/estadisticas/visitasporempresa',
+        name: 'Visits per Company',
+        to: '/statistics/visits-per-company',
         icon: 'cil-chart-pie',
       },
       {
         component: 'CNavItem',
-        name: 'Banners Visitas Por Mes',
-        to: '/estadisticas/bannersvisitaspormes',
+        name: 'Banner Visits per Month',
+        to: '/statistics/banner-visits-per-month',
         icon: 'cil-chart-pie',
       },
       {
         component: 'CNavItem',
-        name: 'Visitas General Por Mes',
-        to: '/estadisticas/visitasgeneralpormes',
+        name: 'General Visits per Month',
+        to: '/statistics/general-visits-per-month',
         icon: 'cil-chart-pie',
       },
     ],

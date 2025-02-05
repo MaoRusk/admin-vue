@@ -14,5 +14,7 @@ export const ROUTE_NAMES = {
   DEVELOPERS_UPDATE: 'DevelopersUpdate',
   COMPANIES: 'Companies',
   COMPANY_DETAIL: 'CompanyDetail',
-  SECURITY: 'Security'
+  SECURITY: 'Security',
+  POLICIES: 'Policies',
+  POLICY_DETAIL: 'PolicyDetail'
 }

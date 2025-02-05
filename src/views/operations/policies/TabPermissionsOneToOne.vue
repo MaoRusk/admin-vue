@@ -64,7 +64,7 @@ const props = defineProps({
 
       buildOptionsSubmarkets(); 
     } catch (error) {
-      console.error('Hubo un error obteniendo los datos:', error);
+      console.error('There was an error getting the data:', error);
     }
   };
 
@@ -148,8 +148,8 @@ const toggleGroup = (group, checked) => {
     selectedSubMarkets.value = selectedSubMarkets.value.filter(sm => sm.marketId !== group.value);
   }
 
-  console.log("Mercados seleccionados:", selectedMarkets.value);
-  console.log("Submercados seleccionados:", selectedSubMarkets.value);
+  console.log("Selected markets:", selectedMarkets.value);
+  console.log("Selected submarkets:", selectedSubMarkets.value);
 };
 
 const toggleOption = (group, option, checked) => {
@@ -181,8 +181,8 @@ const toggleOption = (group, option, checked) => {
     selectedMarkets.value = selectedMarkets.value.filter(val => val !== group.value);
   }
 
-  console.log("Mercados seleccionados:", selectedMarkets.value);
-  console.log("Submercados seleccionados:", selectedSubMarkets.value);
+  console.log("Selected markets:", selectedMarkets.value);
+  console.log("Selected submarkets:", selectedSubMarkets.value);
 };
 
 
