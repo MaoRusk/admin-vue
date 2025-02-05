@@ -5,6 +5,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
 import { cilUserPlus } from '@coreui/icons';
+import { ROUTE_NAMES } from '@/router/routeNames';
 
 const router = useRouter();
 const usersData = ref([]);
@@ -49,38 +50,23 @@ onMounted(fetchData);
 getUserCombo(getUserCombo);
 
 async function getUserCombo(){
-
-  const formData = new FormData();
-  formData.append('multpleUsersId', JSON.stringify(selected.value));
-  
-  try {            
-      axios.post(`https://laravel-back-production-9320.up.railway.app/api/user/combo`, formData).then(response => {
-
-        usersCbo.value = response.data.map(user => ({
-          value: user.id,
-          label:user.name,
-          selected:false
-        }))
-        
-      }).catch(error => {
-        // Swal.fire({
-        //   title: "Error get Permissions.",
-        //   text: error.response.data.message,
-        //   icon: "error",
-        //   showConfirmButton: false,
-        //   timer: 10000
-        // });
-      });
-
+  try {
+    const response = await axios.get('https://laravel-back-production-9320.up.railway.app/api/security/users');
     usersCbo.value = response.data.map(user => ({
       value: user.id,
-      label:user.name,
-      selected:false
-    }))
+      label: user.name,
+      selected: false
+    }));
   } catch (error) {
     console.error('Error fetching users:', error);
+    Swal.fire({
+      title: 'Error!',
+      text: 'Error fetching users.',
+      icon: 'error',
+      showConfirmButton: false,
+      timer: 1500
+    });
   }
-
 }
 
 async function fetchUsers() {
@@ -102,14 +88,14 @@ function getBadge(status) {
 
 function showUserDetails(item) {
   router.push({
-    name: 'PolizaDetalle',
+    name: ROUTE_NAMES.POLICY_DETAIL,
     params: { id: Number(item.id) },
   });
 }
 
 function addUserFunction() {
   router.push({
-    name: 'PolizaDetalle',
+    name: ROUTE_NAMES.POLICY_DETAIL,
     params: { id: 0 },
   });
 }
@@ -121,13 +107,13 @@ const setUserCombo = (value) => {
   }
 };
 
-const heredarPermisos = () => {
+const inheritPermissions = () => {
   
   // * validando que almenos se seleccione un check
   if(selected.value.length == 0){
     Swal.fire({
-      title: "Empty cheks.",
-      text: "Please select almost one user",
+      title: "Empty checks",
+      text: "Please select at least one user",
       icon: "error",
       showConfirmButton: false,
       timer: 3000
@@ -136,7 +122,7 @@ const heredarPermisos = () => {
 
   if (selectedCompany.value == "") {
     Swal.fire({
-      title: "Empty User.",
+      title: "Empty User",
       text: "Please select one user",
       icon: "error",
       showConfirmButton: false,
@@ -166,7 +152,7 @@ const heredarPermisos = () => {
         
       }).catch(error => {
         Swal.fire({
-          title: "Error to clone permissionssss.",
+          title: "Error cloning permissions",
           text: error.response.data.message,
           icon: "error",
           showConfirmButton: false,
@@ -175,7 +161,7 @@ const heredarPermisos = () => {
       });
 
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('Error processing request:', error);
   }
 }
 
@@ -204,7 +190,7 @@ async function fetchData() {
       }));
 
     } catch (error) {
-      console.error('Hubo un error obteniendo los datos:', error);
+      console.error('Error fetching data:', error);
     }
   };
 </script>
@@ -217,14 +203,14 @@ async function fetchData() {
     <div style="margin-right: .5rem;">
       <CMultiSelect
         :multiple="false"
-        label="Heredar Permisos De:"
+        label="Inherit Permissions From:"
         v-model="selectedCompany"
         :options="usersCbo"
         @change="setUserCombo($event)"
       />
     </div>
     <div style="display: flex; justify-content: flex-end; align-items: flex-end;">
-      <CButton color="warning" variant="outline" @click="heredarPermisos">
+      <CButton color="warning" variant="outline" @click="inheritPermissions">
         Confirm
       </CButton>
     </div>

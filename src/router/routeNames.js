@@ -13,5 +13,13 @@ export const ROUTE_NAMES = {
   DEVELOPERS_CREATE: 'Create Developer',
   DEVELOPERS_UPDATE: 'Edit Developer',
   INDUSTRIAL_PARKS: 'Industrial Parks',
-  INDUSTRIAL_PARKS_DETAIL: 'Industrial Park Detail'
+  INDUSTRIAL_PARKS_DETAIL: 'Industrial Park Detail',
+  COMPANIES: 'Companies',
+  COMPANY_DETAIL: 'CompanyDetail',
+  SECURITY: 'Security',
+  POLICIES: 'Policies',
+  POLICY_DETAIL: 'PolicyDetail',
+  INDUSTRIES: 'Industries',
+  INDUSTRY_CREATE: 'IndustryCreate',
+  INDUSTRY_UPDATE: 'IndustryUpdate'
 }

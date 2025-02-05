@@ -54,7 +54,7 @@
   <div>
     <div style="display: flex; justify-content: right;">
       <div >
-        <router-link to="../polizas">
+        <router-link to="../policies">
           <CButton color="primary" variant="outline">
             <CIcon :content="cilArrowCircleLeft" size="sm" />
             return

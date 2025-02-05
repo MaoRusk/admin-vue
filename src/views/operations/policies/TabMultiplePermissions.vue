@@ -80,7 +80,7 @@ const props = defineProps({
 
       buildOptionsSubmarkets();
     } catch (error) {
-      console.error('Hubo un error obteniendo los datos:', error);
+      console.error('There was an error getting the data:', error);
     }
   };
 
@@ -100,7 +100,7 @@ const props = defineProps({
           selected: false, 
         })),
     }));
-    console.log("Arreglo de markets y subMarkets " ,optionsMarketsAndSubmarkets.value);
+    console.log("Array of markets and subMarkets ", optionsMarketsAndSubmarkets.value);
   };
 
     

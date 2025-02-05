@@ -157,8 +157,8 @@ watch(() => props.company, (newVal) => {
   const submitFunction = async () => {
     if (!isFormValid.value) {
       Swal.fire({
-        title: "Lo sentimos!",
-        text: "Por favor, rellena todos los campos requeridos o revisa tu email en caso de tenerlo.",
+        title: "Sorry!",
+        text: "Please fill in all required fields or check your email if you have one.",
         icon: "info",
         showConfirmButton: false,
         timer: 3000
@@ -402,7 +402,7 @@ watch(() => props.company, (newVal) => {
                 v-model="confirmPassword"
                 id="confirmInputPassword"
                 :invalid="!isPasswordMatch"
-                :feedback="isPasswordMatch ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'"
+                :feedback="isPasswordMatch ? 'Passwords match' : 'Passwords do not match'"
               />
             </CCol>
             <!-- <CCol md="6" class="mb-3" v-if="!logoUrl">

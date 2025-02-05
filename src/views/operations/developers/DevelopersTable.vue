@@ -1,26 +1,47 @@
 <script>
-import IndustriesService from '@/services/Industries'
+import DevelopersService from '@/services/Developers'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '@/router/routeNames'
 
 export default {
   data() {
     return {
-      industries: [],
+      developers: [],
       columns: [
         {
           key: 'id',
           label: 'ID',
-          _style: { width: '10%' },
+          _style: { width: '5%' },
         },
         {
           key: 'name',
           label: 'Name',
-          _style: { width: '53%' },
+          _style: { width: '20%' },
+        },
+        {
+          key: 'is_developer',
+          label: 'Developer',
+          _style: { width: '15%' },
+        },
+        {
+          key: 'is_builder',
+          label: 'Builder',
+          _style: { width: '15%' },
+        },
+        {
+          key: 'is_owner',
+          label: 'Owner',
+          _style: { width: '15%' },
+        },
+        {
+          key: 'is_user_owner',
+          label: 'User Owner',
+          _style: { width: '15%' },
         },
         {
           key: 'actions',
           label: 'Actions',
-          _style: { width: '37%', textAlign: 'center' },
+          _style: { width: '15%', textAlign: 'center' },
           sorter: false,
           filter: false
         }
@@ -29,27 +50,27 @@ export default {
   },
 
   methods: {
-    async fetchIndustries() {
+    async fetchDevelopers() {
       try {
-        const response = await IndustriesService.getIndustries()
-        this.industries = response.data.data || []
-        return this.industries
+        const response = await DevelopersService.getDevelopers()
+        this.developers = response.data.data || []
+        return this.developers
       } catch (error) {
-        console.error('Error fetching industries:', error)
-        this.industries = []
+        console.error('Error fetching developers:', error)
+        this.developers = []
         return []
       }
     },
 
-    newIndustry() {
-      this.$router.push({ name: 'IndustryDetail', params: { id: 0 } })
+    newDeveloper() {
+      this.$router.push({ name: ROUTE_NAMES.DEVELOPERS_CREATE })
     },
 
     viewDetails(item) {
-      this.$router.push({ name: 'IndustryDetail', params: { id: item.id } })
+      this.$router.push({ name: ROUTE_NAMES.DEVELOPERS_UPDATE, params: { id: item.id } })
     },
 
-    async deleteIndustry(item) {
+    async deleteDeveloper(item) {
       const result = await Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -62,8 +83,8 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          await IndustriesService.deleteIndustry(item.id)
-          await this.fetchIndustries()
+          await DevelopersService.deleteDeveloper(item.id)
+          await this.fetchDevelopers()
           
           Swal.fire({
             icon: 'success',
@@ -76,11 +97,11 @@ export default {
             timerProgressBar: true
           })
         } catch (error) {
-          console.error('Error deleting industry:', error)
+          console.error('Error deleting developer:', error)
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Error deleting industry',
+            text: 'Error deleting developer',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -93,7 +114,7 @@ export default {
   },
 
   mounted() {
-    return this.fetchIndustries()
+    return this.fetchDevelopers()
   }
 }
 </script>
@@ -104,8 +125,8 @@ export default {
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <CButton color="success" @click="newIndustry()">
-            <CIcon icon="cilPlus" class="me-2" />New Industry
+          <CButton color="success" @click="newDeveloper()">
+            <CIcon icon="cilPlus" class="me-2" />New Developer
           </CButton>
         </CCardBody>
       </CCol>
@@ -115,9 +136,9 @@ export default {
   <CCard class="mb-4">
     <CCardBody>
       <CSmartTable
-        v-if="industries.length > 0"
+        v-if="developers.length > 0"
         :active-page="1"
-        :items="industries"
+        :items="developers"
         :columns="columns"
         :items-per-page="10"
         :table-filter="true"
@@ -127,6 +148,38 @@ export default {
         :pagination="true"
         hover
       >
+        <template #is_developer="{ item }">
+          <td>
+            <CBadge :color="item.is_developer ? 'success' : 'danger'">
+              {{ item.is_developer ? 'Yes' : 'No' }}
+            </CBadge>
+          </td>
+        </template>
+
+        <template #is_builder="{ item }">
+          <td>
+            <CBadge :color="item.is_builder ? 'success' : 'danger'">
+              {{ item.is_builder ? 'Yes' : 'No' }}
+            </CBadge>
+          </td>
+        </template>
+
+        <template #is_owner="{ item }">
+          <td>
+            <CBadge :color="item.is_owner ? 'success' : 'danger'">
+              {{ item.is_owner ? 'Yes' : 'No' }}
+            </CBadge>
+          </td>
+        </template>
+
+        <template #is_user_owner="{ item }">
+          <td>
+            <CBadge :color="item.is_user_owner ? 'success' : 'danger'">
+              {{ item.is_user_owner ? 'Yes' : 'No' }}
+            </CBadge>
+          </td>
+        </template>
+
         <template #actions="{ item }">
           <td class="py-2" style="text-align: center">
             <CButton 
@@ -145,7 +198,7 @@ export default {
               square 
               size="sm" 
               class="mx-1"
-              @click="deleteIndustry(item)"
+              @click="deleteDeveloper(item)"
             >
               <CIcon icon="cil-trash" />
             </CButton>
