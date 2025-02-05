@@ -30,7 +30,8 @@ export default [
       {
         component: 'CNavItem',
         name: 'Usuarios',
-        to: '/seguridad/usuarios',
+        to: { name: ROUTE_NAMES.USERS },
+        icon: 'cil-user',
       },
     ],
   },
@@ -54,9 +55,9 @@ export default [
   },
   {
     component: 'CNavItem',
-    name: 'Employees',
-    to: '/operacion/employees',
-    icon: 'cil-list',
+    name: 'Industrial Parks',
+    to: '/operacion/industrial-parks',
+    icon: 'cil-building',
   },
   {
     component: 'CNavGroup',
@@ -81,6 +82,12 @@ export default [
     name: 'Pólizas de Acceso',
     to: '/operacion/polizas',
     icon: 'cil-list',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Developers',
+    to: '/operacion/developers',
+    icon: 'cil-people',
   },
   {
     component: 'CNavItem',
