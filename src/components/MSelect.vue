@@ -18,6 +18,7 @@ const props = defineProps({
   size: { type: String },
   isDevForm: { type: Boolean, default: false },
   isIndustrialParkForm: { type: Boolean, default: false },
+  isIndustryForm: { type: Boolean, default: false },
   marketId: { type: String },
   submarketId: { type: String }
 })
@@ -47,7 +48,18 @@ const selectedLabel = computed(() => {
 
 async function onSubmit() {
   try {
-    if (props.isIndustrialParkForm) {
+    if (props.isIndustryForm) {
+      if (isEditing.value) {
+        // Update existing industry
+        const { data } = await API.industries.updateIndustry(editingId.value, form)
+        emit('editOption', { ...form, id: editingId.value })
+        // Actualizar el valor seleccionado después de editar
+        emit('update:modelValue', editingId.value)
+      } else {
+        // Create new industry - Solo emitir el form
+        emit('submitOption', form)
+      }
+    } else if (props.isIndustrialParkForm) {
       // Set market and submarket IDs from props
       form.market_id = props.marketId
       form.submarket_id = props.submarketId
@@ -120,7 +132,10 @@ function selectOption(option) {
 
 async function handleDelete() {
   try {
-    const entityType = props.isIndustrialParkForm ? 'Industrial Park' : 'Developer'
+    let entityType = 'Developer'
+    if (props.isIndustrialParkForm) entityType = 'Industrial Park'
+    if (props.isIndustryForm) entityType = 'Industry'
+
     const result = await Swal.fire({
       title: `Delete ${entityType}`,
       text: `Are you sure you want to delete "${form.name}"?`,
@@ -133,7 +148,9 @@ async function handleDelete() {
     })
 
     if (result.isConfirmed) {
-      if (props.isIndustrialParkForm) {
+      if (props.isIndustryForm) {
+        await API.industries.deleteIndustry(editingId.value)
+      } else if (props.isIndustrialParkForm) {
         await API.industrialparks.deleteIndustrialPark(editingId.value)
       } else {
         await API.developers.deleteDeveloper(editingId.value)
@@ -192,9 +209,9 @@ onMounted(() => {
              class="d-flex justify-content-between align-items-center p-2 hover-bg-light cursor-pointer"
              @click="selectOption(option)">
           <span>{{ option.label }}</span>
-          <button v-if="(props.isDevForm || props.isIndustrialParkForm) && option.value" 
+          <button v-if="(props.isDevForm || props.isIndustrialParkForm || props.isIndustryForm) && option.value" 
                   class="btn btn-sm btn-link p-0 ms-2"
-                  @click.stop="startEdit(option)">
+                  @click.stop.prevent="startEdit(option)">
             <CIcon :icon="cilPencil" size="sm" />
           </button>
         </div>

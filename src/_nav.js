@@ -30,7 +30,8 @@ export default [
       {
         component: 'CNavItem',
         name: 'Usuarios',
-        to: '/seguridad/usuarios',
+        to: { name: ROUTE_NAMES.USERS },
+        icon: 'cil-user',
       },
     ],
   },
@@ -44,12 +45,6 @@ export default [
     component: 'CNavItem',
     name: 'Companies',
     to: '/operacion/empresas',
-    icon: 'cil-list',
-  },
-  {
-    component: 'CNavItem',
-    name: 'Employees',
-    to: '/operacion/employees',
     icon: 'cil-list',
   },
   {
@@ -81,6 +76,18 @@ export default [
     name: 'Pólizas de Acceso',
     to: '/operacion/polizas',
     icon: 'cil-list',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Developers',
+    to: '/operacion/developers',
+    icon: 'cil-people',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Industries',
+    to: '/operacion/industries',
+    icon: 'cil-factory',
   },
 
   // ? CONTENIDO WEB

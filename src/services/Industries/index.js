@@ -9,12 +9,12 @@ export default {
       name,
     })
   },
-  updateIndustry(industriyId, { name }) {
-    return httpClient.put(`/industries/${industriyId}`, {
+  updateIndustry(industryId, { name }) {
+    return httpClient.put(`/industries/${industryId}`, {
       name,
     })
   },
-  deleteIndustry(industriyId) {
-    return httpClient.delete(`/industries/${industriyId}`)
+  deleteIndustry(industryId) {
+    return httpClient.delete(`/industries/${industryId}`)
   },
 }

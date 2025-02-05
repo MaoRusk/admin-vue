@@ -51,86 +51,124 @@
   
   const fetchUserTypes = async () => { //Cargar todos los user Types para nuevo empleado
     try {
-      const response = await axios.get(`https://laravel-back-production-9320.up.railway.app/api/user-types`);
-      const modifiedUserTypes = response.data;
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/user-types`);
+      const modifiedUserTypes = Array.isArray(response.data) ? response.data : [];
 
-        userTypesCbo.value = [
-          { value: 'New', label: 'Add object' },
-          ...modifiedUserTypes
-        ];
-
+      userTypesCbo.value = [
+        { value: 'New', label: 'Add object' },
+        ...modifiedUserTypes
+      ];
     } catch (error) {
       console.error('Hubo un error obteniendo el combo user Types:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudieron cargar los tipos de usuario',
+        icon: 'error',
+        timer: 3000
+      });
     }
   };
 
   const fetchMarkets = async () => {
     try {
-      if (props.id == 0 && selectedUserType.value == 5) { 
-        const response = await axios.get('https://laravel-back-production-9320.up.railway.app/api/market');
-        marketsCbo.value = response.data.map(company => ({
-          value: company.id,
-          label: company.marketName,
-          selected: false
-        }));
+      if (props.id == 0 && selectedUserType.value == 5) {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/market`);
+        if (Array.isArray(response.data)) {
+          marketsCbo.value = response.data.map(company => ({
+            value: company.id || '',
+            label: company.marketName || company.name || '',
+            selected: false
+          }));
+        } else {
+          marketsCbo.value = [];
+        }
       }
     } catch (error) {
       console.error('Hubo un error obteniendo el combo companies:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudieron cargar los mercados',
+        icon: 'error',
+        timer: 3000
+      });
     }
   };
   
   const fetchServices = async (userId) => {
     try {
       // Llamado de apis en paralelo
-      const [employeeResponse,userTypesResponse,marketsResponse] = await Promise.all([
-        axios.get(`https://laravel-back-production-9320.up.railway.app/api/employees/${userId}`),
-        axios.get(`https://laravel-back-production-9320.up.railway.app/api/user-types`),
-        axios.get('https://laravel-back-production-9320.up.railway.app/api/market'),
+      const [employeeResponse, userTypesResponse, marketsResponse] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/${userId}`),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/user-types`),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/market`),
       ]);
+
       const employeeInfo = employeeResponse.data;
-      // const userInfoDetails = userDetailsResponse.data;      
-      name.value          = employeeInfo.name;
-      lastName.value      = employeeInfo.lastName;
-      userName.value      = employeeInfo.userName;
-
-      modulesCbo.value = employeeInfo.modules.map(module => ({
-        label: module.label,
-        value: module.value,
-        selected: module.selected
-      }));
-      console.log(modulesCbo.value);
-
-      if (employeeInfo.userTypeId == 5) {
-        marketsCbo.value = employeeInfo.markets.map(mrkt => ({
-          label: mrkt.label,
-          value: mrkt.value,
-          selected: mrkt.selected
-        }));
-      console.log(marketsCbo.value);
-
-      }else{
-        marketsCbo.value = marketsResponse.data.map(mrkt => ({
-          value: mrkt.id,
-          label: mrkt.marketName,
-        }));
-      }
       
-      passwordInput.value = "********"; // Pedir que mande pasword en get
+      // Asignar valores básicos del usuario
+      name.value = employeeInfo.name || '';
+      lastName.value = employeeInfo.lastName || '';
+      userName.value = employeeInfo.userName || '';
+      
+      // Manejar los módulos con validación
+      if (Array.isArray(employeeInfo.modules)) {
+        modulesCbo.value = employeeInfo.modules.map(module => ({
+          label: module.label || module.name || '',
+          value: module.value || module.id || '',
+          selected: module.selected || false
+        }));
+      } else {
+        // Si no hay módulos, mantener el valor por defecto
+        modulesCbo.value = [
+          { value: '1', label: 'Buildings' }
+        ];
+      }
 
+      // Manejar los mercados con validación
+      if (employeeInfo.userTypeId == 5) {
+        if (Array.isArray(employeeInfo.markets)) {
+          marketsCbo.value = employeeInfo.markets.map(mrkt => ({
+            label: mrkt.label || mrkt.name || '',
+            value: mrkt.value || mrkt.id || '',
+            selected: mrkt.selected || false
+          }));
+        }
+      } else if (Array.isArray(marketsResponse.data)) {
+        marketsCbo.value = marketsResponse.data.map(mrkt => ({
+          value: mrkt.id || '',
+          label: mrkt.marketName || mrkt.name || '',
+        }));
+      } else {
+        marketsCbo.value = []; // Valor por defecto si no hay datos
+      }
+
+      passwordInput.value = "********"; // Valor por defecto para password
       status.value = employeeInfo.status === "Activo" ? "Activo" : "Inactivo";
 
-      const modifiedUserTypes = userTypesResponse.data.map(userType => ({
-        ...userType,
-        selected: userType.value === employeeInfo.userTypeId
-      }));
-      
-      userTypesCbo.value = [
-        { value: 'New', label: 'Add position' },
-        ...modifiedUserTypes
-      ];      
+      // Manejar tipos de usuario con validación
+      if (Array.isArray(userTypesResponse.data)) {
+        const modifiedUserTypes = userTypesResponse.data.map(userType => ({
+          ...userType,
+          selected: userType.value === employeeInfo.userTypeId
+        }));
+        
+        userTypesCbo.value = [
+          { value: 'New', label: 'Add position' },
+          ...modifiedUserTypes
+        ];
+      }
+
+      // Establecer el tipo de usuario seleccionado
+      selectedUserType.value = employeeInfo.userTypeId;
 
     } catch (error) {
       console.error('Hubo un error obteniendo los datos:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un error al cargar los datos del usuario',
+        icon: 'error',
+        timer: 3000
+      });
     }
   };
 
@@ -228,29 +266,28 @@
       formData.append('totalScreens', 0);
       formData.append('status', status.value);
   
-          axios.post('https://laravel-back-production-9320.up.railway.app/api/employees', formData).then(response => {
-            Swal.fire({
-              title: "Added!",
-              text: "Employee added successfully.",
-              icon: "success",
-              showConfirmButton: false,
-              timer: 3500
-            }).then(() => {
-              router.push({
-                name: 'Employees',
-                params: { id: Number(0) },
-              })
-            });
-  
-          }).catch(error => {
-            Swal.fire({
-              title: "Error adding Employee.",
-              text: error.response.data.message,
-              icon: "error",
-              showConfirmButton: false,
-              timer: 3500
-            });
-          });
+      try {
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/users`, formData);
+        await Swal.fire({
+          title: "Added!",
+          text: "Employee added successfully.",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3500
+        });
+        router.push({
+          name: 'Employees',
+          params: { id: Number(0) },
+        });
+      } catch (error) {
+        Swal.fire({
+          title: "Error adding Employee.",
+          text: error.response?.data?.message || "Unknown error occurred",
+          icon: "error",
+          showConfirmButton: false,
+          timer: 3500
+        });
+      }
     }
   }
 
@@ -279,28 +316,28 @@
       // formData.append('_method', "put");
 
       
-      axios.post(`https://laravel-back-production-9320.up.railway.app/api/employees/update/${props.id}`, formData).then(response => {
-        Swal.fire({
+      try {
+        await axios.put(`${import.meta.env.VITE_API_BASE_URL}/users/${props.id}`, formData);
+        await Swal.fire({
           title: "Updated!",
           text: "User updated successfully.",
           icon: "success",
           showConfirmButton: false,
           timer: 1500
-        }).then(() => {
-          router.push({
-            name: 'Employees',
-            params: { id: Number(0) },
-          })
         });
-      }).catch(error => {
+        router.push({
+          name: 'Employees',
+          params: { id: Number(0) },
+        });
+      } catch (error) {
         Swal.fire({
-              title: "Error update User.",
-              text: error.response.data.message,
-              icon: "error",
-              showConfirmButton: false,
-              timer: 2000
-            });
-      });
+          title: "Error update User.",
+          text: error.response?.data?.message || "Unknown error occurred",
+          icon: "error",
+          showConfirmButton: false,
+          timer: 2000
+        });
+      }
       }
   }
 
@@ -314,29 +351,28 @@
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!"
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        axios.put(`https://laravel-back-production-9320.up.railway.app/api/user/${props.id}/delete`).then(response => {
-          Swal.fire({
+        try {
+          await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/users/${props.id}`);
+          await Swal.fire({
             title: "Deleted!",
-            text: "Company deleted successfully.",
+            text: "User deleted successfully.",
             icon: "success",
             showConfirmButton: false,
             timer: 1500
-          }).then(() => {
-            router.push({
-              name: 'Employees',
-              params: { id: Number(0) },
-            })
           });
-          
-        }).catch(error => {
+          router.push({
+            name: 'Employees',
+            params: { id: Number(0) },
+          });
+        } catch (error) {
           Swal.fire({
             title: "Error!",
-            text: "Error deleting company.",
+            text: "Error deleting user.",
             icon: "error"
           });
-        });
+        }
       }
     });
     }
