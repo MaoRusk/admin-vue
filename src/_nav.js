@@ -43,6 +43,12 @@ export default [
   },
   {
     component: 'CNavItem',
+    name: 'Tenants',
+    to: '/operacion/tenants',
+    icon: 'cil-people',
+  },
+  {
+    component: 'CNavItem',
     name: 'Companies',
     to: '/operacion/empresas',
     icon: 'cil-list',

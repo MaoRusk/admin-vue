@@ -178,6 +178,16 @@ const routes = [
             },
             props: true,
           },
+          {
+            path: 'tenants',
+            name: 'Tenants',
+            component: () => import('@/views/operacion/tenants/Tenants.vue'),
+          },
+          {
+            path: 'tenants/:id',
+            name: 'TenantDetail',
+            component: () => import('@/views/operacion/tenants/TenantDetail.vue'),
+          },
         ],
       },
       {
