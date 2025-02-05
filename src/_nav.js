@@ -44,9 +44,21 @@ export default [
   },
   {
     component: 'CNavItem',
+    name: 'Tenants',
+    to: '/operacion/tenants',
+    icon: 'cil-people',
+  },
+  {
+    component: 'CNavItem',
     name: 'Companies',
     to: { name: ROUTE_NAMES.COMPANIES },
     icon: 'cil-briefcase',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Industrial Parks',
+    to: '/operacion/industrial-parks',
+    icon: 'cil-building',
   },
   {
     component: 'CNavGroup',

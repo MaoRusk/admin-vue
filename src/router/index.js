@@ -31,7 +31,7 @@ const routes = [
       {
         path: '/operations',
         name: ROUTE_NAMES.OPERATIONS,
-        meta: { 
+        meta: {
           requiresAuth: true,
           label: 'Operations'
         },
@@ -61,7 +61,7 @@ const routes = [
             path: '/operations/company/:id',
             name: ROUTE_NAMES.COMPANY_DETAIL,
             component: () => import('@/views/operations/companies/CompanyDetail.vue'),
-            props: route => ({ 
+            props: route => ({
               id: Number(route.params.id)
             })
           },
@@ -99,6 +99,17 @@ const routes = [
           {
             path: '/security',
             name: ROUTE_NAMES.SECURITY,
+            component: () => import('@/views/operacion/industrial-parks/IndustrialParks.vue'),
+          },
+          {
+            path: 'industrial-parks/:id',
+            name: ROUTE_NAMES.INDUSTRIAL_PARKS_DETAIL,
+            component: () => import('@/views/operacion/industrial-parks/IndustrialParkDetail.vue'),
+            props: true,
+          },
+          {
+            path: '/seguridad',
+            name: 'Seguridad',
             meta: { requiresAuth: true },
             component: {
               render() {
@@ -189,6 +200,16 @@ const routes = [
               requiresAuth: true,
               label: 'Edit Developer'
             }
+          },
+          {
+            path: 'tenants',
+            name: 'Tenants',
+            component: () => import('@/views/operacion/tenants/Tenants.vue'),
+          },
+          {
+            path: 'tenants/:id',
+            name: 'TenantDetail',
+            component: () => import('@/views/operacion/tenants/TenantDetail.vue'),
           },
         ],
       },
@@ -579,9 +600,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem(AUTH_TOKEN)
+  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN)
 
-  if (to.matched.some((record) => record.meta.requiresAuth) && !token) {
+  if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
     next({ name: ROUTE_NAMES.LOGIN })
   } else {
     next()
@@ -589,4 +610,3 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
-
