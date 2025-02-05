@@ -48,6 +48,12 @@ export default [
     icon: 'cil-list',
   },
   {
+    component: 'CNavItem',
+    name: 'Industrial Parks',
+    to: '/operacion/industrial-parks',
+    icon: 'cil-building',
+  },
+  {
     component: 'CNavGroup',
     name: 'Buildings',
     to: '/operacion',

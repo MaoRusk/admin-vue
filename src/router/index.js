@@ -89,6 +89,17 @@ const routes = [
             component: PendingApprovals,
           },
           {
+            path: 'industrial-parks',
+            name: ROUTE_NAMES.INDUSTRIAL_PARKS,
+            component: () => import('@/views/operacion/industrial-parks/IndustrialParks.vue'),
+          },
+          {
+            path: 'industrial-parks/:id',
+            name: ROUTE_NAMES.INDUSTRIAL_PARKS_DETAIL,
+            component: () => import('@/views/operacion/industrial-parks/IndustrialParkDetail.vue'),
+            props: true,
+          },
+          {
             path: '/seguridad',
             name: 'Seguridad',
             meta: { requiresAuth: true },
