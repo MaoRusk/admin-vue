@@ -1,6 +1,7 @@
 <script>
 import IndustriesService from '@/services/Industries'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '@/router/routeNames'
 
 export default {
   data() {
@@ -15,12 +16,12 @@ export default {
         {
           key: 'name',
           label: 'Name',
-          _style: { width: '53%' },
+          _style: { width: '70%' },
         },
         {
           key: 'actions',
           label: 'Actions',
-          _style: { width: '37%', textAlign: 'center' },
+          _style: { width: '20%', textAlign: 'center' },
           sorter: false,
           filter: false
         }
@@ -33,20 +34,21 @@ export default {
       try {
         const response = await IndustriesService.getIndustries()
         this.industries = response.data.data || []
-        return this.industries
       } catch (error) {
         console.error('Error fetching industries:', error)
         this.industries = []
-        return []
       }
     },
 
     newIndustry() {
-      this.$router.push({ name: 'IndustryDetail', params: { id: 0 } })
+      this.$router.push({ name: ROUTE_NAMES.INDUSTRY_CREATE })
     },
 
-    viewDetails(item) {
-      this.$router.push({ name: 'IndustryDetail', params: { id: item.id } })
+    editIndustry(item) {
+      this.$router.push({ 
+        name: ROUTE_NAMES.INDUSTRY_UPDATE, 
+        params: { id: item.id }
+      })
     },
 
     async deleteIndustry(item) {
@@ -67,8 +69,8 @@ export default {
           
           Swal.fire({
             icon: 'success',
-            title: 'Deleted successfully!',
-            text: `${item.name} has been deleted.`,
+            title: 'Deleted!',
+            text: 'Industry has been deleted.',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -93,7 +95,7 @@ export default {
   },
 
   mounted() {
-    return this.fetchIndustries()
+    this.fetchIndustries()
   }
 }
 </script>
@@ -104,7 +106,7 @@ export default {
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <CButton color="success" @click="newIndustry()">
+          <CButton color="success" @click="newIndustry">
             <CIcon icon="cilPlus" class="me-2" />New Industry
           </CButton>
         </CCardBody>
@@ -134,7 +136,7 @@ export default {
               variant="outline" 
               square 
               size="sm" 
-              @click="viewDetails(item)"
+              @click="editIndustry(item)"
               class="mx-1"
             >
               <CIcon icon="cil-pencil" />
@@ -144,8 +146,8 @@ export default {
               variant="outline" 
               square 
               size="sm" 
-              class="mx-1"
               @click="deleteIndustry(item)"
+              class="mx-1"
             >
               <CIcon icon="cil-trash" />
             </CButton>

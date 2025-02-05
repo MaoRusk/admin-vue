@@ -135,19 +135,31 @@ const routes = [
             ],
           },
           {
-            path: '/operations/industries',
-            name: 'Industries',
+            path: 'industries',
+            name: ROUTE_NAMES.INDUSTRIES,
             component: () => import('@/views/operations/industries/Industries.vue'),
             meta: {
-              requiresAuth: true
+              requiresAuth: true,
+              label: 'Industries'
             }
           },
           {
-            path: '/operations/industries/:id',
-            name: 'IndustryDetail',
+            path: 'industry/create',
+            name: ROUTE_NAMES.INDUSTRY_CREATE,
             component: () => import('@/views/operations/industries/IndustryDetail.vue'),
             meta: {
-              requiresAuth: true
+              requiresAuth: true,
+              label: 'Create Industry'
+            }
+          },
+          {
+            path: 'industry/:id',
+            name: ROUTE_NAMES.INDUSTRY_UPDATE,
+            component: () => import('@/views/operations/industries/IndustryDetail.vue'),
+            props: true,
+            meta: {
+              requiresAuth: true,
+              label: 'Edit Industry'
             }
           },
           {
@@ -577,3 +589,4 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
+
