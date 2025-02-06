@@ -37,7 +37,6 @@ const columns = [
   { key: 'avl_size_sf', label: 'Size (SF)' },
   { key: 'avl_building_dimensions', label: 'Building Dimensions' },
   { key: 'avl_minimum_space_sf', label: 'Min. Space' },
-  { key: 'avl_expansion_up_to_sf', label: 'Expansion Up To' },
   { key: 'dock_doors', label: 'Dock Doors' },
   { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
@@ -56,10 +55,9 @@ async function fetchBuildings() {
     buildings.value = data.data.data.map(item => ({
       ...item,
       building_state: item.building_state ?? '',
-      avl_size_sf: item.avl_size_sf ?? '',
-      avl_building_dimensions: item.avl_building_dimensions ?? '',
+      avl_size_sf: item.size_sf ?? '',
+      avl_building_dimensions: item.avl_building_dimensions_ft ?? '',
       avl_minimum_space_sf: item.avl_minimum_space_sf ?? '',
-      avl_expansion_up_to_sf: item.avl_expansion_up_to_sf ?? '',
       dock_doors: item.dock_doors ?? '',
     }))
     loading.value = false

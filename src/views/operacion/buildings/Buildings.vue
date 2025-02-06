@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
-import { cilPlus, cilTrash, cilEyedropper } from '@coreui/icons'
 
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
@@ -89,7 +88,7 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
 <template>
   <div class="d-flex justify-content-end mb-3">
     <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.BUILDINGS_CREATE })">
-      <CIcon :content="cilPlus" size="sm" />
+      <CIcon name="cilPlus" size="sm" />
       New Building
     </CButton>
   </div>
@@ -134,14 +133,27 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
       activePage = 1
       columnFilter = filter
     }"
+    clickable-rows
+    @row-click="item => {
+      $router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'DataBuilding' } })
+    }"
   >
     <template #actions="{ item }">
       <td class="d-flex gap-1">
-        <CButton color="primary" variant="outline" square size="sm" @click="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id } })">
-          <CIcon :content="cilEyedropper" size="sm" />
+        <CButton color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Availability' } })">
+          <CIcon name="cilBuilding" size="sm" />
         </CButton>
-        <CButton color="danger" variant="outline" square size="sm" @click="removeBuilding(item.id)">
-          <CIcon :content="cilTrash" size="sm" />
+        <CButton color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Absorption' } })">
+          <CIcon name="cilIndustrySlash" size="sm" />
+        </CButton>
+        <CButton color="primary" variant="outline" square size="sm" title="Go to files" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Files' } })">
+          <CIcon name="cilImage" size="sm" />
+        </CButton>
+        <CButton color="primary" variant="outline" square size="sm" title="Go to contacts" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'ContactBuilding' } })">
+          <CIcon name="cilContact" size="sm" />
+        </CButton>
+        <CButton color="danger" variant="outline" square size="sm" title="remove" @click.stop="removeBuilding(item.id)">
+          <CIcon icon="cilTrash" size="sm" />
         </CButton>
       </td>
     </template>

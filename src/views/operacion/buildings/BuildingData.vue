@@ -1,14 +1,22 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watchEffect } from 'vue';
+import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
+import { useRoute, useRouter } from 'vue-router';
 
 import { API } from '../../../services';
-import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import MASelect from '../../../components/MASelect.vue';
 
 const router = useRouter()
+const route = useRoute()
+
+watch(
+  () => route.params.id,
+  () => {
+    fetchBuildingData()
+  }
+)
 
 const props = defineProps({
   buildingId: Number
@@ -31,12 +39,11 @@ const buildingEmpty = {
   year_built: '', 
   clear_height_ft: '', 
   total_land_sf: '', 
-  offices_space_ft: '', 
+  offices_space_sf: '', 
   has_crane: false,
   has_rail_spur: false,
   has_leed: false,
   ventilation: '', 
-  construction_state: '', 
   roof_system: '', 
   skylights_sf: '', 
   coverage: '', 
@@ -59,9 +66,6 @@ const buildingEmpty = {
 
   hvacProduction: '',
   hvacArea: '',
-
-  transformer_capacity_value_1: '',
-  transformer_capacity_value_2: '',
 
   columns_spacing_value_1: '',
   columns_spacing_value_2: '',
@@ -86,15 +90,16 @@ const validateRangeInputs = (model, field1, field2, fieldName) => {
     model[field1] = ''
     model[field2] = ''
   }
-};
+}
 
-const validateHvacRange = () => {
-  validateRangeInputs(
-    building,
-    'hvacProduction',
-    'hvacArea',
-    'HVAC Production Area'
-  );
+const validateRangeHvac = () => {
+  validateRangeInputs(building, 'hvacProduction', 'hvacArea', 'HVAC Production Area (TON)');
+}
+const validateRangeBaySize = () => {
+  validateRangeInputs(building, 'bay_size_value_1', 'bay_size_value_2', 'Bay size');
+}
+const validateRangeColumnsSpacing = () => {
+  validateRangeInputs(building, 'columns_spacing_value_1', 'columns_spacing_value_2', 'Column Spacing FT');
 }
 
 const coverage = computed(() => building.building_size_sf && building.total_land_sf ? (+building.building_size_sf * +building.total_land_sf) : '')
@@ -106,12 +111,11 @@ async function onSubmit() {
     const body = {
       ...building,
       hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${VALUE_SEPARATOR}${building.hvacArea}` : '',
-      transformer_capacity: (building.transformer_capacity_value_1 && building.transformer_capacity_value_2) ? `${building.transformer_capacity_value_1}${VALUE_SEPARATOR}${building.transformer_capacity_value_2}` : '',
       columns_spacing_ft: (building.columns_spacing_value_1 && building.columns_spacing_value_2) ? `${building.columns_spacing_value_1}${VALUE_SEPARATOR}${building.columns_spacing_value_2}` : '',
       bay_size: (building.bay_size_value_1 && building.bay_size_value_2) ? `${building.bay_size_value_1}${VALUE_SEPARATOR}${building.bay_size_value_2}` : '',
       coverage: `${coverage.value}`,
-      fire_protection_system: building.fire_protection_system.join(','),
-      above_market_tis: building.above_market_tis.join(','),
+      fire_protection_system: building.fire_protection_system.length ? building.fire_protection_system : null,
+      above_market_tis: building.above_market_tis.length ? building.above_market_tis : null,
     }
     if (props.buildingId) {
       ({ data } = await API.buildings.updateBuilding(props.buildingId, body));
@@ -137,27 +141,23 @@ const fetchBuildingData = async () => {
     const { data } = await API.buildings.getBuilding(buildingId);
     ['region_id', 'market_id', 'submarket_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id']
     .forEach(prop => building[prop] = data.data[prop] ? +(data.data[prop]) : '');
-    ['building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height_ft', 'total_land_sf', 'offices_space_ft', 'ventilation', 'construction_state', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'deal', 'loading_door', 'status', 'floor_thickness_in', 'floor_resistance']
+    ['building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height_ft', 'total_land_sf', 'expansion_up_to_sf', 'offices_space_sf', 'ventilation', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'deal', 'loading_door', 'status', 'floor_thickness_in', 'floor_resistance']
     .forEach(prop => building[prop] = data.data[prop] ? `${data.data[prop]}` : '');
     ['has_crane', 'has_rail_spur', 'has_leed']
     .forEach(prop => building[prop] = Boolean(data.data[prop]));
     ['fire_protection_system', 'above_market_tis']
-    .forEach(prop => building[prop] = data.data[prop] ? data.data[prop].split(',') : []);
+    .forEach(prop => building[prop] = data.data[prop] ? data.data[prop] : []);
 
     building.year_built = data.data.year_built ? `${data.data.year_built}` : ''
     if (data.data.hvac_production_area && data.data.hvac_production_area.length > VALUE_SEPARATOR.length) {
       ([building.hvacProduction, building.hvacArea] = data.data.hvac_production_area.split(VALUE_SEPARATOR))
     }
-    if (data.data.transformer_capacity && data.data.transformer_capacity.length > VALUE_SEPARATOR.length) {
-      ([building.transformer_capacity_value_1, building.transformer_capacity_value_2] = data.data.transformer_capacity.split(VALUE_SEPARATOR))
-    }
-    if (data.data.columns_spacing && data.data.columns_spacing.length > VALUE_SEPARATOR.length) {
-      ([building.columns_spacing_value_1, building.columns_spacing_value_2] = data.data.columns_spacing.split(VALUE_SEPARATOR))
+    if (data.data.columns_spacing_ft && data.data.columns_spacing_ft.length > VALUE_SEPARATOR.length) {
+      ([building.columns_spacing_value_1, building.columns_spacing_value_2] = data.data.columns_spacing_ft.split(VALUE_SEPARATOR))
     }
     if (data.data.bay_size && data.data.bay_size.length > VALUE_SEPARATOR.length) {
       ([building.bay_size_value_1, building.bay_size_value_2] = data.data.bay_size.split(VALUE_SEPARATOR))
     }
-    building.sfSm = false
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -412,7 +412,21 @@ async function saveOptionGeneral(field, values, update = false) {
   });
 }
 
-async function deleteOptionGeneral(field, option) {
+async function deleteOptionGeneral(field, optionReactive) {
+  const option = {...optionReactive}
+  const result = await Swal.fire({
+    title: `Delete option`,
+    text: `Are you sure you want to delete?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  })
+
+  if (!result.isConfirmed) return
+
   try {
     let data;
     if (['owner_id', 'builder_id', 'developer_id'].includes(field)) {
@@ -440,6 +454,7 @@ async function deleteOptionGeneral(field, option) {
     } else {
       throw error
     }
+    return
   }
   Swal.fire({
     icon: "success",
@@ -512,14 +527,14 @@ defineExpose({
                   <div class="mt-2">
                     <CFormInput
                       v-model="building.building_name"
-                      label="Building Name"
+                      label="Building Name *"
                       required
                     />
                   </div>
                 </CCol>
                 <CCol :md="3">
                   <div class="mt-2">
-                    <label class="form-label">Class</label>
+                    <label class="form-label">Class *</label>
                     <MASelect
                       v-model="building.class"
                       :options="classes.items"
@@ -536,7 +551,7 @@ defineExpose({
                     <CFormInput 
                       type="number"
                       v-model="building.building_size_sf"
-                      label="Building Size (SF)"
+                      label="Building Size (SF) *"
                       required
                     />
                   </div>
@@ -546,7 +561,7 @@ defineExpose({
                     <CFormInput 
                       type="number"
                       v-model="building.expansion_land"
-                      label="Expansion Land (SF)"
+                      label="Expansion Land (SF) *"
                       required
                     />
                   </div>
@@ -566,7 +581,7 @@ defineExpose({
                     <CFormInput 
                       type="number"
                       v-model="building.expansion_up_to_sf"
-                      label="Expansion up to SF"
+                      label="Expansion up to SF *"
                       required
                     />
                   </div>
@@ -578,7 +593,7 @@ defineExpose({
                 </CCol>
                 <CCol md="3">
                   <div class="mt-2">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">Status *</label>
                     <MASelect
                       v-model="building.status"
                       :options="statuses.items"
@@ -612,7 +627,7 @@ defineExpose({
           <div class="col-md-4">
             <!-- REGION -->
             <div class="mt-2">
-              <label class="form-label">Region</label>
+              <label class="form-label">Region *</label>
               <MASelect
                 v-model="building.region_id"
                 :options="regions.items"
@@ -627,7 +642,7 @@ defineExpose({
           <div class="col-md-4">
             <!-- MARKET -->
             <div class="mt-2">
-              <label class="form-label">Market</label>
+              <label class="form-label">Market *</label>
               <MASelect
                 v-model="building.market_id"
                 :options="markets.items"
@@ -643,7 +658,7 @@ defineExpose({
           <div class="col-md-4">
             <!-- SUB MARKET -->
             <div class="mt-2">
-              <label class="form-label">Submarket</label>
+              <label class="form-label">Submarket *</label>
               <MASelect
                 v-model="building.submarket_id"
                 :options="submarkets.items"
@@ -659,7 +674,7 @@ defineExpose({
           <div class="col-md-4">
             <!-- INDUSTRIAL PARK -->
             <div class="mt-2">
-              <label class="form-label">Industrial Park</label>
+              <label class="form-label">Industrial Park *</label>
               <MASelect
                 v-model="building.industrial_park_id"
                 :options="industrialParks.items"
@@ -680,7 +695,7 @@ defineExpose({
             <div class="mt-2">
               <CFormInput
               type="text"
-              label="Latitude"
+              label="Latitude *"
               v-model="building.latitud"
               required
               />
@@ -691,7 +706,7 @@ defineExpose({
             <div class="mt-2">
               <CFormInput
               type="text"
-              label="Longitude"
+              label="Longitude *"
               v-model="building.longitud"
               required
               />
@@ -710,7 +725,7 @@ defineExpose({
                 <CCol md>
                   <!-- OWNER -->
                   <div class="mt-2">
-                    <label class="form-label">Owner</label>
+                    <label class="form-label">Owner *</label>
                     <MASelect
                       v-model="building.owner_id"
                       :options="owners.items"
@@ -729,7 +744,7 @@ defineExpose({
                           <div class="col">
                             <CFormInput
                               v-model="form.name"
-                              label="Name"
+                              label="Name *"
                               type="text"
                               placeholder="write a value"
                               required
@@ -764,7 +779,7 @@ defineExpose({
                 <CCol md>
                   <!-- DEVELOPER -->
                   <div class="mt-2">
-                    <label class="form-label">Developer</label>
+                    <label class="form-label">Developer *</label>
                     <MASelect
                       v-model="building.developer_id"
                       :options="developers.items"
@@ -783,7 +798,7 @@ defineExpose({
                           <div class="col">
                             <CFormInput
                               v-model="form.name"
-                              label="Name"
+                              label="Name *"
                               type="text"
                               placeholder="write a value"
                               required
@@ -818,7 +833,7 @@ defineExpose({
                 <CCol md>
                   <!-- BUILDER -->
                   <div class="mt-2">
-                    <label class="form-label">Builder</label>
+                    <label class="form-label">Builder *</label>
                     <MASelect
                       v-model="building.builder_id"
                       :options="builders.items"
@@ -837,7 +852,7 @@ defineExpose({
                           <div class="col">
                             <CFormInput
                               v-model="form.name"
-                              label="Name"
+                              label="Name *"
                               type="text"
                               placeholder="write a value"
                               required
@@ -883,7 +898,7 @@ defineExpose({
           <CCol md="4">
             <!-- CURRENCY -->
             <div class="mt-2">
-              <label class="form-label">Currency</label>
+              <label class="form-label">Currency *</label>
               <MASelect
                 v-model="building.currency"
                 :options="currencies.items"
@@ -898,7 +913,7 @@ defineExpose({
           <CCol md="4">
             <!-- TENANCY -->
             <div class="mt-2">
-              <label class="form-label">Tenancy</label>
+              <label class="form-label">Tenancy *</label>
               <MASelect
                 v-model="building.tenancy"
                 :options="tenancies.items"
@@ -913,7 +928,7 @@ defineExpose({
           <CCol md="4">
             <!-- DEAL -->
             <div class="mt-2">
-              <label class="form-label">Deal</label>
+              <label class="form-label">Deal *</label>
               <MASelect
                 v-model="building.deal"
                 :options="deals.items"
@@ -938,7 +953,7 @@ defineExpose({
                 <CCol :md="3">
                   <!-- TYPE -->
                   <div class="mt-2">
-                    <label class="form-label">Type</label>
+                    <label class="form-label">Type *</label>
                     <MASelect
                       v-model="building.type_generation"
                       :options="generationsTypes.items"
@@ -971,12 +986,12 @@ defineExpose({
                   <div class="mt-2">
                     <CFormInput 
                       type="number" 
-                      v-model="building.offices_space_ft"
+                      v-model="building.offices_space_sf"
                       label="Offices Space SF"
                     />
                   </div>
                   <div class="mt-2">
-                    <label class="form-label">Loading Door</label>
+                    <label class="form-label">Loading Door *</label>
                     <MASelect
                       v-model="building.loading_door"
                       :options="loadingDoors.items"
@@ -988,7 +1003,7 @@ defineExpose({
                     />
                   </div>
                   <div class="mt-2">
-                    <label class="form-label">Floor Thickness FT</label>
+                    <label class="form-label">Floor Thickness FT *</label>
                     <CInputGroup>
                       <CFormInput
                         type="number"
@@ -1003,7 +1018,7 @@ defineExpose({
                 <CCol :md="3">
                   <!-- CONSTRUCTION TYPE -->
                   <div class="mt-2">
-                    <label class="form-label">Construction Type</label>
+                    <label class="form-label">Construction Type *</label>
                     <MASelect
                       v-model="building.construction_type"
                       :options="constructionTypes.items"
@@ -1012,13 +1027,6 @@ defineExpose({
                       required
                       placeholder="Select..."
                       :loading="constructionTypes.loading"
-                    />
-                  </div>
-                  <!-- CONSTRUCTION STATE -->
-                  <div class="mt-2">
-                    <CFormInput
-                      v-model="building.construction_state"
-                      label="Construction State"
                     />
                   </div>
                   <!-- ROOF SYSTEM -->
@@ -1030,7 +1038,7 @@ defineExpose({
                   </div>
                   <!-- FIRE PROTECTION SYSTEM -->
                   <div class="mt-2">
-                    <label class="form-label">Fire Protection System (FPS)</label>
+                    <label class="form-label">Fire Protection System (FPS) *</label>
                     <MASelect
                       v-model="building.fire_protection_system"
                       :options="fireProtectionSystems.items"
@@ -1065,7 +1073,7 @@ defineExpose({
                     />
                   </div>
                   <div class="mt-2">
-                    <label class="form-label">Floor Resistance</label>
+                    <label class="form-label">Floor Resistance *</label>
                     <CInputGroup>
                       <CFormInput
                         type="text"
@@ -1080,7 +1088,7 @@ defineExpose({
                 <CCol :md="3">
                   <!-- LIGHTING -->
                   <div class="mt-2">
-                    <label class="form-label">Lighting</label>
+                    <label class="form-label">Lighting *</label>
                     <MASelect
                       v-model="building.lightning"
                       :options="typesLightnings.items"
@@ -1111,13 +1119,14 @@ defineExpose({
                   </div>
                   <!-- bay_size -->
                   <div class="mt-2">
-                    <label class="form-label">Bay Size</label>
+                    <label class="form-label">Bay Size *</label>
                     <CInputGroup>
                       <CFormInput 
                         type="number" 
                         v-model="building.bay_size_value_1"
                         placeholder="value 1"
                         required
+                        @blur="validateRangeBaySize"
                       />
                       <CInputGroupText>@</CInputGroupText>
                       <CFormInput 
@@ -1125,23 +1134,7 @@ defineExpose({
                         v-model="building.bay_size_value_2"
                         placeholder="value 2"
                         required
-                      />
-                    </CInputGroup>
-                  </div>
-                  <!-- TRANSFORMER CAPACITY -->
-                  <div class="mt-2">
-                    <label class="form-label">Transformer Capacity</label>
-                    <CInputGroup>
-                      <CFormInput 
-                        type="number" 
-                        v-model="building.transformer_capacity_value_1"
-                        placeholder="value 1"
-                      />
-                      <CInputGroupText>@</CInputGroupText>
-                      <CFormInput 
-                        type="number"
-                        v-model="building.transformer_capacity_value_2"
-                        placeholder="value 2"
+                        @blur="validateRangeBaySize"
                       />
                     </CInputGroup>
                   </div>
@@ -1153,26 +1146,27 @@ defineExpose({
                         type="number" 
                         v-model="building.hvacProduction"
                         placeholder="Production"
-                        @blur="validateHvacRange"
+                        @blur="validateRangeHvac"
                       />
                       <CInputGroupText>@</CInputGroupText>
                       <CFormInput 
                         type="number"
                         v-model="building.hvacArea"
                         placeholder="Area"
-                        @blur="validateHvacRange"
+                        @blur="validateRangeHvac"
                       />
                     </CInputGroup>
                   </div>
 
                   <div class="mt-2">
-                    <label class="form-label">Column Spacing FT</label>
+                    <label class="form-label">Column Spacing FT *</label>
                     <CInputGroup>
                       <CFormInput 
                         type="number" 
                         v-model="building.columns_spacing_value_1"
                         placeholder="value 1"
                         required
+                        @blur="validateRangeColumnsSpacing"
                       />
                       <CInputGroupText>@</CInputGroupText>
                       <CFormInput 
@@ -1180,6 +1174,7 @@ defineExpose({
                         v-model="building.columns_spacing_value_2"
                         placeholder="value 2"
                         required
+                        @blur="validateRangeColumnsSpacing"
                       />
                     </CInputGroup>
                   </div>

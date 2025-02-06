@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { cilArrowCircleLeft, cilSave } from '@coreui/icons'
 
 import BuildingData from './BuildingData.vue'
@@ -10,12 +10,13 @@ import BuildingImages from './BuildingsImages.vue';
 import BuildingAbsorption from './BuildingAbsorption.vue'
 import { ROUTE_NAMES } from '../../../router/routeNames';
 
+const router = useRouter()
 const route = useRoute()
 
 const buildingId = computed(() => Number(route.params.buildingId) || null)
 const disabledTab = computed(() => !buildingId.value)
 
-const activeTab = ref('DataBuilding')
+const activeTab = ref(route.query.tab || 'DataBuilding')
 const submittingForm = ref(false)
 const disabledSave = ref(false)
 
@@ -64,6 +65,22 @@ watch(activeTab, () => {
   }
 }, { immediate: true })
 
+watch(() => route.query.tab, (newTab) => {
+  if (['DataBuilding', 'Availability', 'Absorption', 'ContactBuilding', 'Files'].includes(newTab)) {
+    activeTab.value = newTab
+  } else {
+    activeTab.value = 'DataBuilding'
+  }
+}, { immediate: true })
+
+function changeTab(tab) {
+  activeTab.value = tab
+  router.push({
+    name: route.name,
+    params: route.params,
+    query: { ...route.query, tab }
+  })
+}
 </script>
 <template>
   <div>
@@ -86,13 +103,13 @@ watch(activeTab, () => {
     </CCard>
     <!-- TODO. quitar cuando se detecte error, bug: aveces cuando se da click sobre un tab, no se muestra su contenido, coloco variable para monitorear -->
     {{ activeTab }}
-    <CTabs activeItemKey="DataBuilding">
+    <CTabs :activeItemKey="activeTab">
       <CTabList variant="tabs" class="mt-4">
-        <CTab itemKey="DataBuilding" @click="activeTab = 'DataBuilding'">Data Building</CTab>
-        <CTab :disabled="disabledTab" itemKey="Availability" @click="activeTab = 'Availability'">Availability</CTab>
-        <CTab :disabled="disabledTab" itemKey="Absorption" @click="activeTab = 'Absorption'">Absorption</CTab>
-        <CTab :disabled="disabledTab" itemKey="ContactBuilding" @click="activeTab = 'ContactBuilding'">Building Contact</CTab>
-        <CTab :disabled="disabledTab" itemKey="Files" @click="activeTab = 'Files'">Files</CTab>
+        <CTab itemKey="DataBuilding" @click="changeTab('DataBuilding')">Data Building</CTab>
+        <CTab itemKey="Availability" @click="changeTab('Availability')" :disabled="disabledTab">Availability</CTab>
+        <CTab itemKey="Absorption" @click="changeTab('Absorption')" :disabled="disabledTab">Absorption</CTab>
+        <CTab itemKey="ContactBuilding" @click="changeTab('ContactBuilding')" :disabled="disabledTab">Building Contact</CTab>
+        <CTab itemKey="Files" @click="changeTab('Files')" :disabled="disabledTab">Files</CTab>
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
