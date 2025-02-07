@@ -33,26 +33,8 @@
         <!-- Permissions Table -->
         <CRow class="mt-4">
           <CCol :xs="12">
-            <div class="permissions-header d-flex justify-content-between align-items-center mb-3">
+            <div class="permissions-header mb-3">
               <h4 class="m-0">Permissions</h4>
-              <div class="d-flex gap-2">
-                <CButton 
-                  color="primary" 
-                  variant="outline" 
-                  size="sm"
-                  @click="selectAll"
-                >
-                  Select All
-                </CButton>
-                <CButton 
-                  color="danger" 
-                  variant="outline" 
-                  size="sm"
-                  @click="deselectAll"
-                >
-                  Deselect All
-                </CButton>
-              </div>
             </div>
             <div class="table-responsive permissions-wrapper">
               <table class="table permissions-table">
@@ -301,12 +283,6 @@ export default {
     },
     goBack() {
       this.$router.push('/seguridad/roles')
-    },
-    selectAll() {
-      this.selectedPermissions = [...this.availablePermissions]
-    },
-    deselectAll() {
-      this.selectedPermissions = []
     },
     isAllSelectedForAction(action) {
       const availablePermissionsForAction = Object.keys(this.groupedPermissions)
@@ -619,5 +595,10 @@ export default {
 .action-select-all:hover .form-check-input:not(:checked):not(:indeterminate) {
   border-color: #321fdb;
   background-color: rgba(50, 31, 219, 0.1);
+}
+
+.permissions-header {
+  display: flex;
+  align-items: center;
 }
 </style> 
