@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
 import { useRoute, useRouter } from 'vue-router';
@@ -134,7 +134,7 @@ async function onSubmit() {
       title: 'Success',
       text: data.message,
     });
-    router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: data.data.id } })
+    router.push({ name: ROUTE_NAMES.BUILDINGS, params: { buildingId: data.data.id } })
   } catch (e) {
     emit('submitting', false)
     Swal.fire(e.response.data.message, JSON.stringify(e.response.data.errors), 'error')
@@ -480,21 +480,30 @@ async function deleteOptionGeneral(field, optionReactive) {
   });
 }
 
-watchEffect(async () => {
+watch(() => building.region_id, async () => {
   if (building.region_id) {
     await fetchMarkets(building.region_id)
-    building.market_id = props.buildingId ? building.market_id : ''
+    if (!markets.items.find(item => item.value === building.market_id)) {
+      building.market_id = ''
+    }
+  } else {
+    building.market_id = ''
   }
 })
 
-watchEffect(async () => {
+watch(() => building.market_id, async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
-    building.submarket_id = props.buildingId ? building.submarket_id : ''
+    // building.submarket_id = props.buildingId ? building.submarket_id : ''
+    if (!submarkets.items.find(item => item.value === building.submarket_id)) {
+      building.submarket_id = ''
+    }
+  } else {
+    building.submarket_id = ''
   }
 })
 
-watchEffect(async () => {
+watch(() => building.submarket_id, async () => {
   if (building.submarket_id) {
     await Promise.all([
       fetchIndustrialParks(building.market_id, building.submarket_id),
@@ -502,10 +511,15 @@ watchEffect(async () => {
       fetchBuilders(building.market_id, building.submarket_id),
       fetchDevelopers(building.market_id, building.submarket_id),
     ])
-    building.industrial_park_id = props.buildingId ? building.industrial_park_id : ''
-    building.owner_id = props.buildingId ? building.owner_id : ''
-    building.builder_id = props.buildingId ? building.builder_id : ''
-    building.developer_id = props.buildingId ? building.developer_id : ''
+    if (!industrialParks.items.find(item => item.id === building.industrial_park_id)) building.industrial_park_id = ''
+    if (!owners.items.find(item => item.id === building.owner_id)) building.owner_id = ''
+    if (!developers.items.find(item => item.id === building.developer_id)) building.developer_id = ''
+    if (!builders.items.find(item => item.id === building.builder_id)) building.builder_id = ''
+  } else {
+    building.industrial_park_id = ''
+    building.owner_id = ''
+    building.builder_id = ''
+    building.developer_id = ''
   }
 })
 
