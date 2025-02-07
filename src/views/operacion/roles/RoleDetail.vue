@@ -33,27 +33,77 @@
         <!-- Permissions Table -->
         <CRow class="mt-4">
           <CCol :xs="12">
-            <h4>Permissions</h4>
-            <div class="table-responsive">
-              <table class="table table-bordered permissions-table">
+            <div class="permissions-header d-flex justify-content-between align-items-center mb-3">
+              <h4 class="m-0">Permissions</h4>
+              <div class="d-flex gap-2">
+                <CButton 
+                  color="primary" 
+                  variant="outline" 
+                  size="sm"
+                  @click="selectAll"
+                >
+                  Select All
+                </CButton>
+                <CButton 
+                  color="danger" 
+                  variant="outline" 
+                  size="sm"
+                  @click="deselectAll"
+                >
+                  Deselect All
+                </CButton>
+              </div>
+            </div>
+            <div class="table-responsive permissions-wrapper">
+              <table class="table permissions-table">
                 <thead>
                   <tr>
-                    <th>Resource</th>
-                    <th v-for="action in actions" :key="action">
-                      {{ formatActionName(action) }}
+                    <th class="resource-column">Resource</th>
+                    <th class="select-all-column text-center">
+                      <div class="d-flex flex-column align-items-center gap-2">
+                        <span>All</span>
+                        <CFormCheck
+                          :checked="isAllSelected"
+                          :indeterminate="hasIndeterminateSelection"
+                          @change="toggleAll"
+                          class="action-select-all"
+                        />
+                      </div>
+                    </th>
+                    <th v-for="action in actions" :key="action" class="action-column">
+                      <div class="d-flex flex-column align-items-center gap-2">
+                        <span>{{ formatActionName(action) }}</span>
+                        <CFormCheck
+                          :checked="isAllSelectedForAction(action)"
+                          :indeterminate="hasIndeterminateAction(action)"
+                          @change="toggleAllForAction(action)"
+                          class="action-select-all"
+                        />
+                      </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(permissions, resource) in groupedPermissions" :key="resource">
-                    <td class="resource-name">{{ formatResourceName(resource) }}</td>
-                    <td v-for="action in actions" :key="action" class="text-center">
+                    <td class="resource-name">
+                      {{ formatResourceName(resource) }}
+                    </td>
+                    <td class="text-center permission-cell">
+                      <CFormCheck
+                        :checked="isAllSelectedForResource(resource)"
+                        :indeterminate="hasIndeterminateResource(resource)"
+                        @change="toggleAllForResource(resource)"
+                        class="resource-select-all"
+                      />
+                    </td>
+                    <td v-for="action in actions" :key="action" class="text-center permission-cell">
                       <CFormCheck
                         v-if="hasPermission(resource, action)"
                         :checked="isPermissionSelected(resource, action)"
                         @change="togglePermission(resource, action)"
+                        :class="{'permission-checked': isPermissionSelected(resource, action)}"
                       />
-                      <span v-else>-</span>
+                      <span v-else class="permission-unavailable">—</span>
                     </td>
                   </tr>
                 </tbody>
@@ -126,6 +176,14 @@ export default {
         grouped[resource][action] = permission
       })
       return grouped
+    },
+    isAllSelected() {
+      return this.availablePermissions.length > 0 && 
+             this.selectedPermissions.length === this.availablePermissions.length
+    },
+    hasIndeterminateSelection() {
+      return this.selectedPermissions.length > 0 && 
+             this.selectedPermissions.length < this.availablePermissions.length
     }
   },
   methods: {
@@ -243,6 +301,115 @@ export default {
     },
     goBack() {
       this.$router.push('/seguridad/roles')
+    },
+    selectAll() {
+      this.selectedPermissions = [...this.availablePermissions]
+    },
+    deselectAll() {
+      this.selectedPermissions = []
+    },
+    isAllSelectedForAction(action) {
+      const availablePermissionsForAction = Object.keys(this.groupedPermissions)
+        .filter(resource => this.hasPermission(resource, action))
+        .length
+
+      const selectedPermissionsForAction = Object.keys(this.groupedPermissions)
+        .filter(resource => 
+          this.hasPermission(resource, action) && 
+          this.isPermissionSelected(resource, action)
+        )
+        .length
+
+      return availablePermissionsForAction > 0 && 
+             availablePermissionsForAction === selectedPermissionsForAction
+    },
+    hasIndeterminateAction(action) {
+      const availablePermissionsForAction = Object.keys(this.groupedPermissions)
+        .filter(resource => this.hasPermission(resource, action))
+        .length
+
+      const selectedPermissionsForAction = Object.keys(this.groupedPermissions)
+        .filter(resource => 
+          this.hasPermission(resource, action) && 
+          this.isPermissionSelected(resource, action)
+        )
+        .length
+
+      return selectedPermissionsForAction > 0 && 
+             selectedPermissionsForAction < availablePermissionsForAction
+    },
+    toggleAllForAction(action) {
+      const isCurrentlyAllSelected = this.isAllSelectedForAction(action)
+      
+      Object.keys(this.groupedPermissions).forEach(resource => {
+        if (this.hasPermission(resource, action)) {
+          const permission = this.availablePermissions.find(p => p.name === `${resource}.${action}`)
+          if (!permission) return
+
+          const index = this.selectedPermissions.findIndex(p => p.id === permission.id)
+          
+          if (!isCurrentlyAllSelected && index === -1) {
+            this.selectedPermissions.push(permission)
+          } else if (isCurrentlyAllSelected && index !== -1) {
+            this.selectedPermissions.splice(index, 1)
+          }
+        }
+      })
+    },
+    isAllSelectedForResource(resource) {
+      const availablePermissionsForResource = this.actions
+        .filter(action => this.hasPermission(resource, action))
+        .length
+
+      const selectedPermissionsForResource = this.actions
+        .filter(action => 
+          this.hasPermission(resource, action) && 
+          this.isPermissionSelected(resource, action)
+        )
+        .length
+
+      return availablePermissionsForResource > 0 && 
+             availablePermissionsForResource === selectedPermissionsForResource
+    },
+    hasIndeterminateResource(resource) {
+      const availablePermissionsForResource = this.actions
+        .filter(action => this.hasPermission(resource, action))
+        .length
+
+      const selectedPermissionsForResource = this.actions
+        .filter(action => 
+          this.hasPermission(resource, action) && 
+          this.isPermissionSelected(resource, action)
+        )
+        .length
+
+      return selectedPermissionsForResource > 0 && 
+             selectedPermissionsForResource < availablePermissionsForResource
+    },
+    toggleAllForResource(resource) {
+      const isCurrentlyAllSelected = this.isAllSelectedForResource(resource)
+      
+      this.actions.forEach(action => {
+        if (this.hasPermission(resource, action)) {
+          const permission = this.availablePermissions.find(p => p.name === `${resource}.${action}`)
+          if (!permission) return
+
+          const index = this.selectedPermissions.findIndex(p => p.id === permission.id)
+          
+          if (!isCurrentlyAllSelected && index === -1) {
+            this.selectedPermissions.push(permission)
+          } else if (isCurrentlyAllSelected && index !== -1) {
+            this.selectedPermissions.splice(index, 1)
+          }
+        }
+      })
+    },
+    toggleAll() {
+      if (this.isAllSelected) {
+        this.selectedPermissions = []
+      } else {
+        this.selectedPermissions = [...this.availablePermissions]
+      }
     }
   },
   created() {
@@ -252,42 +419,205 @@ export default {
 </script>
 
 <style scoped>
-.permissions-table {
-  margin-top: 1rem;
-}
-
-.permissions-table th {
-  background-color: #f8f9fa;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.resource-name {
-  font-weight: 500;
-  background-color: #f8f9fa;
-}
-
-.table-responsive {
+.permissions-wrapper {
+  border: 1px solid #ebedef;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
   max-height: 500px;
   overflow-y: auto;
 }
 
+.permissions-table {
+  margin-bottom: 0;
+}
+
+.permissions-table th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #ebedef;
+  color: #4f5d73;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  padding: 1rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.resource-column {
+  min-width: 150px;
+  text-align: left !important;
+}
+
+.action-column {
+  min-width: 100px;
+}
+
+.resource-name {
+  font-weight: 500;
+  color: #321fdb;
+  background-color: #ffffff;
+  padding: 0.75rem 1rem !important;
+}
+
+.permission-cell {
+  padding: 0.75rem 0.5rem !important;
+  vertical-align: middle;
+  background-color: #ffffff;
+}
+
+.permission-unavailable {
+  color: #c4c9d0;
+  font-weight: 300;
+}
+
+.select-all-column {
+  width: 80px;
+  min-width: 80px;
+  background-color: #f8f9fa;
+}
+
+.resource-select-all .form-check-input,
+.action-select-all .form-check-input {
+  border-width: 2px;
+}
+
+.resource-select-all .form-check-input:indeterminate,
+.action-select-all .form-check-input:indeterminate {
+  background-color: #321fdb;
+  border-color: #321fdb;
+}
+
 /* Mantener el encabezado fijo al hacer scroll */
-.table-responsive thead th {
+.permissions-table thead th {
   position: sticky;
   top: 0;
   background-color: #f8f9fa;
   z-index: 1;
 }
 
-/* Estilo para las celdas de checkbox */
-.permissions-table td {
-  vertical-align: middle;
-  padding: 0.5rem;
+/* Estilo para los checkboxes */
+.form-check-input {
+  cursor: pointer;
+  border-color: #321fdb;
+  transition: all 0.2s ease;
+}
+
+.form-check-input:checked {
+  background-color: #321fdb;
+  border-color: #321fdb;
+}
+
+.form-check-input:hover:not(:checked) {
+  border-color: #321fdb;
+  background-color: rgba(50, 31, 219, 0.1);
 }
 
 /* Hover effect en las filas */
 .permissions-table tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: #f8f9fa;
+}
+
+/* Estilo para las celdas de la tabla */
+.permissions-table td, 
+.permissions-table th {
+  border-color: #ebedef;
+}
+
+/* Scrollbar personalizado */
+.permissions-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.permissions-wrapper::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 3px;
+}
+
+.permissions-wrapper::-webkit-scrollbar-thumb {
+  background-color: #321fdb;
+  border-radius: 3px;
+}
+
+.permissions-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #2819b0;
+}
+
+/* Estilo para los botones de selección */
+.permissions-header .btn {
+  transition: all 0.2s ease;
+}
+
+.permissions-header .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Animación para los checkboxes */
+.form-check-input {
+  transform-origin: center;
+  transition: transform 0.2s ease;
+}
+
+.form-check-input:checked {
+  transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .permissions-wrapper {
+    max-height: 400px;
+  }
+  
+  .resource-column {
+    min-width: 120px;
+  }
+  
+  .action-column {
+    min-width: 80px;
+  }
+}
+
+/* Estilos para el checkbox de seleccionar todos */
+.action-select-all {
+  margin: 0;
+}
+
+.action-select-all .form-check-input {
+  border-width: 2px;
+}
+
+.action-select-all .form-check-input:indeterminate {
+  background-color: #321fdb;
+  border-color: #321fdb;
+}
+
+/* Ajuste del padding para el encabezado con checkbox */
+.permissions-table th {
+  padding: 0.75rem 0.5rem;
+}
+
+/* Estilo para el contenedor del título y checkbox en el encabezado */
+.permissions-table th .d-flex {
+  min-height: 48px;
+}
+
+/* Ajuste del tamaño del texto en el encabezado */
+.permissions-table th span {
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+/* Hover effect para el checkbox de seleccionar todos */
+.action-select-all:hover .form-check-input:not(:checked):not(:indeterminate) {
+  border-color: #321fdb;
+  background-color: rgba(50, 31, 219, 0.1);
+}
+
+/* Hover effects para los checkboxes de selección múltiple */
+.resource-select-all:hover .form-check-input:not(:checked):not(:indeterminate),
+.action-select-all:hover .form-check-input:not(:checked):not(:indeterminate) {
+  border-color: #321fdb;
+  background-color: rgba(50, 31, 219, 0.1);
 }
 </style> 
