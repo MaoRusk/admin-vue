@@ -47,7 +47,6 @@ const buildingEmpty = {
   roof_system: '', 
   skylights_sf: '', 
   coverage: '', 
-  kvas: '', 
   expansion_land: '', 
   class: '', 
   type_generation: '', 
@@ -66,6 +65,9 @@ const buildingEmpty = {
 
   hvacProduction: '',
   hvacArea: '',
+
+  kvas_value_1: '',
+  kvas_value_2: '',
 
   columns_spacing_value_1: '',
   columns_spacing_value_2: '',
@@ -101,8 +103,11 @@ const validateRangeBaySize = () => {
 const validateRangeColumnsSpacing = () => {
   validateRangeInputs(building, 'columns_spacing_value_1', 'columns_spacing_value_2', 'Column Spacing FT');
 }
+const validateRangeKvas = () => {
+  validateRangeInputs(building, 'kvas_value_1', 'kvas_value_2', 'KVAS');
+}
 
-const coverage = computed(() => building.building_size_sf && building.total_land_sf ? (+building.building_size_sf * +building.total_land_sf) : '')
+const coverage = computed(() => building.building_size_sf && building.total_land_sf ? ((+building.building_size_sf / +building.total_land_sf) * 100).toFixed(2) : '')
 
 async function onSubmit() {
   emit('submitting', true)
@@ -113,6 +118,7 @@ async function onSubmit() {
       hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${VALUE_SEPARATOR}${building.hvacArea}` : '',
       columns_spacing_ft: (building.columns_spacing_value_1 && building.columns_spacing_value_2) ? `${building.columns_spacing_value_1}${VALUE_SEPARATOR}${building.columns_spacing_value_2}` : '',
       bay_size: (building.bay_size_value_1 && building.bay_size_value_2) ? `${building.bay_size_value_1}${VALUE_SEPARATOR}${building.bay_size_value_2}` : '',
+      kvas: (building.kvas_value_1 && building.kvas_value_2) ? `${building.kvas_value_1}${VALUE_SEPARATOR}${building.kvas_value_2}` : '',
       coverage: `${coverage.value}`,
       fire_protection_system: building.fire_protection_system.length ? building.fire_protection_system : null,
       above_market_tis: building.above_market_tis.length ? building.above_market_tis : null,
@@ -157,6 +163,9 @@ const fetchBuildingData = async () => {
     }
     if (data.data.bay_size && data.data.bay_size.length > VALUE_SEPARATOR.length) {
       ([building.bay_size_value_1, building.bay_size_value_2] = data.data.bay_size.split(VALUE_SEPARATOR))
+    }
+    if (data.data.kvas && data.data.kvas.length > VALUE_SEPARATOR.length) {
+      ([building.kvas_value_1, building.kvas_value_2] = data.data.kvas.split(VALUE_SEPARATOR))
     }
   } catch (error) {
     Swal.fire({
@@ -978,10 +987,10 @@ defineExpose({
                     <CFormInput 
                       type="number" 
                       :value="coverage"
-                      label="Coverage % (read only)"
+                      label="Coverage (read only)"
                       readonly
                     />
-                    <small class="text-secondary">Building Size (SF) * Total Land (SF)</small>
+                    <small class="text-secondary">Building Size (SF) &#247; Total Land (SF)</small>
                   </div>
                   <div class="mt-2">
                     <CFormInput 
@@ -1111,11 +1120,22 @@ defineExpose({
                     </CInputGroup>
                   </div>
                   <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      v-model="building.kvas"
-                      label="KVAS"
-                    />
+                    <label class="form-label">KVAS</label>
+                    <CInputGroup>
+                      <CFormInput 
+                        type="number" 
+                        v-model="building.kvas_value_1"
+                        placeholder="value 1"
+                        @blur="validateRangeKvas"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        v-model="building.kvas_value_2"
+                        placeholder="value 2"
+                        @blur="validateRangeKvas"
+                      />
+                    </CInputGroup>
                   </div>
                   <!-- bay_size -->
                   <div class="mt-2">

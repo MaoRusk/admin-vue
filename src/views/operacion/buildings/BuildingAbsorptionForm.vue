@@ -57,9 +57,6 @@ const absorptionObj = {
 
   bay_size_value_1: '',
   bay_size_value_2: '',
-
-  columns_spacing_value_1: '',
-  columns_spacing_value_2: '',
 }
 
 const validateRangeInputs = (model, field1, field2, fieldName) => {
@@ -74,10 +71,7 @@ const validateRangeInputs = (model, field1, field2, fieldName) => {
   }
 }
 const validateRangeBaySize = () => {
-  validateRangeInputs(building, 'bay_size_value_1', 'bay_size_value_2', 'Bay size');
-}
-const validateRangeColumnsSpacing = () => {
-  validateRangeInputs(building, 'columns_spacing_value_1', 'columns_spacing_value_2', 'Column Spacing FT');
+  validateRangeInputs(absorption, 'bay_size_value_1', 'bay_size_value_2', 'Bay size');
 }
 
 const absorption = reactive({...absorptionObj})
@@ -186,12 +180,11 @@ async function fetchShelters() {
   shelters.items = data.data
 }
 
-// TODO, falta verificar si el brokers sera la tabla brokers o developers, ya que la validacion corresponde a developers, pero en developers no hay bandera para is_broker
-async function fetchBrokers(marketId, submarketId) {
+async function fetchBrokers() {
   brokers.loading = true
-  const data = await API.developers.getDevelopers({ is_developer: true, marketId, submarketId });
+  const { data } = await API.brokers.getBrokers();
   brokers.loading = false
-  brokers.items = data.sort((a, b) => a.name.localeCompare(b.name))
+  brokers.items = data.data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 const handleReturn = () => {
@@ -206,7 +199,6 @@ async function saveAbsorption() {
   try {
     const body = {
       ...absorption,
-      columns_spacing: (absorption.columns_spacing_value_1 && absorption.columns_spacing_value_2) ? `${absorption.columns_spacing_value_1}${VALUE_SEPARATOR}${absorption.columns_spacing_value_2}` : '',
       bay_size: (absorption.bay_size_value_1 && absorption.bay_size_value_2) ? `${absorption.bay_size_value_1}${VALUE_SEPARATOR}${absorption.bay_size_value_2}` : '',
       abs_closing_date: absorption.abs_closing_date ? dayjs(absorption.abs_closing_date).format('YYYY-MM-DD') : '',
       abs_lease_up: absorption.abs_lease_up ? dayjs(absorption.abs_lease_up).format('YYYY-MM-DD') : '',
@@ -256,14 +248,10 @@ async function fetchAbsorption() {
         absorption[prop] = [];
       }
     });
-
-    if (data.data.columns_spacing && data.data.columns_spacing.length > VALUE_SEPARATOR.length) {
-      ([absorption.columns_spacing_value_1, absorption.columns_spacing_value_2] = data.data.columns_spacing.split(VALUE_SEPARATOR))
-    }
     if (data.data.bay_size && data.data.bay_size.length > VALUE_SEPARATOR.length) {
       ([absorption.bay_size_value_1, absorption.bay_size_value_2] = data.data.bay_size.split(VALUE_SEPARATOR))
     }
-    console.log(data)
+    console.info(data)
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -293,20 +281,15 @@ async function saveOptionGeneral(field, values, update = false) {
   } else if (['broker_id', 'abs_broker_id'].includes(field)) {
     const body = {
       name: values.name,
-      is_builder: false,
-      is_developer: true,
-      is_owner: false,
-      market_id: building.value.market_id,
-      submarket_id: building.value.submarket_id
     }
     let data;
     if (update) {
-      ({ data } = await API.developers.updateDeveloper(values.id, body));
+      ({ data } = await API.brokers.updateBroker(values.id, body));
     } else {
-      ({ data } = await API.developers.createDeveloper(body));
-      building[field] = data.data.id
+      ({ data } = await API.brokers.createBroker(body));
+      absorption[field] = data.data.id
     }
-    await fetchBrokers(building.value.market_id, building.value.submarket_id)
+    await fetchBrokers()
   }
   Swal.fire({
     icon: "success",
@@ -341,7 +324,7 @@ async function deleteOptionGeneral(field, optionReactive) {
   try {
     let data;
     if (['broker_id', 'abs_broker_id'].includes(field)) {
-      ({ data } = await API.developers.deleteDeveloper(option.id));
+      ({ data } = await API.brokers.deleteBroker(option.id));
       await fetchBrokers();
       if (absorption.broker_id === option.id) absorption.broker_id = ''
       if (absorption.abs_broker_id === option.id) absorption.abs_broker_id = ''
@@ -426,7 +409,7 @@ onMounted(async () => {
     fetchIndustries(),
     fetchCountries(),
     fetchShelters(),
-    fetchBrokers(building.value.market_id, building.value.submarket_id),
+    fetchBrokers(),
   ])
   Swal.close()
 });
@@ -452,223 +435,188 @@ defineExpose({
       
       <CCardBody>
         <form @submit.prevent="saveAbsorption" ref="formHtmlElement">
-          <div class="row">
-            <!-- Basic Information -->
-            <div class="col-md-6">
-              <CCard class="mb-4">
-                <CCardHeader>Basic Information</CCardHeader>
-                <CCardBody>
-                  <div class="mb-3">
-                    <CFormLabel>Tenant *</CFormLabel>
-                    <MASelect
-                      v-model="absorption.abs_tenant_id"
-                      :options="tenants.items"
-                      :reduce="option => option.id"
-                      label="name"
-                      required
-                      placeholder="Select..."
-                      :loading="tenants.loading"
-                      edit-options
-                      @submitOption="(option, update) => { saveOptionGeneral('abs_tenant_id', option, update) }"
-                      @deleteOption="(option) => { deleteOptionGeneral('abs_tenant_id', option) }"
+          <CCard class="mb-4">
+            <CCardHeader>Basic Information</CCardHeader>
+            <CCardBody>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Tenant *</CFormLabel>
+                  <MASelect
+                    v-model="absorption.abs_tenant_id"
+                    :options="tenants.items"
+                    :reduce="option => option.id"
+                    label="name"
+                    required
+                    placeholder="Select..."
+                    :loading="tenants.loading"
+                    edit-options
+                    @submitOption="(option, update) => { saveOptionGeneral('abs_tenant_id', option, update) }"
+                    @deleteOption="(option) => { deleteOptionGeneral('abs_tenant_id', option) }"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Industry *</CFormLabel>
+                  <MASelect
+                    v-model="absorption.abs_industry_id"
+                    :options="industries.items"
+                    :reduce="option => option.id"
+                    label="name"
+                    required
+                    placeholder="Select..."
+                    :loading="industries.loading"
+                    edit-options
+                    @submitOption="(option, update) => { saveOptionGeneral('abs_industry_id', option, update) }"
+                    @deleteOption="(option) => { deleteOptionGeneral('abs_industry_id', option) }"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Country *</CFormLabel>
+                  <MASelect
+                    v-model="absorption.abs_country_id"
+                    :options="countries.items"
+                    :reduce="option => option.id"
+                    label="name"
+                    required
+                    placeholder="Select..."
+                    :loading="countries.loading"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Listing Broker *</CFormLabel>
+                  <MASelect
+                    v-model="absorption.broker_id"
+                    :options="brokers.items"
+                    :reduce="option => option.id"
+                    label="name"
+                    required
+                    placeholder="Select..."
+                    :loading="brokers.loading"
+                    edit-options
+                    @submitOption="(option, update) => { saveOptionGeneral('broker_id', option, update) }"
+                    @deleteOption="(option) => { deleteOptionGeneral('broker_id', option) }"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Absorption Broker</CFormLabel>
+                  <MASelect
+                    v-model="absorption.abs_broker_id"
+                    :options="brokers.items"
+                    :reduce="option => option.id"
+                    label="name"
+                    required
+                    placeholder="Select..."
+                    :loading="brokers.loading"
+                    edit-options
+                    @submitOption="(option, update) => { saveOptionGeneral('abs_broker_id', option, update) }"
+                    @deleteOption="(option) => { deleteOptionGeneral('abs_broker_id', option) }"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Absorption Shelter</CFormLabel>
+                  <MASelect
+                    v-model="absorption.abs_shelter_id"
+                    :options="shelters.items"
+                    :reduce="option => option.id"
+                    label="name"
+                    placeholder="Select..."
+                    :loading="shelters.loading"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Building Phase *</CFormLabel>
+                  <MASelect
+                    v-model="absorption.abs_building_phase"
+                    :options="phases.items"
+                    :reduce="option => option.value"
+                    label="label"
+                    required
+                    placeholder="Select..."
+                    :loading="phases.loading"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Deal *</label>
+                  <MASelect
+                    v-model="absorption.abs_deal"
+                    :options="deals.items"
+                    :reduce="option => option.value"
+                    label="label"
+                    required
+                    placeholder="Select..."
+                    :loading="deals.loading"
+                  />
+                </div>
+              </div>
+            </CCardBody>
+          </CCard>
+
+          <CCard class="mb-4">
+            <CCardHeader>Technical Details</CCardHeader>
+            <CCardBody>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Dock Doors</CFormLabel>
+                  <CFormInput type="number" v-model="absorption.dock_doors" />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Ramp</CFormLabel>
+                  <CFormInput type="number" v-model="absorption.rams" />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Truck Court</CFormLabel>
+                  <CFormInput type="number" v-model="absorption.truck_court_ft" />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormLabel>Size (SF) * </CFormLabel>
+                  <CFormInput type="number" v-model="absorption.size_sf" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Fire Protection System (FPS) *</label>
+                  <MASelect
+                    v-model="absorption.fire_protection_system"
+                    :options="fireProtectionSystems.items"
+                    :reduce="option => option.value"
+                    label="label"
+                    required
+                    placeholder="Select..."
+                    :loading="fireProtectionSystems.loading"
+                    multiple
+                  />
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Above Market TIS</label>
+                  <MASelect
+                    v-model="absorption.above_market_tis"
+                    :options="technicalImprovements.items"
+                    :reduce="option => option.value"
+                    label="label"
+                    placeholder="Select..."
+                    :loading="technicalImprovements.loading"
+                    multiple
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Bay Size</label>
+                  <CInputGroup>
+                    <CFormInput
+                      type="number"
+                      v-model="absorption.bay_size_value_1"
+                      placeholder="value 1"
+                      @blur="validateRangeBaySize"
                     />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Industry *</CFormLabel>
-                    <MASelect
-                      v-model="absorption.abs_industry_id"
-                      :options="industries.items"
-                      :reduce="option => option.id"
-                      label="name"
-                      required
-                      placeholder="Select..."
-                      :loading="industries.loading"
-                      edit-options
-                      @submitOption="(option, update) => { saveOptionGeneral('abs_industry_id', option, update) }"
-                      @deleteOption="(option) => { deleteOptionGeneral('abs_industry_id', option) }"
+                    <CInputGroupText>@</CInputGroupText>
+                    <CFormInput
+                      type="number"
+                      v-model="absorption.bay_size_value_2"
+                      placeholder="value 2"
+                      @blur="validateRangeBaySize"
                     />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Country *</CFormLabel>
-                    <MASelect
-                      v-model="absorption.abs_country_id"
-                      :options="countries.items"
-                      :reduce="option => option.id"
-                      label="name"
-                      required
-                      placeholder="Select..."
-                      :loading="countries.loading"
-                    />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Listing Broker *</CFormLabel>
-                    <MASelect
-                      v-model="absorption.broker_id"
-                      :options="brokers.items"
-                      :reduce="option => option.id"
-                      label="name"
-                      required
-                      placeholder="Select..."
-                      :loading="brokers.loading"
-                      edit-options
-                      @submitOption="(option, update) => { saveOptionGeneral('broker_id', option, update) }"
-                      @deleteOption="(option) => { deleteOptionGeneral('broker_id', option) }"
-                    />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Absorption Broker</CFormLabel>
-                    <MASelect
-                      v-model="absorption.abs_broker_id"
-                      :options="brokers.items"
-                      :reduce="option => option.id"
-                      label="name"
-                      required
-                      placeholder="Select..."
-                      :loading="brokers.loading"
-                      edit-options
-                      @submitOption="(option, update) => { saveOptionGeneral('abs_broker_id', option, update) }"
-                      @deleteOption="(option) => { deleteOptionGeneral('abs_broker_id', option) }"
-                    />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Absorption Shelter</CFormLabel>
-                    <MASelect
-                      v-model="absorption.abs_shelter_id"
-                      :options="shelters.items"
-                      :reduce="option => option.id"
-                      label="name"
-                      placeholder="Select..."
-                      :loading="shelters.loading"
-                    />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Building Phase *</CFormLabel>
-                    <MASelect
-                      v-model="absorption.abs_building_phase"
-                      :options="phases.items"
-                      :reduce="option => option.value"
-                      label="label"
-                      required
-                      placeholder="Select..."
-                      :loading="phases.loading"
-                    />
-                  </div>
-
-                  <div class="mt-3">
-                    <label class="form-label">Deal *</label>
-                    <MASelect
-                      v-model="absorption.abs_deal"
-                      :options="deals.items"
-                      :reduce="option => option.value"
-                      label="label"
-                      required
-                      placeholder="Select..."
-                      :loading="deals.loading"
-                    />
-                  </div>
-                </CCardBody>
-              </CCard>
-            </div>
-
-            <!-- Technical Details -->
-            <div class="col-md-6">
-              <CCard class="mb-4">
-                <CCardHeader>Technical Details</CCardHeader>
-                <CCardBody>
-                  <div class="mb-3">
-                    <CFormLabel>Dock Doors</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.dock_doors" />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Ramp</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.rams" />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Truck Court</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.truck_court_ft" />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Size (SF) * </CFormLabel>
-                    <CFormInput type="number" v-model="absorption.size_sf" required />
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label">Fire Protection System (FPS) *</label>
-                    <MASelect
-                      v-model="absorption.fire_protection_system"
-                      :options="fireProtectionSystems.items"
-                      :reduce="option => option.value"
-                      label="label"
-                      required
-                      placeholder="Select..."
-                      :loading="fireProtectionSystems.loading"
-                      multiple
-                    />
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label class="form-label">Above Market TIS</label>
-                    <MASelect
-                      v-model="absorption.above_market_tis"
-                      :options="technicalImprovements.items"
-                      :reduce="option => option.value"
-                      label="label"
-                      placeholder="Select..."
-                      :loading="technicalImprovements.loading"
-                      multiple
-                    />
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label">Bay Size</label>
-                    <CInputGroup>
-                      <CFormInput 
-                        type="number" 
-                        v-model="absorption.bay_size_value_1"
-                        placeholder="value 1"
-                        @blur="validateRangeBaySize"
-                      />
-                      <CInputGroupText>@</CInputGroupText>
-                      <CFormInput 
-                        type="number"
-                        v-model="absorption.bay_size_value_2"
-                        placeholder="value 2"
-                        @blur="validateRangeBaySize"
-                      />
-                    </CInputGroup>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label">Column Spacing</label>
-                    <CInputGroup>
-                      <CFormInput 
-                        type="number" 
-                        v-model="absorption.columns_spacing_value_1"
-                        placeholder="value 1"
-                        @blur="validateRangeColumnsSpacing"
-                      />
-                      <CInputGroupText>@</CInputGroupText>
-                      <CFormInput 
-                        type="number"
-                        v-model="absorption.columns_spacing_value_2"
-                        placeholder="value 2"
-                        @blur="validateRangeColumnsSpacing"
-                      />
-                    </CInputGroup>
-                  </div>
-                </CCardBody>
-              </CCard>
-            </div>
-          </div>
+                  </CInputGroup>
+                </div>
+              </div>
+            </CCardBody>
+          </CCard>
 
           <!-- Additional Information -->
           <CCard class="mb-4">
