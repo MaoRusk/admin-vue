@@ -116,6 +116,7 @@
 
 <script>
 import RolesService from '@/services/Roles'
+import PermissionsService from '@/services/Permissions'
 import Swal from 'sweetalert2'
 
 export default {
@@ -381,15 +382,46 @@ export default {
       })
     },
     toggleAll() {
-      if (this.isAllSelected) {
+      if (this.isAllSelected || this.hasIndeterminateSelection) {
         this.selectedPermissions = []
       } else {
         this.selectedPermissions = [...this.availablePermissions]
       }
     }
   },
-  created() {
-    this.loadRole()
+  async created() {
+    try {
+      // Primero cargar todos los permisos disponibles
+      const permissionsResponse = await PermissionsService.getPermissions()
+      this.availablePermissions = permissionsResponse.data.data || []
+      
+      // Luego cargar el rol si estamos editando
+      if (!this.isNew) {
+        const roleResponse = await RolesService.getRole(this.id)
+        if (roleResponse.data.data) {
+          const { name, guard_name, permissions } = roleResponse.data.data
+          this.role = {
+            name,
+            guard_name,
+            permissions: permissions || []
+          }
+          // Inicializar los permisos seleccionados
+          this.selectedPermissions = [...permissions]
+        }
+      }
+    } catch (error) {
+      console.error('Error loading data:', error)
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Error loading data',
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      })
+    }
   }
 }
 </script>
