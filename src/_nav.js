@@ -26,11 +26,7 @@ export default [
         component: 'CNavItem',
         name: 'Roles',
         to: '/seguridad/roles',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Perfiles',
-        to: '/seguridad/perfiles',
+        icon: 'cil-shield-alt',
       },
       {
         component: 'CNavItem',
