@@ -438,8 +438,8 @@ defineExpose({
                       placeholder="Select..."
                       :loading="brokers.loading"
                       edit-options
-                      @submitOption="(option, update) => { saveOptionGeneral('owner_id', option, update) }"
-                      @deleteOption="(option) => { deleteOptionGeneral('owner_id', option) }"
+                      @submitOption="(option, update) => { saveOptionGeneral('broker_id', option, update) }"
+                      @deleteOption="(option) => { deleteOptionGeneral('broker_id', option) }"
                     />
                   </div>
                 </CCardBody>

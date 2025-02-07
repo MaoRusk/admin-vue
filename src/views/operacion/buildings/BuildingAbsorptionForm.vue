@@ -1,9 +1,11 @@
 <script setup>
 import { onMounted, computed, reactive, ref } from 'vue';
 import Swal from 'sweetalert2';
-import { API } from '../../../services';
 import dayjs from 'dayjs';
-import MSelect from '../../../components/MSelect.vue';
+
+import { API } from '../../../services';
+import MASelect from '../../../components/MASelect.vue';
+import { AxiosError } from 'axios';
 
 const props = defineProps({
   buildingId: {
@@ -19,36 +21,63 @@ const emit = defineEmits(['return', 'submitting']);
 
 const isNewRecord = computed(() => !props.absorptionId);
 
+const building = ref(null)
+const VALUE_SEPARATOR = ' x '
+
 const absorptionObj = {
   building_id: props.buildingId,
-  abs_tenant_id: '', // id
-  abs_industry_id: '', // id
-  abs_country_id: '', // id
-  broker_id: '', // id
-  dock_doors: '', // number
-  drive_in_door: '', // number
-  floor_thickness: '', // number
-  floor_resistance: '', // string,
-  truck_court: '', // number
-  has_crossdock: false,
+  dock_doors: '',
+  abs_tenant_id: '',
+  abs_industry_id: '',
+  abs_country_id: '',
+  broker_id: '',
+  rams: '',
+  truck_court_ft: '',
   shared_truck: false,
   new_construction: false,
   is_starting_construction: false,
-  bay_size: '', // string
-  columns_spacing: '', // string
-  abs_lease_term_month: '', // number
-  knockouts_docks: '', // number
-  parking_space: '', // number
-  abs_asking_rate_shell: '', // number
-  abs_closing_rate: '', // number
-  abs_closing_date: '', // string date
-  abs_lease_up: '', // string date
-  abs_month: '', // string date
-  abs_sale_price: '', // number
-  building_state: '', // string enum
-  abs_building_phase: '', // string enum
-  abs_final_use: '', // string
-  abs_company_type: '', // string
+  abs_lease_term_month: '',
+  parking_space: '',
+  abs_closing_rate: '',
+  abs_closing_date: '',
+  abs_lease_up: '',
+  abs_month: '',
+  abs_sale_price: '',
+  abs_building_phase: '',
+  abs_final_use: '',
+  abs_company_type: '',
+  size_sf: '',
+  trailer_parking_space: '',
+  fire_protection_system: [],
+  above_market_tis: [],
+  abs_deal: '',
+  abs_broker_id: '',
+  abs_shelter_id: '',
+  sqftToM2: false,
+
+  bay_size_value_1: '',
+  bay_size_value_2: '',
+
+  columns_spacing_value_1: '',
+  columns_spacing_value_2: '',
+}
+
+const validateRangeInputs = (model, field1, field2, fieldName) => {
+  if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Range',
+      text: `The first ${fieldName} value cannot be greater than the second value`,
+    });
+    model[field1] = ''
+    model[field2] = ''
+  }
+}
+const validateRangeBaySize = () => {
+  validateRangeInputs(building, 'bay_size_value_1', 'bay_size_value_2', 'Bay size');
+}
+const validateRangeColumnsSpacing = () => {
+  validateRangeInputs(building, 'columns_spacing_value_1', 'columns_spacing_value_2', 'Column Spacing FT');
 }
 
 const absorption = reactive({...absorptionObj})
@@ -59,9 +88,12 @@ const industries = reactive({ loading: false, items: []})
 const countries = reactive({ loading: false, items: []})
 const brokers = reactive({ loading: false, items: []})
 const phases = reactive({ loading: false, items: []})
-const buildingStates = reactive({ loading: false, items: []})
 const finalUses = reactive({ loading: false, items: []})
 const companyTypes = reactive({ loading: false, items: []})
+const technicalImprovements = reactive({ loading: false, items: []})
+const fireProtectionSystems = reactive({ loading: false, items: []})
+const deals = reactive({ loading: false, items: []})
+const shelters = reactive({ loading: false, items: []})
 
 // TODO, no encontre catalogo en backend
 async function fetchCompanyTypes() {
@@ -70,7 +102,6 @@ async function fetchCompanyTypes() {
     r({
       data: {
         data: [
-          { value: '', label: 'Select' },
           { value: 'Existing Company', label: 'Existing Company' },
           { value: 'New Company in Market', label: 'New Company in Market' },
           { value: 'New Company in Mexico', label: 'New Company in Mexico' }
@@ -79,7 +110,7 @@ async function fetchCompanyTypes() {
     })
   });
   companyTypes.loading = false
-  companyTypes.items = data.data.map(({ value, label }) => ({ label: label, value: value, selected: value === absorption.abs_company_type}))
+  companyTypes.items = data.data.map(({ value, label }) => ({ label: label, value: value}))
 }
 
 // TODO, no encontre catalogo en backend
@@ -89,7 +120,6 @@ async function fetchFinalUses() {
     r({
       data: {
         data: [
-          { value: '', label: 'Select' },
           { value: 'Manufacturing', label: 'Manufacturing' },
           { value: 'Logistic', label: 'Logistic' },
         ]
@@ -97,65 +127,71 @@ async function fetchFinalUses() {
     })
   });
   finalUses.loading = false
-  finalUses.items = data.data.map(({ value, label }) => ({ label: label, value: value, selected: value === absorption.abs_final_use}))
+  finalUses.items = data.data.map(({ value, label }) => ({ label: label, value: value}))
 }
 
-// TODO. este catalogo es de backend? y solo tendra siempre un valor?
-async function fetchBuildingStates() {
-  buildingStates.loading = true
-  const { data } = await new Promise(r => {
-    r({
-      data: {
-        data: [
-          { value: '', label: 'Select...' },
-          { value: 'Absorption', label: 'Absorption' },
-        ]
-      }
-    })
-  });
-  buildingStates.loading = false
-  buildingStates.items = data.data.map(({ value, label }) => ({ label: label, value: value, selected: value === absorption.building_state}))
+async function fetchBuildingTechnicalImprovements() {
+  technicalImprovements.loading = true
+  const { data } = await API.buildings.getBuildingsTechnicalImprovements();
+  technicalImprovements.loading = false
+  technicalImprovements.items = Object.values(data.data).map(value => ({ value, label: value }))
+}
+
+async function fetchFireProtectionSystems() {
+  fireProtectionSystems.loading = true
+  const { data } = await API.buildings.getBuildingsFireProtectionSystems();
+  fireProtectionSystems.loading = false
+  fireProtectionSystems.items = Object.values(data.data).map(value => ({ value, label: value }))
+}
+
+async function fetchBuildingDeals() {
+  deals.loading = true
+  const { data } = await API.buildings.getBuildingsTypesDeals();
+  deals.loading = false
+  deals.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchPhases() {
   phases.loading = true
-  const { data } = await API.buildings.getBuildingsPhases();
+  const { data } = await API.buildings.getBuildingsPhases({ absorption: true });
   phases.loading = false
-  phases.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === absorption.abs_building_phases }))
-  phases.items.unshift({label: 'Select...', value: ''})
+  phases.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchTenants() {
   tenants.loading = true
   const { data } = await API.tenants.getTenants();
   tenants.loading = false
-  tenants.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_tenant_id})).sort((a, b) => a.label.localeCompare(b.label))
-  tenants.items.unshift({label: 'Select...', value: ''})
+  tenants.items = data.data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 async function fetchIndustries() {
   industries.loading = true
   const { data } = await API.industries.getIndustries();
   industries.loading = false
-  industries.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_industry_id})).sort((a, b) => a.label.localeCompare(b.label))
-  industries.items.unshift({label: 'Select...', value: ''})
+  industries.items = data.data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 async function fetchCountries() {
   countries.loading = true
   const { data } = await API.countries.getCountries();
   countries.loading = false
-  countries.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.abs_country_id}))
-  countries.items.unshift({label: 'Select...', value: ''})
+  countries.items = data.data
+}
+
+async function fetchShelters() {
+  shelters.loading = true
+  const { data } = await API.shelters.getShelters();
+  shelters.loading = false
+  shelters.items = data.data
 }
 
 // TODO, falta verificar si el brokers sera la tabla brokers o developers, ya que la validacion corresponde a developers, pero en developers no hay bandera para is_broker
-async function fetchBrokers() {
+async function fetchBrokers(marketId, submarketId) {
   brokers.loading = true
-  const { data } = await API.developers.getDevelopers();
+  const data = await API.developers.getDevelopers({ is_developer: true, marketId, submarketId });
   brokers.loading = false
-  brokers.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === absorption.broker_id}))
-  brokers.items.unshift({label: 'Select...', value: ''})
+  brokers.items = data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 const handleReturn = () => {
@@ -170,9 +206,13 @@ async function saveAbsorption() {
   try {
     const body = {
       ...absorption,
+      columns_spacing: (absorption.columns_spacing_value_1 && absorption.columns_spacing_value_2) ? `${absorption.columns_spacing_value_1}${VALUE_SEPARATOR}${absorption.columns_spacing_value_2}` : '',
+      bay_size: (absorption.bay_size_value_1 && absorption.bay_size_value_2) ? `${absorption.bay_size_value_1}${VALUE_SEPARATOR}${absorption.bay_size_value_2}` : '',
       abs_closing_date: absorption.abs_closing_date ? dayjs(absorption.abs_closing_date).format('YYYY-MM-DD') : '',
       abs_lease_up: absorption.abs_lease_up ? dayjs(absorption.abs_lease_up).format('YYYY-MM-DD') : '',
       abs_month: absorption.abs_month ? dayjs(absorption.abs_month).format('YYYY-MM-DD') : '',
+      fire_protection_system: absorption.fire_protection_system.length ? absorption.fire_protection_system : null,
+      above_market_tis: absorption.above_market_tis.length ? absorption.above_market_tis : null,
     }
     let data;
     if (isNewRecord.value) {
@@ -201,10 +241,28 @@ async function saveAbsorption() {
 async function fetchAbsorption() {
   try {
     const { data } = await API.buildingsAbsorption.getAbsorptionBuilding(props.absorptionId, props.buildingId);
-    ['abs_tenant_id', 'abs_industry_id', 'abs_country_id', 'broker_id', 'dock_doors', 'drive_in_door', 'floor_thickness', 'floor_resistance', 'truck_court', 'bay_size', 'columns_spacing', 'abs_lease_term_month', 'knockouts_docks', 'parking_space', 'abs_asking_rate_shell', 'abs_closing_rate', 'abs_closing_date', 'abs_lease_up', 'abs_month', 'abs_sale_price', 'building_state', 'abs_building_phase', 'abs_final_use', 'abs_company_type']
+    ['dock_doors', 'rams', 'truck_court_ft', 'abs_lease_term_month', 'parking_space', 'abs_closing_rate', 'abs_closing_date', 'abs_lease_up', 'abs_month', 'abs_sale_price', 'abs_building_phase', 'abs_final_use', 'abs_company_type', 'size_sf', 'trailer_parking_space', 'abs_deal']
     .forEach(prop => absorption[prop] = `${data.data[prop] ?? ''}`);
-    ['has_crossdock', 'shared_truck', 'new_construction', 'is_starting_construction']
-    .forEach(prop => absorption[prop] = Boolean(data.data[prop]))
+    ['abs_tenant_id', 'abs_industry_id', 'abs_country_id', 'broker_id', 'abs_broker_id', 'abs_shelter_id']
+    .forEach(prop => absorption[prop] = data.data[prop] ? +data.data[prop] : '');
+    ['shared_truck', 'new_construction', 'is_starting_construction']
+    .forEach(prop => absorption[prop] = Boolean(data.data[prop]));
+    ['fire_protection_system', 'above_market_tis']
+    .forEach(prop => {
+      if (data.data[prop]) {
+        if (Array.isArray(data.data[prop])) absorption[prop] = data.data[prop]
+        else absorption[prop] = data.data[prop].split(',')
+      } else {
+        absorption[prop] = [];
+      }
+    });
+
+    if (data.data.columns_spacing && data.data.columns_spacing.length > VALUE_SEPARATOR.length) {
+      ([absorption.columns_spacing_value_1, absorption.columns_spacing_value_2] = data.data.columns_spacing.split(VALUE_SEPARATOR))
+    }
+    if (data.data.bay_size && data.data.bay_size.length > VALUE_SEPARATOR.length) {
+      ([absorption.bay_size_value_1, absorption.bay_size_value_2] = data.data.bay_size.split(VALUE_SEPARATOR))
+    }
     console.log(data)
   } catch (error) {
     Swal.fire({
@@ -215,19 +273,44 @@ async function fetchAbsorption() {
   }
 }
 
-async function createOptionGeneral(field, value) {
+async function saveOptionGeneral(field, values, update = false) {
   if (field === 'abs_industry_id') {
-    const { data } = await API.industries.createIndustry({ name: value.name })
-    absorption[field] = data.data.id
-    fetchIndustries()
+    if (update) {
+      await API.industries.updateIndustry(values.id, { name: values.name })
+    } else {
+      const { data } = await API.industries.createIndustry({ name: values.name })
+      absorption[field] = data.data.id
+    }
+    await fetchIndustries()
   } else if (field === 'abs_tenant_id') {
-    const { data } = await API.tenants.createTenant({ name: value.name })
-    absorption[field] = data.data.id
-    fetchTenants()
+    if (update) {
+      await API.tenants.updateTenant(values.id, { name: values.name })
+    } else {
+      const { data } = await API.tenants.createTenant({ name: values.name })
+      absorption[field] = data.data.id
+    }
+    await fetchTenants()
+  } else if (['broker_id', 'abs_broker_id'].includes(field)) {
+    const body = {
+      name: values.name,
+      is_builder: false,
+      is_developer: true,
+      is_owner: false,
+      market_id: building.value.market_id,
+      submarket_id: building.value.submarket_id
+    }
+    let data;
+    if (update) {
+      ({ data } = await API.developers.updateDeveloper(values.id, body));
+    } else {
+      ({ data } = await API.developers.createDeveloper(body));
+      building[field] = data.data.id
+    }
+    await fetchBrokers(building.value.market_id, building.value.submarket_id)
   }
   Swal.fire({
     icon: "success",
-    title: "Created successfully",
+    title: "Saved successfully",
     toast: true,
     position: "bottom",
     showConfirmButton: false,
@@ -240,11 +323,80 @@ async function createOptionGeneral(field, value) {
   });
 }
 
-async function editOptionGeneral(field, value) {
-  if (field === 'abs_industry_id') {
-    fetchIndustries()
-  } else if (field === 'abs_tenant_id') {
-    fetchTenants()
+async function deleteOptionGeneral(field, optionReactive) {
+  const option = {...optionReactive}
+  const result = await Swal.fire({
+    title: `Delete option`,
+    text: `Are you sure you want to delete?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  })
+
+  if (!result.isConfirmed) return
+
+  try {
+    let data;
+    if (['broker_id', 'abs_broker_id'].includes(field)) {
+      ({ data } = await API.developers.deleteDeveloper(option.id));
+      await fetchBrokers();
+      if (absorption.broker_id === option.id) absorption.broker_id = ''
+      if (absorption.abs_broker_id === option.id) absorption.abs_broker_id = ''
+    } else if (field === 'abs_industry_id') {
+      ({ data } = await API.industries.deleteIndustry(option.id));
+      await fetchIndustries();
+    } else if (field === 'abs_tenant_id') {
+      ({ data } = await API.tenants.deleteTenant(option.id));
+      await fetchTenants()
+    }
+    console.info(data)
+    if (absorption[field] === option.id) {
+      absorption[field] = ''
+    }
+  } catch (error) {
+    console.error('Error with developer:', error);
+    if (error instanceof AxiosError) {
+      const errorMessage = error.response?.data?.errors 
+        ? Object.values(error.response.data.errors).flat().join('\n')
+        : error.response?.data?.message || 'An error occurred';
+      Swal.fire({
+        icon: "error",
+        title: "Error deleting",
+        text: errorMessage,
+      });
+    } else {
+      throw error
+    }
+    return
+  }
+  Swal.fire({
+    icon: "success",
+    title: "Deleted successfully",
+    toast: true,
+    position: "bottom",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
+}
+
+async function fetchBuildingData() {
+  try {
+    const { data } = await API.buildings.getBuilding(props.buildingId);
+    building.value = data.data
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to load building data: ' + error.message,
+    });
   }
 }
 
@@ -257,18 +409,24 @@ onMounted(async () => {
     allowOutsideClick: false,
     allowEscapeKey: false,
   })
+  if (props.buildingId) {
+    await fetchBuildingData();
+  }
   if (!isNewRecord.value) {
     await fetchAbsorption();
   }
   await Promise.all([
+    fetchBuildingTechnicalImprovements(),
+    fetchFireProtectionSystems(),
     fetchCompanyTypes(),
     fetchFinalUses(),
-    fetchBuildingStates(),
+    fetchBuildingDeals(),
     fetchPhases(),
     fetchTenants(),
     fetchIndustries(),
     fetchCountries(),
-    fetchBrokers(),
+    fetchShelters(),
+    fetchBrokers(building.value.market_id, building.value.submarket_id),
   ])
   Swal.close()
 });
@@ -301,64 +459,117 @@ defineExpose({
                 <CCardHeader>Basic Information</CCardHeader>
                 <CCardBody>
                   <div class="mb-3">
-                    <CFormLabel>Tenant</CFormLabel>
-                    <MSelect
-                      :options="tenants.items"
+                    <CFormLabel>Tenant *</CFormLabel>
+                    <MASelect
                       v-model="absorption.abs_tenant_id"
-                      @submitOption="value => createOptionGeneral('abs_tenant_id', value)"
-                      create-option
+                      :options="tenants.items"
+                      :reduce="option => option.id"
+                      label="name"
                       required
+                      placeholder="Select..."
+                      :loading="tenants.loading"
+                      edit-options
+                      @submitOption="(option, update) => { saveOptionGeneral('abs_tenant_id', option, update) }"
+                      @deleteOption="(option) => { deleteOptionGeneral('abs_tenant_id', option) }"
                     />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Industry</CFormLabel>
-                    <MSelect
-                      :options="industries.items"
+                    <CFormLabel>Industry *</CFormLabel>
+                    <MASelect
                       v-model="absorption.abs_industry_id"
-                      @submitOption="value => createOptionGeneral('abs_industry_id', value)"
-                      @editOption="value => editOptionGeneral('abs_industry_id', value)"
-                      @deleteOption="fetchIndustries"
-                      create-option
+                      :options="industries.items"
+                      :reduce="option => option.id"
+                      label="name"
                       required
-                      isIndustryForm
-                      modalTitle="Create Industry"
+                      placeholder="Select..."
+                      :loading="industries.loading"
+                      edit-options
+                      @submitOption="(option, update) => { saveOptionGeneral('abs_industry_id', option, update) }"
+                      @deleteOption="(option) => { deleteOptionGeneral('abs_industry_id', option) }"
                     />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Country</CFormLabel>
-                    <CFormSelect
+                    <CFormLabel>Country *</CFormLabel>
+                    <MASelect
                       v-model="absorption.abs_country_id"
                       :options="countries.items"
+                      :reduce="option => option.id"
+                      label="name"
                       required
+                      placeholder="Select..."
+                      :loading="countries.loading"
                     />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Broker</CFormLabel>
-                    <CFormSelect
+                    <CFormLabel>Listing Broker *</CFormLabel>
+                    <MASelect
                       v-model="absorption.broker_id"
                       :options="brokers.items"
+                      :reduce="option => option.id"
+                      label="name"
                       required
+                      placeholder="Select..."
+                      :loading="brokers.loading"
+                      edit-options
+                      @submitOption="(option, update) => { saveOptionGeneral('broker_id', option, update) }"
+                      @deleteOption="(option) => { deleteOptionGeneral('broker_id', option) }"
                     />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Building State</CFormLabel>
-                    <CFormSelect
-                      v-model="absorption.building_state"
-                      :options="buildingStates.items"
+                    <CFormLabel>Absorption Broker</CFormLabel>
+                    <MASelect
+                      v-model="absorption.abs_broker_id"
+                      :options="brokers.items"
+                      :reduce="option => option.id"
+                      label="name"
                       required
+                      placeholder="Select..."
+                      :loading="brokers.loading"
+                      edit-options
+                      @submitOption="(option, update) => { saveOptionGeneral('abs_broker_id', option, update) }"
+                      @deleteOption="(option) => { deleteOptionGeneral('abs_broker_id', option) }"
                     />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Building Phase</CFormLabel>
-                    <CFormSelect
+                    <CFormLabel>Absorption Shelter</CFormLabel>
+                    <MASelect
+                      v-model="absorption.abs_shelter_id"
+                      :options="shelters.items"
+                      :reduce="option => option.id"
+                      label="name"
+                      placeholder="Select..."
+                      :loading="shelters.loading"
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <CFormLabel>Building Phase *</CFormLabel>
+                    <MASelect
                       v-model="absorption.abs_building_phase"
                       :options="phases.items"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="phases.loading"
+                    />
+                  </div>
+
+                  <div class="mt-3">
+                    <label class="form-label">Deal *</label>
+                    <MASelect
+                      v-model="absorption.abs_deal"
+                      :options="deals.items"
+                      :reduce="option => option.value"
+                      label="label"
+                      required
+                      placeholder="Select..."
+                      :loading="deals.loading"
                     />
                   </div>
                 </CCardBody>
@@ -376,33 +587,83 @@ defineExpose({
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Drive-in Door</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.drive_in_door" />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Floor Thickness</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.floor_thickness" />
-                  </div>
-
-                  <div class="mb-3">
-                    <CFormLabel>Floor Resistance</CFormLabel>
-                    <CFormInput type="text" v-model="absorption.floor_resistance" />
+                    <CFormLabel>Ramp</CFormLabel>
+                    <CFormInput type="number" v-model="absorption.rams" />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Truck Court</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.truck_court" />
+                    <CFormInput type="number" v-model="absorption.truck_court_ft" />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Bay Size</CFormLabel>
-                    <CFormInput type="text" v-model="absorption.bay_size" />
+                    <CFormLabel>Size (SF) * </CFormLabel>
+                    <CFormInput type="number" v-model="absorption.size_sf" required />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Columns Spacing</CFormLabel>
-                    <CFormInput type="text" v-model="absorption.columns_spacing" />
+                    <label class="form-label">Fire Protection System (FPS) *</label>
+                    <MASelect
+                      v-model="absorption.fire_protection_system"
+                      :options="fireProtectionSystems.items"
+                      :reduce="option => option.value"
+                      label="label"
+                      required
+                      placeholder="Select..."
+                      :loading="fireProtectionSystems.loading"
+                      multiple
+                    />
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label">Above Market TIS</label>
+                    <MASelect
+                      v-model="absorption.above_market_tis"
+                      :options="technicalImprovements.items"
+                      :reduce="option => option.value"
+                      label="label"
+                      placeholder="Select..."
+                      :loading="technicalImprovements.loading"
+                      multiple
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Bay Size</label>
+                    <CInputGroup>
+                      <CFormInput 
+                        type="number" 
+                        v-model="absorption.bay_size_value_1"
+                        placeholder="value 1"
+                        @blur="validateRangeBaySize"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        v-model="absorption.bay_size_value_2"
+                        placeholder="value 2"
+                        @blur="validateRangeBaySize"
+                      />
+                    </CInputGroup>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Column Spacing</label>
+                    <CInputGroup>
+                      <CFormInput 
+                        type="number" 
+                        v-model="absorption.columns_spacing_value_1"
+                        placeholder="value 1"
+                        @blur="validateRangeColumnsSpacing"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        v-model="absorption.columns_spacing_value_2"
+                        placeholder="value 2"
+                        @blur="validateRangeColumnsSpacing"
+                      />
+                    </CInputGroup>
                   </div>
                 </CCardBody>
               </CCard>
@@ -421,27 +682,17 @@ defineExpose({
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Knockouts Docks</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.knockouts_docks" />
-                  </div>
-
-                  <div class="mb-3">
                     <CFormLabel>Parking Space</CFormLabel>
                     <CFormInput type="number" v-model="absorption.parking_space" />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Asking Rate Shell</CFormLabel>
-                    <CFormInput 
-                      type="number" 
-                      v-model="absorption.abs_asking_rate_shell"
-                      step="0.01" 
-                      required
-                    />
+                    <CFormLabel>Trailer Parking Space</CFormLabel>
+                    <CFormInput type="number" v-model="absorption.trailer_parking_space" />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Closing Rate</CFormLabel>
+                    <CFormLabel>Closing Rate *</CFormLabel>
                     <CFormInput 
                       type="number" 
                       v-model="absorption.abs_closing_rate"
@@ -454,19 +705,27 @@ defineExpose({
                 <div class="col-md-6">
                   <div class="mb-3">
                     <CFormLabel>Final Use</CFormLabel>
-                    <CFormSelect
+                    <MASelect
                       v-model="absorption.abs_final_use"
                       :options="finalUses.items"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="finalUses.loading"
                     />
                   </div>
 
                   <div class="mb-3">
                     <CFormLabel>Company Type</CFormLabel>
-                    <CFormSelect
+                    <MASelect
                       v-model="absorption.abs_company_type"
                       :options="companyTypes.items"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="companyTypes.loading"
                     />
                   </div>
 
@@ -507,11 +766,6 @@ defineExpose({
                     <div class="col-md-4 mb-4">
                       <h6 class="mb-3">Building Features</h6>
                       <div class="d-flex flex-column gap-3">
-                        <CFormSwitch
-                          v-model="absorption.has_crossdock"
-                          label="Has Crossdock"
-                          size="lg"
-                        />
                         <CFormSwitch
                           v-model="absorption.shared_truck"
                           label="Shared Truck"
