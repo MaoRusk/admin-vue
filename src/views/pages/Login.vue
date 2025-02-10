@@ -81,4 +81,5 @@ async function login() {
     errorMessage.value = err.response?.data?.message || 'Error al iniciar sesión'
   }
 }
+
 </script>
