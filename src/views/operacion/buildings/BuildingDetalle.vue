@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import { cilArrowCircleLeft, cilSave } from '@coreui/icons'
 
 import BuildingData from './BuildingData.vue'
 import BuildingAvailability from './BuildingAvailability.vue'
@@ -81,6 +80,16 @@ function changeTab(tab) {
     query: { ...route.query, tab }
   })
 }
+
+function showList() {
+  if (['DataBuilding', 'ContactBuilding', 'Files'].includes(activeTab.value)) {
+    router.push({ name: ROUTE_NAMES.BUILDINGS })
+  } else if (activeTab.value === 'Availability') {
+    buildingAvailabilityRef.value?.handleReturn?.()
+  } else if (activeTab.value === 'Absorption') {
+    buildingAbsorptionRef.value?.handleReturn?.()
+  }
+}
 </script>
 <template>
   <div>
@@ -89,14 +98,12 @@ function changeTab(tab) {
         <CRow class="justify-content-center">
           <CCol xs="auto" class="btns-flotantes-customer-moviles">
             <CLoadingButton color="success" variant="outline" @click="dispatchSubmitForm" class="me-3" :loading="submittingForm" :disabled="disabledSave">
-              <CIcon :content="cilSave" size="sm" />
+              <CIcon name="cilSave" size="sm" />
               Save
             </CLoadingButton>
-            <router-link :to="{ name: ROUTE_NAMES.BUILDINGS_CREATE }">
-              <CButton color="primary" variant="outline" @click="this.$router.back()">
-                <CIcon :content="cilArrowCircleLeft" size="sm" /> back
-              </CButton>
-            </router-link>
+            <CButton color="primary" variant="outline" @click="showList()">
+              <CIcon name="cilArrowCircleLeft" size="sm" /> List
+            </CButton>
           </CCol>
         </CRow>
       </CCardBody>

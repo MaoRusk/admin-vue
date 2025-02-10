@@ -123,6 +123,7 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
 
 defineExpose({
   showForm,
+  handleReturn,
   submit() {
     formAvailabilityRef.value?.submit?.()
   }

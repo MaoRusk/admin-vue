@@ -1004,7 +1004,6 @@ defineExpose({
                       label="Coverage (read only)"
                       readonly
                     />
-                    <small class="text-secondary">Building Size (SF) &#247; Total Land (SF)</small>
                   </div>
                   <div class="mt-2">
                     <CFormInput 
