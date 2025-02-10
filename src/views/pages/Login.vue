@@ -40,7 +40,7 @@
             </CCard>
             <CCard class="text-white bg-primary py-5">
               <CCardBody class="text-center">
-                <CImage align="center" rounded src="/src/assets/images/market-logo.jpg" width="300" height="150"/>
+                <CImage align="center" rounded src="/src/assets/images/market-logo.jpg" width="300" height="150" alt="market-logo.jpg"/>
               </CCardBody>
             </CCard>
           </CCardGroup>
