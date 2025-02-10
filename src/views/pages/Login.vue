@@ -39,9 +39,15 @@
               </CCardBody>
             </CCard>
             <CCard class="text-white bg-primary py-5">
-              <CCardBody class="text-center">
-                <!-- <CImage align="center" rounded src="/src/assets/images/market-logo.jpg" width="300" height="150" alt="market-logo.jpg"/> -->
-                <CImage align="center" rounded :src="logo" width="300" height="150" alt="market-logo.jpg"/>
+              <CCardBody class="text-center d-flex align-items-center justify-content-center">
+                <CImage 
+                  class="img-fluid" 
+                  rounded 
+                  :src="logo" 
+                  width="300" 
+                  height="auto" 
+                  alt="market-logo.jpg"
+                />
               </CCardBody>
             </CCard>
           </CCardGroup>
