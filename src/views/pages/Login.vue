@@ -40,7 +40,8 @@
             </CCard>
             <CCard class="text-white bg-primary py-5">
               <CCardBody class="text-center">
-                <CImage align="center" rounded src="/src/assets/images/market-logo.jpg" width="300" height="150" alt="market-logo.jpg"/>
+                <!-- <CImage align="center" rounded src="/src/assets/images/market-logo.jpg" width="300" height="150" alt="market-logo.jpg"/> -->
+                <CImage align="center" rounded :src="logo" width="300" height="150" alt="market-logo.jpg"/>
               </CCardBody>
             </CCard>
           </CCardGroup>
@@ -51,12 +52,14 @@
 </template>
 
 <script setup>
+
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '../../router/routeNames';
 import { AUTH_TOKEN, AUTH_USER } from '../../constants';
 import { useLocalStorage } from '../../composables/useLocalStorage';
 import { API } from '../../services';
+import logo from '@/assets/images/market-logo.jpg';
 
 const router = useRouter()
 const { setItem } = useLocalStorage()
