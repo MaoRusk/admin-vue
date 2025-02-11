@@ -44,7 +44,7 @@ export default [
   {
     component: 'CNavItem',
     name: 'Tenants',
-    to: '/operacion/tenants',
+    to: '/operations/tenants',
     icon: 'cil-people',
   },
   {
@@ -56,18 +56,18 @@ export default [
   {
     component: 'CNavItem',
     name: 'Industrial Parks',
-    to: '/operacion/industrial-parks',
+    to: '/operations/industrial-parks',
     icon: 'cil-building',
   },
   {
     component: 'CNavGroup',
-    name: 'Buildings',
+    name: 'Market Size',
     to: '/operations',
     icon: 'cil-building',
     items: [
       {
         component: 'CNavItem',
-        name: 'Buildings',
+        name: 'Market Size',
         to: { name: ROUTE_NAMES.BUILDINGS },
       },
       {

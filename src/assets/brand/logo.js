@@ -22,7 +22,6 @@ export const logo = [
 `,
 ]
 */
-
 import logoPath from '../images/market-logo.jpg'; 
 export const logo = [
   '300 116',

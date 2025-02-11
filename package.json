@@ -45,7 +45,8 @@
     "simplebar-vue": "^2.3.3",
     "sweetalert2": "^11.11.1",
     "vue": "^3.4.21",
-    "vue-router": "^4.4.0"
+    "vue-router": "^4.4.0",
+    "vue-select": "^4.0.0-beta.6"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
