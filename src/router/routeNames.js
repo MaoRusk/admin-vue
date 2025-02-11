@@ -21,5 +21,9 @@ export const ROUTE_NAMES = {
   POLICY_DETAIL: 'PolicyDetail',
   INDUSTRIES: 'Industries',
   INDUSTRY_CREATE: 'IndustryCreate',
-  INDUSTRY_UPDATE: 'IndustryUpdate'
+  INDUSTRY_UPDATE: 'IndustryUpdate',
+
+  LANDS_INDEX: 'Lands',
+  LANDS_CREATE: 'Create Lands',
+  LANDS_UPDATE: 'Edit Lands',
 }

@@ -23,6 +23,7 @@ import {
   cibCcPaypal,
   cibCcApplePay,
   cibCcAmex,
+  cilTerrain,
 } from '@coreui/icons'
 import { cifUs, cifBr, cifIn, cifFr, cifEs, cifPl, cifGb } from '@coreui/icons'
 import {
@@ -125,6 +126,9 @@ import {
 export const iconsSet = Object.assign(
   {},
   {
+    cilArrowCircleLeft,
+    cilSave,
+    cilTerrain,
     cilLowVision,
     cilViewModule,
     cilViewColumn,
@@ -168,7 +172,6 @@ export const iconsSet = Object.assign(
     cilInbox,
     cilImage,
     cilImagePlus,
-    cilArrowCircleLeft,
     cilArrowLeft,
     cilPlus,
     cilIndentDecrease,
@@ -196,7 +199,6 @@ export const iconsSet = Object.assign(
     cilPeople,
     cilPrint,
     cilPuzzle,
-    cilSave,
     cilSearch,
     cilSettings,
     cilShare,

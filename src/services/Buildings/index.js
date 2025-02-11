@@ -240,4 +240,10 @@ export default {
   getBuildingsStatus() {
     return httpClient.get(`/buildings/status`)
   },
+  getBuildingsFinalUses() {
+    return httpClient.get(`/buildings/final-uses`)
+  },
+  getBuildingsCompanyTypes() {
+    return httpClient.get(`/buildings/company-types`)
+  },
 }
