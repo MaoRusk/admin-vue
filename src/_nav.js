@@ -24,9 +24,9 @@ export default [
     items: [
       {
         component: 'CNavItem',
-        name: 'Profile',
-        to: { name: ROUTE_NAMES.PROFILE },
-        icon: 'cil-user',
+        name: 'Roles',
+        to: '/seguridad/roles',
+        icon: 'cil-shield-alt',
       },
       {
         component: 'CNavItem',
