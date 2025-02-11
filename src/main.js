@@ -8,7 +8,7 @@ import i18next from './i18n.js'
 
 import CoreuiVue from '@coreui/vue-pro'
 import CIcon from '@coreui/icons-vue'
-import { iconsSet as icons } from '@/assets/icons'
+import * as icons from '@coreui/icons'
 import DocsExample from '@/components/DocsExample'
 
 const app = createApp(App)

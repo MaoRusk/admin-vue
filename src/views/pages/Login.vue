@@ -31,16 +31,23 @@
                     />
                   </CInputGroup>
                   <CRow>
-                    <CLoadingButton :loading="submitting" color="primary" class="px-4" type="submit"> Login </CLoadingButton>
+                    <CLoadingButton :loading="submitting" :disabled="submitting" color="primary" class="px-4" type="submit"> Login </CLoadingButton>
                   </CRow>
                   <!-- Espacio para mostrar mensajes de error -->
-                  <p v-if="errorMessage" class="text-danger mt-2">{{ errorMessage }}</p>
+                  <p v-if="errorMessage" class="text-center text-white mt-3 p-2 bg-danger rounded">{{ errorMessage }}</p>
                 </CForm>
               </CCardBody>
             </CCard>
             <CCard class="text-white bg-primary py-5">
-              <CCardBody class="text-center">
-                <CImage align="center" rounded src="/src/assets/images/market-logo.jpg" width="300" height="150"/>
+              <CCardBody class="text-center d-flex align-items-center justify-content-center">
+                <CImage 
+                  class="img-fluid" 
+                  rounded 
+                  :src="logo" 
+                  width="300" 
+                  height="auto" 
+                  alt="market-logo.jpg"
+                />
               </CCardBody>
             </CCard>
           </CCardGroup>
@@ -51,12 +58,14 @@
 </template>
 
 <script setup>
+
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '../../router/routeNames';
 import { AUTH_TOKEN, AUTH_USER } from '../../constants';
 import { useLocalStorage } from '../../composables/useLocalStorage';
 import { API } from '../../services';
+import logo from '@/assets/images/market-logo.jpg';
 
 const router = useRouter()
 const { setItem } = useLocalStorage()
@@ -79,6 +88,8 @@ async function login() {
     router.push({ name: ROUTE_NAMES.HOME })
   } catch (err) {
     errorMessage.value = err.response?.data?.message || 'Error al iniciar sesión'
+    submitting.value = false
   }
 }
+
 </script>
