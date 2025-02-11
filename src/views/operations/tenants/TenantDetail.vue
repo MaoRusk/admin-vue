@@ -1,15 +1,15 @@
 <template>
   <CCard class="mb-4">
     <CCardHeader>
-      <strong>{{ isNew ? 'New Industry' : 'Edit Industry' }}</strong>
+      <strong>{{ isNew ? 'New Tenant' : 'Edit Tenant' }}</strong>
     </CCardHeader>
     <CCardBody>
-      <CForm @submit.prevent="saveIndustry">
+      <CForm @submit.prevent="saveTenant">
         <CRow>
           <CCol :md="6">
             <CFormInput
               label="Name"
-              v-model="industry.name"
+              v-model="tenant.name"
               :feedback="errors.name"
               :invalid="!!errors.name"
               required
@@ -37,14 +37,14 @@
 </template>
 
 <script>
-import IndustriesService from '@/services/Industries'
+import TenantsService from '@/services/Tenants'
 import Swal from 'sweetalert2'
 
 export default {
-  name: 'IndustryDetail',
+  name: 'TenantDetail',
   data() {
     return {
-      industry: {
+      tenant: {
         name: ''
       },
       errors: {
@@ -58,22 +58,21 @@ export default {
     }
   },
   methods: {
-    async loadIndustry() {
+    async loadTenant() {
       if (!this.isNew) {
         try {
-          const response = await IndustriesService.getIndustries()
-          const industry = response.data.data.find(
-            i => i.id === parseInt(this.$route.params.id)
-          )
-          if (industry) {
-            this.industry = { ...industry }
+          const response = await TenantsService.getTenant(this.$route.params.id)
+          if (response.data.data) {
+            this.tenant = {
+              name: response.data.data.name
+            }
           }
         } catch (error) {
-          console.error('Error loading industry:', error)
+          console.error('Error loading tenant:', error)
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Error loading industry',
+            text: 'Error loading tenant',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -88,18 +87,16 @@ export default {
         name: ''
       }
     },
-    async saveIndustry() {
+    async saveTenant() {
       this.clearErrors()
       
       try {
         if (this.isNew) {
-          await IndustriesService.createIndustry({
-            name: this.industry.name.trim()
-          })
+          await TenantsService.createTenant(this.tenant)
           Swal.fire({
             icon: 'success',
             title: 'Created successfully!',
-            text: 'New industry has been created.',
+            text: 'New tenant has been created.',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -107,13 +104,11 @@ export default {
             timerProgressBar: true
           })
         } else {
-          await IndustriesService.updateIndustry(this.$route.params.id, {
-            name: this.industry.name.trim()
-          })
+          await TenantsService.updateTenant(this.$route.params.id, this.tenant)
           Swal.fire({
             icon: 'success',
             title: 'Updated successfully!',
-            text: 'Industry has been updated.',
+            text: 'Tenant has been updated.',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -123,14 +118,14 @@ export default {
         }
         this.goBack()
       } catch (error) {
-        console.error('Error saving industry:', error)
+        console.error('Error saving tenant:', error)
         if (error.response?.data?.errors) {
           this.errors = error.response.data.errors
         } else {
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Error saving industry',
+            text: 'Error saving tenant',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -141,11 +136,11 @@ export default {
       }
     },
     goBack() {
-      this.$router.push('/operacion/industries')
+      this.$router.push('/operacion/tenants')
     }
   },
   mounted() {
-    this.loadIndustry()
+    this.loadTenant()
   }
 }
 </script> 

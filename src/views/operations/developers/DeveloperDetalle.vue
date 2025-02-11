@@ -2,13 +2,14 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { API } from '@/services'
+import { ROUTE_NAMES } from '@/router/routeNames'
 
 const route = useRoute()
 const router = useRouter()
 
 // Validar si estamos en la ruta de creación
 const isCreating = computed(() => {
-  return route.path === '/operacion/developer/create' || route.name === 'DEVELOPERS_CREATE'
+  return route.path === '/operations/developer/create' || route.name === ROUTE_NAMES.DEVELOPERS_CREATE
 })
 
 const developer = ref({
@@ -41,7 +42,7 @@ const loadDeveloper = async (id) => {
   } catch (error) {
     console.error('Error fetching developer:', error)
     error.value = 'Error al cargar los datos del developer'
-    router.push('/operacion/developers')
+    router.push('/operations/developers')
   } finally {
     loading.value = false
   }
@@ -70,7 +71,6 @@ const saveDeveloper = async () => {
       is_user_owner: Number(developer.value.is_user_owner),
     }
 
-    // Validar la operación basada en la ruta actual
     if (isCreating.value) {
       await API.developers.createDeveloper(developerData)
     } else if (route.params.id) {
@@ -79,7 +79,7 @@ const saveDeveloper = async () => {
       throw new Error('Operación no válida')
     }
     
-    router.push('/operacion/developers')
+    router.push({ name: ROUTE_NAMES.DEVELOPERS })
   } catch (error) {
     console.error('Error saving developer:', error)
     if (error.response?.status === 422) {
@@ -174,7 +174,7 @@ const saveDeveloper = async () => {
                 <CButton
                   type="button"
                   color="secondary"
-                  @click="router.push('/operacion/developers')"
+                  @click="router.push('/operations/developers')"
                 >
                   Cancelar
                 </CButton>
