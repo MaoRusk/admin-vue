@@ -124,6 +124,7 @@ watch([columnSorter, columnFilter], fetchAbsorptions, { deep: true })
 
 defineExpose({
   showForm,
+  handleReturn,
   submit() {
     formAbsorptionRef.value?.submit?.()
   }

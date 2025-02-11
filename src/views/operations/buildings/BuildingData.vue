@@ -1,12 +1,22 @@
 <script setup>
-import { onMounted, reactive, ref, watchEffect } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import Swal from 'sweetalert2';
+import { AxiosError } from 'axios';
+import { useRoute, useRouter } from 'vue-router';
+
 import { API } from '../../../services';
-import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '../../../router/routeNames';
-import MSelect from '../../../components/MSelect.vue';
+import MASelect from '../../../components/MASelect.vue';
 
 const router = useRouter()
+const route = useRoute()
+
+watch(
+  () => route.params.id,
+  () => {
+    fetchBuildingData()
+  }
+)
 
 const props = defineProps({
   buildingId: Number
@@ -18,33 +28,25 @@ const buildingEmpty = {
   region_id: '', 
   market_id: '', 
   submarket_id: '', 
-  builder_id: '', 
   industrial_park_id: '', 
+  builder_id: '', 
   developer_id: '', 
   owner_id: '', 
-  user_owner_id: '', 
   building_name: '', 
   building_size_sf: '', 
   latitud: '', 
   longitud: '', 
   year_built: '', 
-  clear_height: '', 
-  total_land: '', 
-  offices_space: '', 
+  clear_height_ft: '', 
+  total_land_sf: '', 
+  offices_space_sf: '', 
   has_crane: false,
-  has_hvac: false,
   has_rail_spur: false,
-  has_sprinklers: false,
-  has_office: false,
   has_leed: false,
-  has_expansion_land: false,
   ventilation: '', 
-  transformer_capacity: '', 
-  construction_state: '', 
   roof_system: '', 
   skylights_sf: '', 
   coverage: '', 
-  kvas: '', 
   expansion_land: '', 
   class: '', 
   type_generation: '', 
@@ -52,20 +54,33 @@ const buildingEmpty = {
   tenancy: '', 
   construction_type: '', 
   lightning: '', 
-  fire_protection_system: '', 
+  fire_protection_system: [], 
   deal: '', 
   loading_door: '', 
-  above_market_tis: '', 
-  status: '', 
+  above_market_tis: [], 
+  status: 'Active',
+  floor_thickness_in: '',
+  floor_resistance: '',
+  expansion_up_to_sf: '',
 
   hvacProduction: '',
   hvacArea: '',
-  sfSm: false, // TODO, esta variable no esta en building
+
+  kvas_value_1: '',
+  kvas_value_2: '',
+
+  columns_spacing_value_1: '',
+  columns_spacing_value_2: '',
+
+  bay_size_value_1: '',
+  bay_size_value_2: '',
+
+  sfSm: false,
 }
 
-const building = reactive(buildingEmpty)
+const building = reactive({...buildingEmpty})
 const formHtmlElement = ref(null)
-const HVAC_SEPARATOR = ' x '
+const VALUE_SEPARATOR = ' x '
 
 const validateRangeInputs = (model, field1, field2, fieldName) => {
   if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
@@ -77,16 +92,22 @@ const validateRangeInputs = (model, field1, field2, fieldName) => {
     model[field1] = ''
     model[field2] = ''
   }
-};
+}
 
-const validateHvacRange = () => {
-  validateRangeInputs(
-    building,
-    'hvacProduction',
-    'hvacArea',
-    'HVAC Production Area'
-  );
-};
+const validateRangeHvac = () => {
+  validateRangeInputs(building, 'hvacProduction', 'hvacArea', 'HVAC Production Area (TON)');
+}
+const validateRangeBaySize = () => {
+  validateRangeInputs(building, 'bay_size_value_1', 'bay_size_value_2', 'Bay size');
+}
+const validateRangeColumnsSpacing = () => {
+  validateRangeInputs(building, 'columns_spacing_value_1', 'columns_spacing_value_2', 'Column Spacing FT');
+}
+const validateRangeKvas = () => {
+  validateRangeInputs(building, 'kvas_value_1', 'kvas_value_2', 'KVAS');
+}
+
+const coverage = computed(() => building.building_size_sf && building.total_land_sf ? ((+building.building_size_sf / +building.total_land_sf) * 100).toFixed(2) : '')
 
 async function onSubmit() {
   emit('submitting', true)
@@ -94,7 +115,13 @@ async function onSubmit() {
     let data;
     const body = {
       ...building,
-      hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${HVAC_SEPARATOR}${building.hvacArea}` : '',
+      hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${VALUE_SEPARATOR}${building.hvacArea}` : '',
+      columns_spacing_ft: (building.columns_spacing_value_1 && building.columns_spacing_value_2) ? `${building.columns_spacing_value_1}${VALUE_SEPARATOR}${building.columns_spacing_value_2}` : '',
+      bay_size: (building.bay_size_value_1 && building.bay_size_value_2) ? `${building.bay_size_value_1}${VALUE_SEPARATOR}${building.bay_size_value_2}` : '',
+      kvas: (building.kvas_value_1 && building.kvas_value_2) ? `${building.kvas_value_1}${VALUE_SEPARATOR}${building.kvas_value_2}` : '',
+      coverage: `${coverage.value}`,
+      fire_protection_system: building.fire_protection_system.length ? building.fire_protection_system : null,
+      above_market_tis: building.above_market_tis.length ? building.above_market_tis : null,
     }
     if (props.buildingId) {
       ({ data } = await API.buildings.updateBuilding(props.buildingId, body));
@@ -107,7 +134,7 @@ async function onSubmit() {
       title: 'Success',
       text: data.message,
     });
-    router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: data.data.id } })
+    router.push({ name: ROUTE_NAMES.BUILDINGS, params: { buildingId: data.data.id } })
   } catch (e) {
     emit('submitting', false)
     Swal.fire(e.response.data.message, JSON.stringify(e.response.data.errors), 'error')
@@ -118,18 +145,28 @@ const fetchBuildingData = async () => {
   try {
     const buildingId = props.buildingId;
     const { data } = await API.buildings.getBuilding(buildingId);
-    ['region_id', 'market_id', 'submarket_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id', 'user_owner_id', 'building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height', 'total_land', 'offices_space', 'ventilation', 'transformer_capacity', 'construction_state', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'fire_protection_system', 'deal', 'loading_door', 'above_market_tis', 'status']
+    ['region_id', 'market_id', 'submarket_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id']
+    .forEach(prop => building[prop] = data.data[prop] ? +(data.data[prop]) : '');
+    ['building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height_ft', 'total_land_sf', 'expansion_up_to_sf', 'offices_space_sf', 'ventilation', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'deal', 'loading_door', 'status', 'floor_thickness_in', 'floor_resistance']
     .forEach(prop => building[prop] = data.data[prop] ? `${data.data[prop]}` : '');
-    ['has_crane', 'has_hvac', 'has_rail_spur', 'has_sprinklers', 'has_office', 'has_leed', 'has_expansion_land']
-    .forEach(prop => building[prop] = Boolean(data.data[prop]))
+    ['has_crane', 'has_rail_spur', 'has_leed']
+    .forEach(prop => building[prop] = Boolean(data.data[prop]));
+    ['fire_protection_system', 'above_market_tis']
+    .forEach(prop => building[prop] = data.data[prop] ? data.data[prop] : []);
 
-    building.year_built = `${data.data.year_built}`
-    if (data.data.hvac_production_area && data.data.hvac_production_area.length > HVAC_SEPARATOR.length) {
-      const [hvacProduction, hvacArea] = data.data.hvac_production_area.split(HVAC_SEPARATOR)
-      building.hvacProduction = hvacProduction
-      building.hvacArea = hvacArea
+    building.year_built = data.data.year_built ? `${data.data.year_built}` : ''
+    if (data.data.hvac_production_area && data.data.hvac_production_area.length > VALUE_SEPARATOR.length) {
+      ([building.hvacProduction, building.hvacArea] = data.data.hvac_production_area.split(VALUE_SEPARATOR))
     }
-    building.sfSm = false // TODO, esta variable no esta en building
+    if (data.data.columns_spacing_ft && data.data.columns_spacing_ft.length > VALUE_SEPARATOR.length) {
+      ([building.columns_spacing_value_1, building.columns_spacing_value_2] = data.data.columns_spacing_ft.split(VALUE_SEPARATOR))
+    }
+    if (data.data.bay_size && data.data.bay_size.length > VALUE_SEPARATOR.length) {
+      ([building.bay_size_value_1, building.bay_size_value_2] = data.data.bay_size.split(VALUE_SEPARATOR))
+    }
+    if (data.data.kvas && data.data.kvas.length > VALUE_SEPARATOR.length) {
+      ([building.kvas_value_1, building.kvas_value_2] = data.data.kvas.split(VALUE_SEPARATOR))
+    }
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -149,7 +186,6 @@ const submarkets = reactive({ loading: false, items: []})
 const owners = reactive({ loading: false, items: []})
 const developers = reactive({ loading: false, items: []})
 const builders = reactive({ loading: false, items: []})
-const userOwners = reactive({ loading: false, items: []})
 const currencies = reactive({ loading: false, items: []})
 const tenancies = reactive({ loading: false, items: []})
 const deals = reactive({ loading: false, items: []})
@@ -163,156 +199,126 @@ async function fetchBuildingStatuses() {
   statuses.loading = true
   const { data } = await API.buildings.getBuildingsStatus()
   statuses.loading = false
-  statuses.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.status }))
-  statuses.items.unshift({ value: '', label: 'Select...' })
+  statuses.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchBuildingTechnicalImprovements() {
   technicalImprovements.loading = true
   const { data } = await API.buildings.getBuildingsTechnicalImprovements();
   technicalImprovements.loading = false
-  technicalImprovements.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.above_market_tis }))
-  technicalImprovements.items.unshift({ value: '', label: 'Select...' })
+  technicalImprovements.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchBuildingLoadingDoors() {
   loadingDoors.loading = true
   const { data } = await API.buildings.getBuildingsLoadingDoors();
   loadingDoors.loading = false
-  loadingDoors.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.loading_door }))
-  loadingDoors.items.unshift({ value: '', label: 'Select...' })
+  loadingDoors.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchBuildingTypesLightnings() {
   typesLightnings.loading = true
   const { data } = await API.buildings.getBuildingsTypesLightnings();
   typesLightnings.loading = false
-  typesLightnings.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.lightning }))
-  typesLightnings.items.unshift({ value: '', label: 'Select...' })
+  typesLightnings.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchBuildingTypeGenerations() {
   generationsTypes.loading = true
   const { data } = await API.buildings.getBuildingsTypesGeneration();
   generationsTypes.loading = false
-  generationsTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.type_generation }))
-  generationsTypes.items.unshift({ value: '', label: 'Select...' })
+  generationsTypes.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchTenancies() {
   tenancies.loading = true
   const { data } = await API.buildings.getBuildingsTenancies();
   tenancies.loading = false
-  tenancies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.tenancy }))
-  tenancies.items.unshift({ value: '', label: 'Select...' })
+  tenancies.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchCurrencies() {
   currencies.loading = true
   const { data } = await API.currencies.getCurrencies();
   currencies.loading = false
-  currencies.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.currency }))
-  currencies.items.unshift({ value: '', label: 'Select...' })
+  currencies.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchBuildingContructionTypes() {
   constructionTypes.loading = true
   const { data } = await API.buildings.getBuildingsTypesConstruction();
   constructionTypes.loading = false
-  constructionTypes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.construction_type }))
-  constructionTypes.items.unshift({ value: '', label: 'Select...' })
+  constructionTypes.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchBuildingDeals() {
   deals.loading = true
   const { data } = await API.buildings.getBuildingsTypesDeals();
   deals.loading = false
-  deals.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.deal }))
-  deals.items.unshift({ value: '', label: 'Select...' })
+  deals.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
-async function fetchDevelopers() {
+async function fetchDevelopers(marketId, submarketId) {
   developers.loading = true
-  owners.loading = true
-  builders.loading = true
-  userOwners.loading = true
-  const { data } = await API.developers.getDevelopers();
+  const data = await API.developers.getDevelopers({ is_developer: true, marketId, submarketId });
   developers.loading = false
-  owners.loading = false
+  developers.items = data.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+async function fetchBuilders(marketId, submarketId) {
+  builders.loading = true
+  const data = await API.developers.getDevelopers({ is_builder: true, marketId, submarketId });
   builders.loading = false
-  userOwners.loading = false
+  builders.items = data.sort((a, b) => a.name.localeCompare(b.name))
+}
 
-  const items = data.data.sort((a, b) => a.name.localeCompare(b.name))
-  const firstOption = { value: '', label: 'Select...' }
-  const itemsGrouped = items.reduce((group, item) => {
-    const baseItem = { 
-      label: item.name, 
-      value: item.id,
-      is_owner: item.is_owner,
-      is_developer: item.is_developer,
-      is_user_owner: item.is_user_owner,
-      is_builder: item.is_builder
-    }
-
-    if (item.is_owner) group.owners.push(baseItem)
-    if (item.is_developer) group.developers.push(baseItem)
-    if (item.is_user_owner) group.userOwners.push(baseItem)
-    if (item.is_builder) group.builders.push(baseItem)
-    return group
-  }, { owners: [{...firstOption}], developers: [{...firstOption}], builders: [{...firstOption}], userOwners: [{...firstOption}] })
-
-  developers.items = itemsGrouped.developers
-  owners.items = itemsGrouped.owners
-  builders.items = itemsGrouped.builders
-  userOwners.items = itemsGrouped.userOwners
+async function fetchOwners(marketId, submarketId) {
+  owners.loading = true
+  const data = await API.developers.getDevelopers({ is_owner: true, marketId, submarketId });
+  owners.loading = false
+  owners.items = data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 async function fetchIndustrialParks(marketId, submarketId) {
   industrialParks.loading = true
   const { data } = await API.industrialparks.getIndustrialParks({ marketId, submarketId});
   industrialParks.loading = false
-  industrialParks.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.industrial_park_id })).sort((a, b) => a.label.localeCompare(b.label))
-  industrialParks.items.unshift({ value: '', label: 'Select...' })
+  industrialParks.items = data.data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 async function fetchSubmarkets(marketId) {
   submarkets.loading = true
   const { data } = await API.submarkets.getSubmarkets({ marketId });
   submarkets.loading = false
-  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.submarket_id })).sort((a, b) => a.label.localeCompare(b.label))
-  submarkets.items.unshift({ value: '', label: 'Select...' })
+  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchMarkets(regionId) {
   markets.loading = true
   const { data } = await API.markets.getMarkets({ regionId });
   markets.loading = false
-  markets.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.market_id })).sort((a, b) => a.label.localeCompare(b.label))
-  markets.items.unshift({ value: '', label: 'Select...' })
+  markets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchClasses() {
   classes.loading = true
   const { data } = await API.buildings.getBuildingsClasses();
   classes.loading = false
-  classes.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.class }))
-  classes.items.unshift({ value: '', label: 'Select...' })
+  classes.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchFireProtectionSystems() {
   fireProtectionSystems.loading = true
   const { data } = await API.buildings.getBuildingsFireProtectionSystems();
   fireProtectionSystems.loading = false
-  fireProtectionSystems.items = Object.keys(data.data).map(item => ({ value: data.data[item], label: item, selected: data.data[item] === building.fire_protection_system }))
-  fireProtectionSystems.items.unshift({ value: '', label: 'Select...' })
+  fireProtectionSystems.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
 async function fetchRegions() {
   regions.loading = true
   const { data } = await API.regions.getRegions();
   regions.loading = false
-  regions.items = data.data.map(({ id, name }) => ({ label: name, value: id, selected: id === building.region_id}))
-  regions.items.unshift({ value: '', label: 'Select...' })
+  regions.items = data.data.map(({ id, name }) => ({ label: name, value: id}))
 }
 
 onMounted(async () => {
@@ -324,15 +330,10 @@ onMounted(async () => {
     allowOutsideClick: false,
     allowEscapeKey: false,
   })
-  if (props.buildingId) {
-    await fetchBuildingData();
-  }
   await Promise.all([
     fetchClasses(),
     fetchRegions(),
-    fetchDevelopers(),
     fetchTenancies(),
-    
     fetchCurrencies(),
     fetchFireProtectionSystems(),
     fetchBuildingDeals(),
@@ -343,64 +344,71 @@ onMounted(async () => {
     fetchBuildingTechnicalImprovements(),
     fetchBuildingStatuses()
   ])
+  if (props.buildingId) {
+    await fetchBuildingData();
+  }
   Swal.close()
 });
 
-async function createOptionGeneral(field, value) {
-  if (['owner_id', 'builder_id', 'user_owner_id', 'developer_id'].includes(field)) {
-    try {
-      let data;
-      if (value.id) {
-        // Edit existing developer
-        ({ data } = await API.developers.updateDeveloper(value.id, {
-          name: value.name,
-          is_developer: Boolean(value.is_developer),
-          is_builder: Boolean(value.is_builder),
-          is_owner: Boolean(value.is_owner),
-          is_user_owner: Boolean(value.is_user_owner),
-        }));
+async function saveOptionGeneral(field, values, update = false) {
+  try {
+    let data;
+    if (['owner_id', 'builder_id', 'developer_id'].includes(field)) {
+      const body = {
+        name: values.name,
+        is_builder: !!values.is_builder,
+        is_developer: !!values.is_developer,
+        is_owner: !!values.is_owner,
+        market_id: building.market_id,
+        submarket_id: building.submarket_id
+      }
+      if (update) {
+        ({ data } = await API.developers.updateDeveloper(values.id, body));
+
+        if (building.owner_id === data.data.id && data.data.is_owner === false) building.owner_id = ''
+        if (building.developer_id === data.data.id && data.data.is_developer === false) building.developer_id = ''
+        if (building.builder_id === data.data.id && data.data.is_builder === false) building.builder_id = ''
       } else {
-        // Create new developer
-        ({ data } = await API.developers.createDeveloper(value));
+        ({ data } = await API.developers.createDeveloper(body));
+        building[field] = data.data.id
       }
-      
-      if (data.success) {
-        building[field] = data.data.id;
-        await fetchDevelopers();
-        Swal.fire({
-          icon: "success",
-          title: value.id ? "Updated successfully" : "Created successfully",
-          toast: true,
-          position: "bottom",
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true
-        });
+      await Promise.all([
+        fetchOwners(building.market_id, building.submarket_id),
+        fetchDevelopers(building.market_id, building.submarket_id),
+        fetchBuilders(building.market_id, building.submarket_id),
+      ])
+    } else if (field === 'industrial_park_id') {
+      const body = {
+        name: values.name,
+        market_id: building.market_id,
+        submarket_id: building.submarket_id
       }
-    } catch (error) {
-      console.error('Error with developer:', error);
+      if (update) {
+        ({ data } = await API.industrialparks.updateIndustrialPark(values.id, body))
+      } else {
+        ({ data } = await API.industrialparks.createIndustrialPark(body))
+        building[field] = data.data.id
+      }
+      await fetchIndustrialParks(building.market_id, building.submarket_id)
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    if (error instanceof AxiosError) {
       const errorMessage = error.response?.data?.errors 
         ? Object.values(error.response.data.errors).flat().join('\n')
         : error.response?.data?.message || 'An error occurred';
-        
       Swal.fire({
         icon: "error",
-        title: value.id ? "Error updating developer" : "Error creating developer",
+        title: update ? "Error updating" : "Error creating",
         text: errorMessage,
       });
+    } else {
+      throw error
     }
-  } else if (field === 'industrial_park_id') {
-    const { data } = await API.industrialparks.createIndustrialPark({ 
-      name: value.name, 
-      market_id: building.market_id, 
-      submarket_id: building.submarket_id 
-    })
-    building[field] = data.data.id
-    fetchIndustrialParks(building.market_id, building.submarket_id)
   }
   Swal.fire({
     icon: "success",
-    title: "Created successfully",
+    title: "Saved successfully",
     toast: true,
     position: "bottom",
     showConfirmButton: false,
@@ -413,34 +421,105 @@ async function createOptionGeneral(field, value) {
   });
 }
 
-async function editOptionGeneral(field, value) {
-  if (field === 'industrial_park_id') {
-    // Just refresh the list after edit
-    fetchIndustrialParks(building.market_id, building.submarket_id)
-  } else {
-    // Handle other types of edits
-    await createOptionGeneral(field, value);
+async function deleteOptionGeneral(field, optionReactive) {
+  const option = {...optionReactive}
+  const result = await Swal.fire({
+    title: `Delete option`,
+    text: `Are you sure you want to delete?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  })
+
+  if (!result.isConfirmed) return
+
+  try {
+    let data;
+    if (['owner_id', 'builder_id', 'developer_id'].includes(field)) {
+      ({ data } = await API.developers.deleteDeveloper(option.id));
+      await fetchDevelopers();
+    } else if (field === 'industrial_park_id') {
+      ({ data } = await API.industrialparks.deleteIndustrialPark(option.id))
+      await fetchIndustrialParks(building.market_id, building.submarket_id)
+    }
+    console.info(data)
+    if (building[field] === option.id) {
+      building[field] = ''
+    }
+  } catch (error) {
+    console.error('Error with developer:', error);
+    if (error instanceof AxiosError) {
+      const errorMessage = error.response?.data?.errors 
+        ? Object.values(error.response.data.errors).flat().join('\n')
+        : error.response?.data?.message || 'An error occurred';
+      Swal.fire({
+        icon: "error",
+        title: "Error deleting",
+        text: errorMessage,
+      });
+    } else {
+      throw error
+    }
+    return
   }
+  Swal.fire({
+    icon: "success",
+    title: "Deleted successfully",
+    toast: true,
+    position: "bottom",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer;
+      toast.onmouseleave = Swal.resumeTimer;
+    }
+  });
 }
 
-watchEffect(async () => {
+watch(() => building.region_id, async () => {
   if (building.region_id) {
     await fetchMarkets(building.region_id)
-    building.market_id = props.buildingId ? building.market_id : ''
+    if (!markets.items.find(item => item.value === building.market_id)) {
+      building.market_id = ''
+    }
+  } else {
+    building.market_id = ''
   }
 })
 
-watchEffect(async () => {
+watch(() => building.market_id, async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
-    building.submarket_id = props.buildingId ? building.submarket_id : ''
+    // building.submarket_id = props.buildingId ? building.submarket_id : ''
+    if (!submarkets.items.find(item => item.value === building.submarket_id)) {
+      building.submarket_id = ''
+    }
+  } else {
+    building.submarket_id = ''
   }
 })
 
-watchEffect(async () => {
+watch(() => building.submarket_id, async () => {
   if (building.submarket_id) {
-    await fetchIndustrialParks(building.market_id, building.submarket_id)
-    building.industrial_park_id = props.buildingId ? building.industrial_park_id : ''
+    await Promise.all([
+      fetchIndustrialParks(building.market_id, building.submarket_id),
+      fetchOwners(building.market_id, building.submarket_id),
+      fetchBuilders(building.market_id, building.submarket_id),
+      fetchDevelopers(building.market_id, building.submarket_id),
+    ])
+    if (!industrialParks.items.find(item => item.id === building.industrial_park_id)) building.industrial_park_id = ''
+    if (!owners.items.find(item => item.id === building.owner_id)) building.owner_id = ''
+    if (!developers.items.find(item => item.id === building.developer_id)) building.developer_id = ''
+    if (!builders.items.find(item => item.id === building.builder_id)) building.builder_id = ''
+  } else {
+    building.industrial_park_id = ''
+    building.owner_id = ''
+    building.builder_id = ''
+    building.developer_id = ''
   }
 })
 
@@ -470,21 +549,23 @@ defineExpose({
                 <CCol :md="3">
                   <div class="mt-2">
                     <CFormInput
-                      size="sm"
                       v-model="building.building_name"
-                      label="Building Name"
+                      label="Building Name *"
                       required
                     />
                   </div>
                 </CCol>
                 <CCol :md="3">
                   <div class="mt-2">
-                    <CFormSelect
-                      label="Class"
+                    <label class="form-label">Class *</label>
+                    <MASelect
                       v-model="building.class"
                       :options="classes.items"
-                      size="sm"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="classes.loading"
                     />
                   </div>
                 </CCol>
@@ -492,42 +573,70 @@ defineExpose({
                   <div class="mt-2">
                     <CFormInput 
                       type="number"
-                      size="sm"
-                      class="no-spinner"
                       v-model="building.building_size_sf"
-                      label="Building Size (SF)"
+                      label="Building Size (SF) *"
                       required
                     />
                   </div>
                 </CCol>
-                <CCol :md="3">
+                <CCol md="3">
                   <div class="mt-2">
                     <CFormInput 
                       type="number"
-                      size="sm"
-                      class="no-spinner"
                       v-model="building.expansion_land"
-                      label="Expansion Land"
+                      label="Expansion Land (SF) *"
+                      required
+                    />
+                  </div>
+                </CCol>
+                <!-- TOTAL LAND -->
+                <div class="col-md-3">
+                  <div class="mt-2">
+                    <CFormInput 
+                      type="number" 
+                      v-model="building.total_land_sf"
+                      label="Total Land (SF)"
+                    />
+                  </div>
+                </div>
+                <CCol md="3">
+                  <div class="mt-2">
+                    <CFormInput 
+                      type="number"
+                      v-model="building.expansion_up_to_sf"
+                      label="Expansion up to SF *"
                       required
                     />
                   </div>
                 </CCol>
                 <CCol md="3">
                   <div class="mt-2">
-                    <CDatePicker label="Year Built" v-model:date="building.year_built" locale="en-US" size="sm" selectionType="year" />
+                    <CDatePicker label="Year Built" v-model:date="building.year_built" locale="en-US" selectionType="year" />
                   </div>
                 </CCol>
                 <CCol md="3">
                   <div class="mt-2">
-                    <CFormSelect
-                      label="Status"
+                    <label class="form-label">Status *</label>
+                    <MASelect
                       v-model="building.status"
                       :options="statuses.items"
-                      size="sm"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="statuses.loading"
                     />
                   </div>
                 </CCol>
+                <div class="col-md-3">
+                  <div class="mt-2">
+                    <label class="form-label">SF/SM</label>
+                    <CFormSwitch
+                      size="lg"
+                      v-model="building.sfSm"
+                    />
+                  </div>
+                </div>
               </CRow>
             </CCardBody>
           </CCard>
@@ -541,58 +650,66 @@ defineExpose({
           <div class="col-md-4">
             <!-- REGION -->
             <div class="mt-2">
-              <CFormSelect
-                label="Region"
+              <label class="form-label">Region *</label>
+              <MASelect
                 v-model="building.region_id"
                 :options="regions.items"
-                size="sm"
+                :reduce="option => option.value"
+                label="label"
                 required
+                placeholder="Select..."
+                :loading="regions.loading"
               />
             </div>
           </div>
           <div class="col-md-4">
             <!-- MARKET -->
             <div class="mt-2">
-              <CFormSelect
-                label="Market"
+              <label class="form-label">Market *</label>
+              <MASelect
                 v-model="building.market_id"
                 :options="markets.items"
-                size="sm"
-                required
+                :reduce="option => option.value"
+                label="label"
+                placeholder="Select..."
+                :loading="markets.loading"
                 :disabled="!building.region_id"
+                required
               />
             </div>
           </div>
           <div class="col-md-4">
             <!-- SUB MARKET -->
             <div class="mt-2">
-              <CFormSelect
-                label="Submarket"
+              <label class="form-label">Submarket *</label>
+              <MASelect
                 v-model="building.submarket_id"
                 :options="submarkets.items"
-                size="sm"
-                required
+                :reduce="option => option.value"
+                label="label"
+                placeholder="Select..."
+                :loading="submarkets.loading"
                 :disabled="!building.market_id"
+                required
               />
             </div>
           </div>
           <div class="col-md-4">
             <!-- INDUSTRIAL PARK -->
             <div class="mt-2">
-              <MSelect
-                label="Industrial Park"
-                :options="industrialParks.items"
+              <label class="form-label">Industrial Park *</label>
+              <MASelect
                 v-model="building.industrial_park_id"
-                @submitOption="value => createOptionGeneral('industrial_park_id', value)"
-                @editOption="value => editOptionGeneral('industrial_park_id', value)"
-                @deleteOption="() => fetchIndustrialParks(building.market_id, building.submarket_id)"
-                create-option
-                size="sm"
+                :options="industrialParks.items"
+                :reduce="option => option.id"
+                label="name"
+                placeholder="Select..."
+                :loading="industrialParks.loading"
                 :disabled="!building.submarket_id"
                 required
-                isIndustrialParkForm
-                :marketId="building.market_id"
-                :submarketId="building.submarket_id"
+                edit-options
+                @submitOption="(option, update) => { saveOptionGeneral('industrial_park_id', option, update) }"
+                @deleteOption="(option) => { deleteOptionGeneral('industrial_park_id', option) }"
               />
             </div>
           </div>
@@ -601,8 +718,7 @@ defineExpose({
             <div class="mt-2">
               <CFormInput
               type="text"
-              size="sm"
-              label="Latitude"
+              label="Latitude *"
               v-model="building.latitud"
               required
               />
@@ -613,8 +729,7 @@ defineExpose({
             <div class="mt-2">
               <CFormInput
               type="text"
-              size="sm"
-              label="Longitude"
+              label="Longitude *"
               v-model="building.longitud"
               required
               />
@@ -630,75 +745,166 @@ defineExpose({
           <CCard class="card-customer-buildings">
             <CCardBody>
               <CRow>
-                <CCol :md="3">
+                <CCol md>
                   <!-- OWNER -->
                   <div class="mt-2">
-                    <MSelect
-                      label="Owner"
-                      :options="owners.items" 
+                    <label class="form-label">Owner *</label>
+                    <MASelect
                       v-model="building.owner_id"
-                      @submitOption="value => createOptionGeneral('owner_id', value)"
-                      @editOption="value => editOptionGeneral('owner_id', value)"
-                      @deleteOption="fetchDevelopers"
-                      create-option
-                      size="sm"
+                      :options="owners.items"
+                      :reduce="option => option.id"
+                      label="name"
+                      placeholder="Select..."
+                      :loading="owners.loading"
+                      :disabled="!building.submarket_id"
                       required
-                      isDevForm
-                      modalTitle="Create Owner"
-                    />
+                      edit-options
+                      @submitOption="(option, update) => { saveOptionGeneral('owner_id', option, update) }"
+                      @deleteOption="(option) => { deleteOptionGeneral('owner_id', option) }"
+                    >
+                      <template #form-modal="{ form, isEditing }">
+                        <div class="row">
+                          <div class="col">
+                            <CFormInput
+                              v-model="form.name"
+                              label="Name *"
+                              type="text"
+                              placeholder="write a value"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div v-if="!isEditing" class="d-none">
+                          <!-- checked por defecto is owner -->
+                          {{  form.is_owner = true }}
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col">
+                            <CFormCheck
+                              v-model="form.is_owner"
+                              label="Is Owner"
+                              :disabled="!isEditing"
+                            />
+                            <CFormCheck
+                              v-model="form.is_developer"
+                              label="Is Developer"
+                            />
+                            <CFormCheck
+                              v-model="form.is_builder"
+                              label="Is Builder"
+                            />
+                          </div>
+                        </div>
+                      </template>
+                    </MASelect>
                   </div>
                 </CCol>
-                <CCol :md="3">
+                <CCol md>
                   <!-- DEVELOPER -->
                   <div class="mt-2">
-                    <MSelect
-                      label="Developer"
-                      :options="developers.items" 
+                    <label class="form-label">Developer *</label>
+                    <MASelect
                       v-model="building.developer_id"
-                      @submitOption="value => createOptionGeneral('developer_id', value)"
-                      @editOption="value => editOptionGeneral('developer_id', value)"
-                      @deleteOption="fetchDevelopers"
-                      create-option
-                      size="sm"
+                      :options="developers.items"
+                      :reduce="option => option.id"
+                      label="name"
+                      placeholder="Select..."
+                      :loading="developers.loading"
+                      :disabled="!building.submarket_id"
                       required
-                      isDevForm
-                      modalTitle="Create Developer"
-                    />
+                      edit-options
+                      @submitOption="(option, update) => { saveOptionGeneral('developer_id', option, update) }"
+                      @deleteOption="(option) => { deleteOptionGeneral('developer_id', option) }"
+                    >
+                      <template #form-modal="{ form, isEditing }">
+                        <div class="row">
+                          <div class="col">
+                            <CFormInput
+                              v-model="form.name"
+                              label="Name *"
+                              type="text"
+                              placeholder="write a value"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div v-if="!isEditing" class="d-none">
+                          <!-- checked por defecto is developer -->
+                          {{  form.is_developer = true }}
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col">
+                            <CFormCheck
+                              v-model="form.is_owner"
+                              label="Is Owner"
+                            />
+                            <CFormCheck
+                              v-model="form.is_developer"
+                              label="Is Developer"
+                              :disabled="!isEditing"
+                            />
+                            <CFormCheck
+                              v-model="form.is_builder"
+                              label="Is Builder"
+                            />
+                          </div>
+                        </div>
+                      </template>
+                    </MASelect>
                   </div>
                 </CCol>
-                <CCol :md="3">    
+                <CCol md>
                   <!-- BUILDER -->
                   <div class="mt-2">
-                    <MSelect
-                      label="Builder"
-                      :options="builders.items" 
+                    <label class="form-label">Builder *</label>
+                    <MASelect
                       v-model="building.builder_id"
-                      @submitOption="value => createOptionGeneral('builder_id', value)"
-                      @editOption="value => editOptionGeneral('builder_id', value)"
-                      @deleteOption="fetchDevelopers"
-                      create-option
-                      size="sm"
+                      :options="builders.items"
+                      :reduce="option => option.id"
+                      label="name"
+                      placeholder="Select..."
+                      :loading="builders.loading"
+                      :disabled="!building.submarket_id"
                       required
-                      isDevForm
-                      modalTitle="Create Builder"
-                    />
-                  </div>
-                </CCol>
-                <CCol :md="3">
-                  <div class="mt-2">
-                    <MSelect
-                      label="User Owner"
-                      :options="userOwners.items" 
-                      v-model="building.user_owner_id"
-                      @submitOption="value => createOptionGeneral('user_owner_id', value)"
-                      @editOption="value => editOptionGeneral('user_owner_id', value)"
-                      @deleteOption="fetchDevelopers"
-                      create-option
-                      size="sm"
-                      required
-                      isDevForm
-                      modalTitle="Create User Owner"
-                    />
+                      edit-options
+                      @submitOption="(option, update) => { saveOptionGeneral('builder_id', option, update) }"
+                      @deleteOption="(option) => { deleteOptionGeneral('builder_id', option) }"
+                    >
+                      <template #form-modal="{ form, isEditing }">
+                        <div class="row">
+                          <div class="col">
+                            <CFormInput
+                              v-model="form.name"
+                              label="Name *"
+                              type="text"
+                              placeholder="write a value"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div v-if="!isEditing" class="d-none">
+                          <!-- checked por defecto is builder -->
+                          {{  form.is_builder = true }}
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col">
+                            <CFormCheck
+                              v-model="form.is_owner"
+                              label="Is Owner"
+                            />
+                            <CFormCheck
+                              v-model="form.is_developer"
+                              label="Is Developer"
+                            />
+                            <CFormCheck
+                              v-model="form.is_builder"
+                              label="Is Builder"
+                              :disabled="!isEditing"
+                            />
+                          </div>
+                        </div>
+                      </template>
+                    </MASelect>
                   </div>
                 </CCol>
               </CRow>
@@ -715,36 +921,45 @@ defineExpose({
           <CCol md="4">
             <!-- CURRENCY -->
             <div class="mt-2">
-              <CFormSelect
-                label="Currency"
+              <label class="form-label">Currency *</label>
+              <MASelect
                 v-model="building.currency"
                 :options="currencies.items"
-                size="sm"
+                :reduce="option => option.value"
+                label="label"
                 required
+                placeholder="Select..."
+                :loading="currencies.loading"
               />
             </div>
           </CCol>
           <CCol md="4">
             <!-- TENANCY -->
             <div class="mt-2">
-              <CFormSelect
-                label="Tenancy"
+              <label class="form-label">Tenancy *</label>
+              <MASelect
                 v-model="building.tenancy"
                 :options="tenancies.items"
-                size="sm"
+                :reduce="option => option.value"
+                label="label"
                 required
+                placeholder="Select..."
+                :loading="tenancies.loading"
               />
             </div>
           </CCol>
           <CCol md="4">
             <!-- DEAL -->
             <div class="mt-2">
-              <CFormSelect
-                label="Deal"
+              <label class="form-label">Deal *</label>
+              <MASelect
                 v-model="building.deal"
                 :options="deals.items"
-                size="sm"
+                :reduce="option => option.value"
+                label="label"
                 required
+                placeholder="Select..."
+                :loading="deals.loading"
               />
             </div>
           </CCol>
@@ -761,57 +976,63 @@ defineExpose({
                 <CCol :md="3">
                   <!-- TYPE -->
                   <div class="mt-2">
-                    <CFormSelect
-                      label="Type"
+                    <label class="form-label">Type *</label>
+                    <MASelect
                       v-model="building.type_generation"
                       :options="generationsTypes.items"
-                      size="sm"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="generationsTypes.loading"
                     />
                   </div>
                   <!-- HEIGHT -->
                   <div class="mt-2">
                     <CFormInput 
                       type="number" 
-                      size="sm"
-                      v-model="building.clear_height"
-                      label="Clear Height"
-                    />
-                  </div>
-                  <!-- TOTAL LAND -->
-                  <div class="mt-2">
-                    <CFormInput 
-                      type="number" 
-                      size="sm"
-                      v-model="building.total_land"
-                      label="Total Land"
+                      v-model="building.clear_height_ft"
+                      label="Clear Height FT"
+                      max="99"
                     />
                   </div>
                   <!-- COVERAGE -->
                   <div class="mt-2">
                     <CFormInput 
                       type="number" 
-                      size="sm"
-                      v-model="building.coverage"
-                      label="Coverage %"
+                      :value="coverage"
+                      label="Coverage (read only)"
+                      readonly
                     />
                   </div>
                   <div class="mt-2">
                     <CFormInput 
                       type="number" 
-                      size="sm"
-                      v-model="building.offices_space"
-                      label="Offices Space"
+                      v-model="building.offices_space_sf"
+                      label="Offices Space SF"
                     />
                   </div>
                   <div class="mt-2">
-                    <CFormSelect
-                      label="Loading Door"
+                    <label class="form-label">Loading Door *</label>
+                    <MASelect
                       v-model="building.loading_door"
                       :options="loadingDoors.items"
-                      size="sm"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="loadingDoors.loading"
                     />
+                  </div>
+                  <div class="mt-2">
+                    <label class="form-label">Floor Thickness FT *</label>
+                    <CInputGroup>
+                      <CFormInput
+                        type="number"
+                        v-model="building.floor_thickness_in"
+                        required
+                      />
+                    </CInputGroup>
                   </div>
                 </CCol>
 
@@ -819,119 +1040,174 @@ defineExpose({
                 <CCol :md="3">
                   <!-- CONSTRUCTION TYPE -->
                   <div class="mt-2">
-                    <CFormSelect
-                      label="Construction Type"
+                    <label class="form-label">Construction Type *</label>
+                    <MASelect
                       v-model="building.construction_type"
                       :options="constructionTypes.items"
-                      size="sm"
+                      :reduce="option => option.value"
+                      label="label"
                       required
-                    />
-                  </div>
-                  <!-- CONSTRUCTION STATE -->
-                  <div class="mt-2">
-                    <CFormInput
-                      size="sm"
-                      v-model="building.construction_state"
-                      label="Construction State"
+                      placeholder="Select..."
+                      :loading="constructionTypes.loading"
                     />
                   </div>
                   <!-- ROOF SYSTEM -->
                   <div class="mt-2">
                     <CFormInput
-                      size="sm"
                       v-model="building.roof_system"
                       label="Roof System"
                     />
                   </div>
                   <!-- FIRE PROTECTION SYSTEM -->
                   <div class="mt-2">
-                    <CFormSelect
-                      label="Fire Protection System (FPS)"
+                    <label class="form-label">Fire Protection System (FPS) *</label>
+                    <MASelect
                       v-model="building.fire_protection_system"
                       :options="fireProtectionSystems.items"
-                      size="sm"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="fireProtectionSystems.loading"
+                      multiple
                     />
                   </div>
                   <div class="mt-2">
-                    <CFormInput
-                      type="number"
-                      size="sm"
-                      v-model="building.skylights_sf"
-                      label="Skylights SF"
-                    />
+                    <label class="form-label">Skylights SF</label>
+                    <CInputGroup>
+                      <CFormInput
+                        type="number"
+                        v-model="building.skylights_sf"
+                      />
+                      <CInputGroupText>%</CInputGroupText>
+                    </CInputGroup>
                   </div>
                   <div class="mt-2">
-                    <CFormSelect
-                      label="Above Market TIS"
+                    <label class="form-label">Above Market TIS</label>
+                    <MASelect
                       v-model="building.above_market_tis"
                       :options="technicalImprovements.items"
-                      size="sm"
-                      required
+                      :reduce="option => option.value"
+                      label="label"
+                      placeholder="Select..."
+                      :loading="technicalImprovements.loading"
+                      multiple
                     />
+                  </div>
+                  <div class="mt-2">
+                    <label class="form-label">Floor Resistance *</label>
+                    <CInputGroup>
+                      <CFormInput
+                        type="text"
+                        v-model="building.floor_resistance"
+                        required
+                      />
+                    </CInputGroup>
                   </div>
                 </CCol>
 
                 <!-- Tercera columna: Sistemas eléctricos y ambientales -->
                 <CCol :md="3">
-                  <!-- TRANSFORMER CAPACITY -->
-                  <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="building.transformer_capacity"
-                      label="Transformer Capacity"
-                    />
-                  </div>
                   <!-- LIGHTING -->
                   <div class="mt-2">
-                    <CFormSelect
-                      label="Lighting"
+                    <label class="form-label">Lighting *</label>
+                    <MASelect
                       v-model="building.lightning"
                       :options="typesLightnings.items"
-                      size="sm"
+                      :reduce="option => option.value"
+                      label="label"
                       required
+                      placeholder="Select..."
+                      :loading="typesLightnings.loading"
                     />
                   </div>
                   <!-- VENTILATION -->
                   <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="building.ventilation"
-                      label="Ventilation System"
-                    />
+                    <label class="form-label">Ventilation System</label>
+                    <CInputGroup>
+                      <CFormInput
+                        type="number"
+                        v-model="building.ventilation"
+                      />
+                      <CInputGroupText>CH/PH</CInputGroupText>
+                    </CInputGroup>
                   </div>
                   <div class="mt-2">
-                    <CFormInput
-                      type="text"
-                      size="sm"
-                      v-model="building.kvas"
-                      label="KVAS"
-                    />
-                  </div>
-                  <!-- HVAC PRODUCTION AREA -->
-                  <div class="mt-2">
-                    <label>HVAC Production Area</label>
-                    <CInputGroup class="mb-3">
+                    <label class="form-label">KVAS</label>
+                    <CInputGroup>
                       <CFormInput 
                         type="number" 
-                        size="sm"
-                        class="no-spinner"
-                        v-model="building.hvacProduction"
-                        placeholder="Production"
-                        aria-label="Production"
-                        @blur="validateHvacRange"
+                        v-model="building.kvas_value_1"
+                        placeholder="value 1"
+                        @blur="validateRangeKvas"
                       />
                       <CInputGroupText>@</CInputGroupText>
                       <CFormInput 
                         type="number"
-                        size="sm"
-                        class="no-spinner"
+                        v-model="building.kvas_value_2"
+                        placeholder="value 2"
+                        @blur="validateRangeKvas"
+                      />
+                    </CInputGroup>
+                  </div>
+                  <!-- bay_size -->
+                  <div class="mt-2">
+                    <label class="form-label">Bay Size *</label>
+                    <CInputGroup>
+                      <CFormInput 
+                        type="number" 
+                        v-model="building.bay_size_value_1"
+                        placeholder="value 1"
+                        required
+                        @blur="validateRangeBaySize"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        v-model="building.bay_size_value_2"
+                        placeholder="value 2"
+                        required
+                        @blur="validateRangeBaySize"
+                      />
+                    </CInputGroup>
+                  </div>
+                  <!-- HVAC PRODUCTION AREA -->
+                  <div class="mt-2">
+                    <label class="form-label">HVAC Production Area (TON)</label>
+                    <CInputGroup>
+                      <CFormInput 
+                        type="number" 
+                        v-model="building.hvacProduction"
+                        placeholder="Production"
+                        @blur="validateRangeHvac"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
                         v-model="building.hvacArea"
                         placeholder="Area"
-                        aria-label="Area"
-                        @blur="validateHvacRange"
+                        @blur="validateRangeHvac"
+                      />
+                    </CInputGroup>
+                  </div>
+
+                  <div class="mt-2">
+                    <label class="form-label">Column Spacing FT *</label>
+                    <CInputGroup>
+                      <CFormInput 
+                        type="number" 
+                        v-model="building.columns_spacing_value_1"
+                        placeholder="value 1"
+                        required
+                        @blur="validateRangeColumnsSpacing"
+                      />
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput 
+                        type="number"
+                        v-model="building.columns_spacing_value_2"
+                        placeholder="value 2"
+                        required
+                        @blur="validateRangeColumnsSpacing"
                       />
                     </CInputGroup>
                   </div>
@@ -940,44 +1216,12 @@ defineExpose({
                 <!-- Cuarta columna: Switches de características -->
                 <CCol :md="3">
                   <div class="switches-container">
-                    <!-- SF/SM SWITCH -->
-                    <div class="switch-item">
-                      <label class="switch-label">SF/SM</label>
-                      <CFormSwitch 
-                        size="lg"
-                        v-model="building.sfSm"
-                      />
-                    </div>
-                    <!-- OFFICE -->
-                    <div class="switch-item">
-                      <label class="switch-label">Office</label>
-                      <CFormSwitch 
-                        size="lg"
-                        v-model="building.has_office"
-                      />
-                    </div>
-                    <!-- SPRINKLERS -->
-                    <div class="switch-item">
-                      <label class="switch-label">Sprinklers</label>
-                      <CFormSwitch 
-                        size="lg"
-                        v-model="building.has_sprinklers"
-                      />
-                    </div>
                     <!-- CRANE -->
                     <div class="switch-item">
                       <label class="switch-label">Crane</label>
                       <CFormSwitch 
                         size="lg"
                         v-model="building.has_crane"
-                      />
-                    </div>
-                    <!-- HVAC -->
-                    <div class="switch-item">
-                      <label class="switch-label">HVAC</label>
-                      <CFormSwitch 
-                        size="lg"
-                        v-model="building.has_hvac"
                       />
                     </div>
                     <!-- LEED -->
@@ -1006,7 +1250,6 @@ defineExpose({
     </CRow>
   </form>
 </template>
-
 <style scoped>
 .switches-container {
   display: flex;

@@ -26,19 +26,19 @@ const routes = [
         path: '/dashboard',
         name: ROUTE_NAMES.DASHBOARD,
         component: () => import('@/views/dashboard/Dashboard.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true },
       },
       {
         path: '/operations',
         name: ROUTE_NAMES.OPERATIONS,
         meta: {
           requiresAuth: true,
-          label: 'Operations'
+          label: 'Operations',
         },
         component: {
           render() {
             return h(resolveComponent('router-view'))
-          }
+          },
         },
         children: [
           {
@@ -50,7 +50,7 @@ const routes = [
             path: 'policy/:id',
             name: ROUTE_NAMES.POLICY_DETAIL,
             component: PolicyDetail,
-            props: true
+            props: true,
           },
           {
             path: '/operations/companies',
@@ -61,9 +61,9 @@ const routes = [
             path: '/operations/company/:id',
             name: ROUTE_NAMES.COMPANY_DETAIL,
             component: () => import('@/views/operations/companies/CompanyDetail.vue'),
-            props: route => ({
-              id: Number(route.params.id)
-            })
+            props: (route) => ({
+              id: Number(route.params.id),
+            }),
           },
           {
             path: '/operations/employees',
@@ -77,17 +77,17 @@ const routes = [
             props: true,
           },
           {
-            path: '/operations/buildings',
+            path: '/operations/market-size',
             name: ROUTE_NAMES.BUILDINGS,
             component: Buildings,
           },
           {
-            path: '/operations/building/create',
+            path: '/operations/market-size/create',
             name: ROUTE_NAMES.BUILDINGS_CREATE,
             component: () => import('@/views/operations/buildings/BuildingDetalle.vue'),
           },
           {
-            path: '/operations/building/:buildingId/edit',
+            path: '/operations/market-size/:buildingId/edit',
             name: ROUTE_NAMES.BUILDINGS_UPDATE,
             component: () => import('@/views/operations/buildings/BuildingDetalle.vue'),
           },
@@ -97,14 +97,14 @@ const routes = [
             component: PendingApprovals,
           },
           {
-            path: '/security',
-            name: ROUTE_NAMES.SECURITY,
-            component: () => import('@/views/operacion/industrial-parks/IndustrialParks.vue'),
+            path: 'industrial-parks',
+            name: ROUTE_NAMES.INDUSTRIAL_PARKS,
+            component: () => import('@/views/operations/industrial-parks/IndustrialParks.vue'),
           },
           {
             path: 'industrial-parks/:id',
             name: ROUTE_NAMES.INDUSTRIAL_PARKS_DETAIL,
-            component: () => import('@/views/operacion/industrial-parks/IndustrialParkDetail.vue'),
+            component: () => import('@/views/operations/industrial-parks/IndustrialParkDetail.vue'),
             props: true,
           },
           {
@@ -129,7 +129,7 @@ const routes = [
                 path: 'users/create',
                 name: ROUTE_NAMES.USERS_CREATE,
                 component: UserDetail,
-                props: { id: 0 },
+                props: { id: 0 }, // Para nuevo usuario
                 meta: {
                   requiresAuth: true,
                 },
@@ -151,8 +151,8 @@ const routes = [
             component: () => import('@/views/operations/industries/Industries.vue'),
             meta: {
               requiresAuth: true,
-              label: 'Industries'
-            }
+              label: 'Industries',
+            },
           },
           {
             path: 'industry/create',
@@ -160,8 +160,8 @@ const routes = [
             component: () => import('@/views/operations/industries/IndustryDetail.vue'),
             meta: {
               requiresAuth: true,
-              label: 'Create Industry'
-            }
+              label: 'Create Industry',
+            },
           },
           {
             path: 'industry/:id',
@@ -170,8 +170,8 @@ const routes = [
             props: true,
             meta: {
               requiresAuth: true,
-              label: 'Edit Industry'
-            }
+              label: 'Edit Industry',
+            },
           },
           {
             path: 'developers',
@@ -179,8 +179,8 @@ const routes = [
             component: () => import('@/views/operations/developers/Developers.vue'),
             meta: {
               requiresAuth: true,
-              label: 'Developers'
-            }
+              label: 'Developers',
+            },
           },
           {
             path: 'developer/create',
@@ -188,8 +188,8 @@ const routes = [
             component: () => import('@/views/operations/developers/DeveloperDetalle.vue'),
             meta: {
               requiresAuth: true,
-              label: 'Create Developer'
-            }
+              label: 'Create Developer',
+            },
           },
           {
             path: 'developer/:id',
@@ -198,18 +198,18 @@ const routes = [
             props: true,
             meta: {
               requiresAuth: true,
-              label: 'Edit Developer'
-            }
+              label: 'Edit Developer',
+            },
           },
           {
             path: 'tenants',
             name: 'Tenants',
-            component: () => import('@/views/operacion/tenants/Tenants.vue'),
+            component: () => import('@/views/operations/tenants/Tenants.vue'),
           },
           {
             path: 'tenants/:id',
             name: 'TenantDetail',
-            component: () => import('@/views/operacion/tenants/TenantDetail.vue'),
+            component: () => import('@/views/operations/tenants/TenantDetail.vue'),
           },
         ],
       },

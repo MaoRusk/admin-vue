@@ -53,7 +53,7 @@ export default {
     async fetchDevelopers() {
       try {
         const response = await DevelopersService.getDevelopers()
-        this.developers = response.data.data || []
+        this.developers = response || []
         return this.developers
       } catch (error) {
         console.error('Error fetching developers:', error)
