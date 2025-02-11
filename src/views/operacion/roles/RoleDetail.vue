@@ -52,16 +52,8 @@
                         />
                       </div>
                     </th>
-                    <th v-for="action in actions" :key="action" class="action-column">
-                      <div class="d-flex flex-column align-items-center gap-2">
-                        <span>{{ formatActionName(action) }}</span>
-                        <CFormCheck
-                          :checked="isAllSelectedForAction(action)"
-                          :indeterminate="hasIndeterminateAction(action)"
-                          @change="toggleAllForAction(action)"
-                          class="action-select-all"
-                        />
-                      </div>
+                    <th v-for="action in actions" :key="action" class="action-column text-center">
+                      <!-- Empty headers for actions -->
                     </th>
                   </tr>
                 </thead>
@@ -79,13 +71,18 @@
                       />
                     </td>
                     <td v-for="action in actions" :key="action" class="text-center permission-cell">
-                      <CFormCheck
-                        v-if="hasPermission(resource, action)"
-                        :checked="isPermissionSelected(resource, action)"
-                        @change="togglePermission(resource, action)"
-                        :class="{'permission-checked': isPermissionSelected(resource, action)}"
-                      />
-                      <span v-else class="permission-unavailable">—</span>
+                      <div class="d-flex align-items-center gap-2 justify-content-center">
+                        <CFormCheck
+                          v-if="hasPermission(resource, action)"
+                          :checked="isPermissionSelected(resource, action)"
+                          @change="togglePermission(resource, action)"
+                          :class="{'permission-checked': isPermissionSelected(resource, action)}"
+                        />
+                        <span v-if="hasPermission(resource, action)" class="permission-action-name">
+                          {{ formatActionName(action) }}
+                        </span>
+                        <span v-else class="permission-unavailable">—</span>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -174,6 +171,7 @@ export default {
       return resource.charAt(0).toUpperCase() + resource.slice(1)
     },
     formatActionName(action) {
+      if (action === 'index') return 'Listar'
       return action.charAt(0).toUpperCase() + action.slice(1)
     },
     hasPermission(resource, action) {
@@ -457,7 +455,7 @@ export default {
 }
 
 .action-column {
-  min-width: 100px;
+  min-width: 150px;
 }
 
 .resource-name {
@@ -632,5 +630,10 @@ export default {
 .permissions-header {
   display: flex;
   align-items: center;
+}
+
+.permission-action-name {
+  font-size: 0.875rem;
+  color: #4f5d73;
 }
 </style> 
