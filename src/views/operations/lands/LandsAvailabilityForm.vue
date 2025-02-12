@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { AxiosError } from 'axios';
 
 import { API } from '../../../services';
-// import MASelect from '../../../components/MASelect.vue';
+import MASelect from '../../../components/MASelect.vue';
 
 const props = defineProps({
   landId: {
@@ -22,7 +22,7 @@ const emit = defineEmits(['return', 'submitting']);
 const isNewRecord = computed(() => !props.availabilityId);
 
 const land = ref(null)
-const VALUE_SEPARATOR = ' x '
+// const VALUE_SEPARATOR = ' x '
 
 const availabilityObj = {
   land_id: props.landId,
@@ -41,26 +41,9 @@ const availabilityObj = {
   avl_comments: '',
   avl_conditioned_construction: false,
   rail_spur: false,
-
-  kvas_value_1: '',
-  kvas_value_2: '',
-
-  // 'land_condition' => 'nullable|in:Fully Developed,Undeveloped',
-  // 'rail_spur' => 'nullable|boolean',
-  // 'natural_gas' => 'nullable|in:yes,no,feasibility',
-  // 'sewage' => 'nullable|in:yes,no,feasibility',
-  // 'water' => 'nullable|in:yes,no,feasibility',
-  // 'electric' => 'nullable|in:yes,no,feasibility',
-  // 'kvas' => 'nullable|integer',
-  // 'avl_broker_id' => 'nullable|exists:cat_developers,id',
-  // 'avl_size_ha' => 'nullable|integer',
-  // 'avl_minimum' => 'nullable|integer',
-  // 'avl_min_sale' => 'nullable|numeric|min:0',
-  // 'avl_max_sale' => 'nullable|numeric|min:0',
-  // 'avl_conditioned_construction' => 'nullable|boolean',
-  // 'avl_date' => 'nullable|date',
-  // 'avl_deal' => 'required|in:Lease,Sale',
-  // 'avl_comments' => 'nullable|string|max:45',
+  kvas: '',
+  // kvas_value_1: '',
+  // kvas_value_2: '',
 }
 
 const availability = reactive({...availabilityObj})
@@ -73,21 +56,21 @@ const handleReturn = () => {
   emit('return');
 };
 
-const validateRangeInputs = (model, field1, field2, fieldName) => {
-  if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Invalid Range',
-      text: `The first ${fieldName} value cannot be greater than the second value`,
-    });
-    model[field1] = ''
-    model[field2] = ''
-  }
-}
+// const validateRangeInputs = (model, field1, field2, fieldName) => {
+//   if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
+//     Swal.fire({
+//       icon: 'warning',
+//       title: 'Invalid Range',
+//       text: `The first ${fieldName} value cannot be greater than the second value`,
+//     });
+//     model[field1] = ''
+//     model[field2] = ''
+//   }
+// }
 
-const validateRangeKvas = () => {
-  validateRangeInputs(availability, 'kvas_value_1', 'kvas_value_2', 'KVAS');
-}
+// const validateRangeKvas = () => {
+//   validateRangeInputs(availability, 'kvas_value_1', 'kvas_value_2', 'KVAS');
+// }
 
 async function saveAvailability() {
   emit('submitting', true)
@@ -95,7 +78,7 @@ async function saveAvailability() {
     const body = {
       ...availability,
       avl_date: availability.avl_date ? dayjs(availability.avl_date).format('YYYY-MM-DD') : '',
-      kvas: (availability.kvas_value_1 && availability.kvas_value_2) ? `${availability.kvas_value_1}${VALUE_SEPARATOR}${availability.kvas_value_2}` : '',
+      // kvas: (availability.kvas_value_1 && availability.kvas_value_2) ? `${availability.kvas_value_1}${VALUE_SEPARATOR}${availability.kvas_value_2}` : '',
     }
     let data;
     if (isNewRecord.value) {
@@ -128,13 +111,13 @@ const landConditions = reactive({ loading: false, items: []})
 
 async function fetchLandConditions() {
   landConditions.loading = true
-  const { data } = new Promise(r => {
+  const { data } = await new Promise(r => {
     r({
       data: {
-        data: [
-          {'Fully Developed': 'Fully Developed'},
-          {'Undeveloped': 'Undeveloped'},
-        ]
+        data: {
+          'Fully Developed': 'Fully Developed',
+          'Undeveloped': 'Undeveloped',
+        }
       }
     })
   })
@@ -144,14 +127,14 @@ async function fetchLandConditions() {
 
 async function fetchStateService() {
   stateServices.loading = true
-  const { data } = new Promise(r => {
+  const { data } = await new Promise(r => {
     r({
       data: {
-        data: [
-          {'yes': 'yes'},
-          {'no': 'no'},
-          {'feasibility': 'feasibility'},
-        ]
+        data: {
+          'yes': 'yes',
+          'no': 'no',
+          'feasibility': 'feasibility',
+        }
       }
     })
   })
@@ -175,16 +158,16 @@ async function fetchBrokers() {
 async function fetchAvailability() {
   try {
     const { data } = await API.landsAvailability.getLandAvailability(props.landId, props.availabilityId);
-    ['land_condition', 'natural_gas', 'sewage', 'water', 'electric', 'avl_broker_id', 'avl_minimum', 'avl_min_sale', 'avl_max_sale', 'avl_size_ha', 'avl_date', 'avl_deal', 'avl_comments']
+    ['land_condition', 'natural_gas', 'sewage', 'water', 'electric', 'avl_broker_id', 'avl_minimum', 'avl_min_sale', 'avl_max_sale', 'avl_size_ha', 'avl_date', 'avl_deal', 'avl_comments', 'kvas']
     .forEach(prop => availability[prop] = `${data.data[prop] ?? ''}`);
     ['broker_id']
     .forEach(prop => availability[prop] = data.data[prop] ? +data.data[prop] : '');
     ['avl_conditioned_construction', 'rail_spur']
     .forEach(prop => availability[prop] = Boolean(data.data[prop]));
 
-    if (data.data.kvas && data.data.kvas.length > VALUE_SEPARATOR.length) {
-      ([availability.kvas_value_1, availability.kvas_value_2] = data.data.kvas.split(VALUE_SEPARATOR))
-    }
+    // if (data.data.kvas && data.data.kvas.length > VALUE_SEPARATOR.length) {
+    //   ([availability.kvas_value_1, availability.kvas_value_2] = data.data.kvas.split(VALUE_SEPARATOR))
+    // }
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -342,7 +325,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="p-4">
+  <div>
     <CCard>
       <CCardHeader class="d-flex justify-content-between align-items-center">
         <h3>{{ isNewRecord ? 'New Land Availability' : 'Edit Land Availability' }}</h3>
@@ -360,10 +343,7 @@ defineExpose({
 
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Land Condition</CFormLabel>
-                  <select class="form-select" v-model="land.land_condition">
-                    <option v-for="value in Object.values(landConditions.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="availability.land_condition"
                     :options="landConditions.items"
                     :reduce="option => option.value"
@@ -371,15 +351,12 @@ defineExpose({
                     required
                     placeholder="Select..."
                     :loading="landConditions.loading"
-                  /> -->
+                  />
                 </div>
 
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Natural Gas</CFormLabel>
-                  <select class="form-select" v-model="land.natural_gas">
-                    <option v-for="value in Object.values(stateServices.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="availability.natural_gas"
                     :options="stateServices.items"
                     :reduce="option => option.value"
@@ -387,15 +364,12 @@ defineExpose({
                     required
                     placeholder="Select..."
                     :loading="stateServices.loading"
-                  /> -->
+                  />
                 </div>
 
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Sewage</CFormLabel>
-                  <select class="form-select" v-model="land.sewage">
-                    <option v-for="value in Object.values(stateServices.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="availability.sewage"
                     :options="stateServices.items"
                     :reduce="option => option.value"
@@ -403,15 +377,12 @@ defineExpose({
                     required
                     placeholder="Select..."
                     :loading="stateServices.loading"
-                  /> -->
+                  />
                 </div>
 
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Water</CFormLabel>
-                  <select class="form-select" v-model="land.water">
-                    <option v-for="value in Object.values(stateServices.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="availability.water"
                     :options="stateServices.items"
                     :reduce="option => option.value"
@@ -419,15 +390,12 @@ defineExpose({
                     required
                     placeholder="Select..."
                     :loading="stateServices.loading"
-                  /> -->
+                  />
                 </div>
 
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Electric</CFormLabel>
-                  <select class="form-select" v-model="land.electric">
-                    <option v-for="value in Object.values(stateServices.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="availability.electric"
                     :options="stateServices.items"
                     :reduce="option => option.value"
@@ -435,12 +403,16 @@ defineExpose({
                     required
                     placeholder="Select..."
                     :loading="stateServices.loading"
-                  /> -->
+                  />
                 </div>
 
                 <div class="col-md-6 mb-3">
                   <label class="form-label">KVAS</label>
-                  <CInputGroup>
+                  <CFormInput
+                    type="number"
+                    v-model="availability.kvas"
+                  />
+                  <!-- <CInputGroup>
                     <CFormInput
                       type="number"
                       v-model="availability.kvas_value_1"
@@ -454,15 +426,12 @@ defineExpose({
                       placeholder="value 2"
                       @blur="validateRangeKvas"
                     />
-                  </CInputGroup>
+                  </CInputGroup> -->
                 </div>
 
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Listing Broker</CFormLabel>
-                  <select class="form-select" v-model="land.avl_broker_id">
-                    <option v-for="value in (brokers.items)" :key="value.id" :value="value.id">{{value.name}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="availability.avl_broker_id"
                     :options="brokers.items"
                     :reduce="option => option.id"
@@ -472,19 +441,18 @@ defineExpose({
                     edit-options
                     @submitOption="(option, update) => { saveOptionGeneral('broker_id', option, update) }"
                     @deleteOption="(option) => { deleteOptionGeneral('broker_id', option) }"
-                  /> -->
+                  />
                 </div>
 
-
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Size ha</CFormLabel>
+                  <CFormLabel>Size (ha)</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.avl_size_ha"
                   />
                 </div>
 
-                <div class="col-12 mb-3">
+                <div class="col-md-6 mb-3">
                   <label class="form-label">Rail Spur</label>
                   <CFormSwitch
                     size="lg"
@@ -532,39 +500,35 @@ defineExpose({
                     step="0.01"
                   />
                 </div>
-              </div>
 
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Deal *</label>
-                <select class="form-select" v-model="land.avl_deal">
-                  <option v-for="value in (deals.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                </select>
-                <!-- <MASelect
-                  v-model="availability.avl_deal"
-                  :options="fireProtectionSystems.items"
-                  :reduce="option => option.value"
-                  label="label"
-                  required
-                  placeholder="Select..."
-                  :loading="fireProtectionSystems.loading"
-                  multiple
-                /> -->
-              </div>
-                
-              <div class="col-12 mb-3">
-                <label class="form-label">Conditioned Construction</label>
-                <CFormSwitch
-                  size="lg"
-                  v-model="availability.avl_conditioned_construction"
-                />
-              </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Deal *</label>
+                  <MASelect
+                    v-model="availability.avl_deal"
+                    :options="deals.items"
+                    :reduce="option => option.value"
+                    label="label"
+                    required
+                    placeholder="Select..."
+                    :loading="deals.loading"
+                  />
+                </div>
 
-              <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-3">
                   <CFormLabel>Comments</CFormLabel>
                   <CFormInput
                     v-model="availability.avl_comments"
                   />
                 </div>
+                  
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Conditioned Construction</label>
+                  <CFormSwitch
+                    size="lg"
+                    v-model="availability.avl_conditioned_construction"
+                  />
+                </div>
+              </div>
             </CCardBody>
           </CCard>
         </form>

@@ -2,7 +2,7 @@ export const ROUTE_NAMES = {
   LOGIN: 'Login',
   HOME: 'home',
   DASHBOARD: 'dashboard',
-  OPERATIONS: 'Operacion',
+  OPERATIONS: 'Operation',
   BUILDINGS: 'Market Size',
   BUILDINGS_CREATE: 'Create Market Size',
   BUILDINGS_UPDATE: 'Edit Market Size',

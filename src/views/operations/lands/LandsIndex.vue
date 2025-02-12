@@ -140,16 +140,18 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
     }"
   >
     <template #actions="{ item }">
-      <td class="d-flex gap-1">
-        <CButton color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Availability' } })">
-          <CIcon name="cilBuilding" size="sm" />
-        </CButton>
-        <CButton color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Absorption' } })">
-          <CIcon name="cilIndustrySlash" size="sm" />
-        </CButton>
-        <CButton color="danger" variant="outline" square size="sm" @click="removeLand(item.id)">
-          <CIcon name="cilTrash" size="sm" />
-        </CButton>
+      <td style="vertical-align: middle;">
+        <div class="d-flex gap-1">
+          <CButton color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Availability' } })">
+            <CIcon name="cilBuilding" size="sm" />
+          </CButton>
+          <CButton color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Absorption' } })">
+            <CIcon name="cilIndustrySlash" size="sm" />
+          </CButton>
+          <CButton color="danger" variant="outline" square size="sm" @click="removeLand(item.id)">
+            <CIcon name="cilTrash" size="sm" />
+          </CButton>
+        </div>
       </td>
     </template>
   </CSmartTable>

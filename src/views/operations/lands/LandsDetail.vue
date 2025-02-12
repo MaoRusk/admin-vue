@@ -105,8 +105,7 @@ watch(activeItemKey, (newTab) => {
           <LandsForm v-if="tabLandLoaded" :landId="landId" ref="landRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Availability">
-          availabilityId
-          <LandsAvailabilityIndex v-if="tabDataLoaded" :landId="landId" ref="availabilityRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
+          <LandsAvailabilityIndex v-if="tabAvailabilityLoaded" :landId="landId" ref="availabilityRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" @changeShowForm="(value) => disabledSave = !value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
           absorptionId

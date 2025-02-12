@@ -36,7 +36,6 @@ const columns = [
   { key: 'avl_size_ha', label: 'Size ha' },
   { key: 'avl_deal', label: 'Land Deal' },
   { key: 'avl_minimum', label: 'Minimum' },
-  { key: 'avl_expansion_up_to_sf', label: 'Expansion Up To' },
   { key: 'rail_spur', label: 'Rail Spur' },
   { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
@@ -59,7 +58,7 @@ async function fetchLandsAvl() {
       avl_deal: item.avl_deal ?? '',
       avl_minimum: item.avl_minimum ?? '',
       avl_expansion_up_to_sf: item.avl_expansion_up_to_sf ?? '',
-      rail_spur: item.rail_spur ?? '',
+      rail_spur: item.rail_spur ? 'YES' : 'NO',
     }))
     loading.value = false
   } catch (error) {

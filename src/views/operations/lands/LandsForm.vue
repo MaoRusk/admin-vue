@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
-// import MASelect from '../../../components/MASelect.vue';
+import MASelect from '../../../components/MASelect.vue';
 
 const router = useRouter()
 const route = useRoute()
@@ -156,14 +156,14 @@ async function fetchDevelopers(marketId, submarketId) {
   developers.loading = true
   const data = await API.developers.getDevelopers({ is_developer: true, marketId, submarketId });
   developers.loading = false
-  developers.items = data.data.data.sort((a, b) => a.name.localeCompare(b.name))
+  developers.items = data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 async function fetchOwners(marketId, submarketId) {
   owners.loading = true
   const data = await API.developers.getDevelopers({ is_owner: true, marketId, submarketId });
   owners.loading = false
-  owners.items = data.data.data.sort((a, b) => a.name.localeCompare(b.name))
+  owners.items = data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 async function fetchIndustrialParks(marketId, submarketId) {
@@ -424,10 +424,7 @@ defineExpose({
 
                 <div class="col-md-4 mt-2">
                   <label class="form-label">Zoning *</label>
-                  <select class="form-select" v-model="land.zoning" required>
-                    <option v-for="value in Object.values(zoning.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="land.zoning"
                     :options="zoning.items"
                     :reduce="option => option.value"
@@ -435,15 +432,12 @@ defineExpose({
                     required
                     placeholder="Select..."
                     :loading="zoning.loading"
-                  /> -->
+                  />
                 </div>
 
                 <div class="col-md-4 mt-2">
                   <label class="form-label">Parcel Shape *</label>
-                  <select class="form-select" v-model="land.parcel_shape" required>
-                    <option v-for="value in Object.values(parcelShape.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="land.parcel_shape"
                     :options="parcelShape.items"
                     :reduce="option => option.value"
@@ -451,22 +445,25 @@ defineExpose({
                     required
                     placeholder="Select..."
                     :loading="parcelShape.loading"
-                  /> -->
+                  />
                 </div>
 
                 <div class="col-md-4 mt-2">
                   <label class="form-label">Status *</label>
-                  <select class="form-select" v-model="land.status" required>
-                    <option v-for="value in Object.values(statuses.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
+                  <MASelect
+                    v-model="land.status"
+                    :options="statuses.items"
+                    :reduce="option => option.value"
+                    label="label"
+                    required
+                    placeholder="Select..."
+                    :loading="statuses.loading"
+                  />
                 </div>
 
                 <div class="col-md-4 mt-2">
                   <label class="form-label">Currency *</label>
-                  <select class="form-select" v-model="land.currency" required>
-                    <option v-for="value in Object.values(currencies.items)" :key="value.value" :value="value.value">{{value.label}}</option>
-                  </select>
-                  <!-- <MASelect
+                  <MASelect
                     v-model="land.currency"
                     :options="currencies.items"
                     :reduce="option => option.value"
@@ -474,7 +471,7 @@ defineExpose({
                     required
                     placeholder="Select..."
                     :loading="currencies.loading"
-                  /> -->
+                  />
                 </div>
               </div>
 
@@ -509,10 +506,7 @@ defineExpose({
           <div class="row">
             <div class="col-md-4 mt-2">
               <label class="form-label">Region *</label>
-              <select class="form-select" v-model="land.region_id" required>
-                <option v-for="item in regions.items" :key="item.value" :value="item.value">{{item.label}}</option>
-              </select>
-              <!-- <MASelect
+              <MASelect
                 v-model="land.region_id"
                 :options="regions.items"
                 :reduce="option => option.value"
@@ -520,15 +514,12 @@ defineExpose({
                 required
                 placeholder="Select..."
                 :loading="regions.loading"
-              /> -->
+              />
             </div>
 
             <div class="col-md-4 mt-2">
               <label class="form-label">Market *</label>
-              <select class="form-select" v-model="land.market_id" required>
-                <option v-for="item in markets.items" :key="item.value" :value="item.value">{{item.label}}</option>
-              </select>
-              <!-- <MASelect
+              <MASelect
                 v-model="land.market_id"
                 :options="markets.items"
                 :reduce="option => option.value"
@@ -537,15 +528,12 @@ defineExpose({
                 :loading="markets.loading"
                 :disabled="!land.region_id"
                 required
-              /> -->
+              />
             </div>
 
             <div class="col-md-4 mt-2">
               <label class="form-label">Submarket *</label>
-              <select class="form-select" v-model="land.submarket_id" required>
-                <option v-for="item in submarkets.items" :key="item.value" :value="item.value">{{item.label}}</option>
-              </select>
-              <!-- <MASelect
+              <MASelect
                 v-model="land.submarket_id"
                 :options="submarkets.items"
                 :reduce="option => option.value"
@@ -554,15 +542,12 @@ defineExpose({
                 :loading="submarkets.loading"
                 :disabled="!land.market_id"
                 required
-              /> -->
+              />
             </div>
             
             <div class="col-md-4 mt-2">
               <label class="form-label">Industrial Park *</label>
-              <select class="form-select" v-model="land.industrial_park_id" required>
-                <option v-for="item in industrialParks.items" :key="item.id" :value="item.id">{{item.name}}</option>
-              </select>
-              <!-- <MASelect
+              <MASelect
                 v-model="land.industrial_park_id"
                 :options="industrialParks.items"
                 :reduce="option => option.id"
@@ -574,7 +559,7 @@ defineExpose({
                 edit-options
                 @submitOption="(option, update) => { saveOptionGeneral('industrial_park_id', option, update) }"
                 @deleteOption="(option) => { deleteOptionGeneral('industrial_park_id', option) }"
-              /> -->
+              />
             </div>
 
             <div class="col-md-4 mt-2">
@@ -609,10 +594,7 @@ defineExpose({
                   <!-- OWNER -->
                   <div class="mt-2">
                     <label class="form-label">Owner *</label>
-                    <select class="form-select" v-model="land.owner_id" required>
-                      <option v-for="item in owners.items" :key="item.id" :value="item.id">{{item.name}}</option>
-                    </select>
-                    <!-- <MASelect
+                    <MASelect
                       v-model="land.owner_id"
                       :options="owners.items"
                       :reduce="option => option.id"
@@ -658,17 +640,14 @@ defineExpose({
                           </div>
                         </div>
                       </template>
-                    </MASelect> -->
+                    </MASelect>
                   </div>
                 </CCol>
                 <CCol md>
                   <!-- DEVELOPER -->
                   <div class="mt-2">
                     <label class="form-label">Developer *</label>
-                    <select class="form-select" v-model="land.developer_id" required>
-                      <option v-for="item in developers.items" :key="item.id" :value="item.id">{{item.name}}</option>
-                    </select>
-                    <!-- <MASelect
+                    <MASelect
                       v-model="land.developer_id"
                       :options="developers.items"
                       :reduce="option => option.id"
@@ -714,7 +693,7 @@ defineExpose({
                           </div>
                         </div>
                       </template>
-                    </MASelect> -->
+                    </MASelect>
                   </div>
                 </CCol>
               </CRow>
