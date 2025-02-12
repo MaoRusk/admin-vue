@@ -37,8 +37,7 @@ const form = reactive({
   // Keep developer fields but only use them when isDevForm is true
   is_developer: false,
   is_builder: false,
-  is_owner: false,
-  is_user_owner: false
+  is_owner: false
 })
 
 const selectedLabel = computed(() => {
@@ -113,7 +112,6 @@ function startEdit(option) {
     form.is_developer = Boolean(Number(option.is_developer))
     form.is_builder = Boolean(Number(option.is_builder))
     form.is_owner = Boolean(Number(option.is_owner))
-    form.is_user_owner = Boolean(Number(option.is_user_owner))
   }
   
   if (props.isIndustrialParkForm) {
@@ -256,10 +254,6 @@ onMounted(() => {
               <CFormCheck
                 v-model="form.is_owner"
                 label="Is Owner"
-              />
-              <CFormCheck
-                v-model="form.is_user_owner"
-                label="Is User Owner"
               />
             </div>
           </div>

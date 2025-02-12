@@ -17,7 +17,6 @@ const developer = ref({
   is_developer: false,
   is_builder: false,
   is_owner: false,
-  is_user_owner: false,
 })
 
 const loading = ref(false)
@@ -36,7 +35,6 @@ const loadDeveloper = async (id) => {
         is_developer: Boolean(response.data.data.is_developer),
         is_builder: Boolean(response.data.data.is_builder),
         is_owner: Boolean(response.data.data.is_owner),
-        is_user_owner: Boolean(response.data.data.is_user_owner),
       }
     }
   } catch (error) {
@@ -68,7 +66,6 @@ const saveDeveloper = async () => {
       is_developer: Number(developer.value.is_developer),
       is_builder: Number(developer.value.is_builder),
       is_owner: Number(developer.value.is_owner),
-      is_user_owner: Number(developer.value.is_user_owner),
     }
 
     if (isCreating.value) {
@@ -143,28 +140,22 @@ const saveDeveloper = async () => {
               </CCol>
             </CRow>
             <CRow class="mb-3">
-              <CCol xs="12" sm="6" md="3">
+              <CCol xs="12" sm="6" md="4">
                 <CFormSwitch
                   label="Developer"
                   v-model="developer.is_developer"
                 />
               </CCol>
-              <CCol xs="12" sm="6" md="3">
+              <CCol xs="12" sm="6" md="4">
                 <CFormSwitch
                   label="Builder"
                   v-model="developer.is_builder"
                 />
               </CCol>
-              <CCol xs="12" sm="6" md="3">
+              <CCol xs="12" sm="6" md="4">
                 <CFormSwitch
                   label="Owner"
                   v-model="developer.is_owner"
-                />
-              </CCol>
-              <CCol xs="12" sm="6" md="3">
-                <CFormSwitch
-                  label="User Owner"
-                  v-model="developer.is_user_owner"
                 />
               </CCol>
             </CRow>
