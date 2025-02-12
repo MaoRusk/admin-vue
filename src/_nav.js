@@ -96,6 +96,12 @@ export default [
     to: '/operations/industries',
     icon: 'cil-factory',
   },
+  {
+    component: 'CNavItem',
+    name: 'Brokers',
+    to: '/operations/brokers',
+    icon: 'cil-people',
+  },
 
   // ? CONTENIDO WEB
   {

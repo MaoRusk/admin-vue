@@ -16,6 +16,8 @@ import Users from '@/views/operations/users/Users.vue'
 import UserDetail from '@/views/operations/users/UserDetail.vue'
 import Roles from '@/views/operations/roles/Roles.vue'
 import RoleDetail from '@/views/operations/roles/RoleDetail.vue'
+import Brokers from '@/views/operations/brokers/Brokers.vue'
+import BrokerDetail from '@/views/operations/brokers/BrokerDetail.vue'
 
 const routes = [
   {
@@ -238,6 +240,34 @@ const routes = [
             path: 'tenants/:id',
             name: 'TenantDetail',
             component: () => import('@/views/operations/tenants/TenantDetail.vue'),
+          },
+          {
+            path: 'brokers',
+            name: ROUTE_NAMES.BROKERS,
+            component: Brokers,
+            meta: {
+              requiresAuth: true,
+              label: 'Brokers',
+            },
+          },
+          {
+            path: 'broker/create',
+            name: ROUTE_NAMES.BROKERS_CREATE,
+            component: BrokerDetail,
+            meta: {
+              requiresAuth: true,
+              label: 'Create Broker',
+            },
+          },
+          {
+            path: 'broker/:id',
+            name: ROUTE_NAMES.BROKERS_UPDATE,
+            component: BrokerDetail,
+            props: true,
+            meta: {
+              requiresAuth: true,
+              label: 'Edit Broker',
+            },
           },
         ],
       },
