@@ -4,8 +4,16 @@ export default {
   getLand(landId) {
     return httpClient.get(`/lands/${landId}`)
   },
-  getLands() {
-    return httpClient.get(`/lands`)
+  getLands(query, filters = {}, sorter = {}) {
+    return httpClient.get(`/lands`, {
+      params: {
+        page: query?.page || null,
+        size: query?.size || null,
+        search: query?.search || null,
+        ...filters,
+        ...sorter,
+      },
+    })
   },
   createLand({
     region_id,

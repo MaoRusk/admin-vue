@@ -49,7 +49,7 @@ async function removeLand(id) {
     console.error('Error fetching land:', error);
   }
 }
-
+// TODO: aplicar filtros de busqueda y definir que campos se mostraran
 async function fetchLands() {
   loading.value = true
 
@@ -148,7 +148,7 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
           <CButton color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Absorption' } })">
             <CIcon name="cilIndustrySlash" size="sm" />
           </CButton>
-          <CButton color="danger" variant="outline" square size="sm" @click="removeLand(item.id)">
+          <CButton color="danger" variant="outline" square size="sm" @click.stop="removeLand(item.id)">
             <CIcon name="cilTrash" size="sm" />
           </CButton>
         </div>

@@ -4,8 +4,16 @@ export default {
   getLandAvailability(landId, landAvailableId) {
     return httpClient.get(`/lands/${landId}/available/${landAvailableId}`)
   },
-  getLandsAvailability(landId) {
-    return httpClient.get(`/lands/${landId}/available`)
+  getLandsAvailability(landId, query, filters = {}, sorter = {}) {
+    return httpClient.get(`/lands/${landId}/available`, {
+      params: {
+        page: query?.page || null,
+        size: query?.size || null,
+        search: query?.search || null,
+        ...filters,
+        ...sorter,
+      },
+    })
   },
   createLandAvailability(
     landId,

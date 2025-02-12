@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { API } from '../../../services';
 import { LANDS_ITEMS_PER_PAGE } from '../../../constants';
-import LandsAvailabilityForm from './LandsAvailabilityForm.vue';
+import LandsAbsorptionForm from './LandsAbsorptionForm.vue';
 
 const props = defineProps({
   landId: {
@@ -17,7 +17,7 @@ const emit = defineEmits(['submitting', 'changeShowForm'])
 
 const storage = useLocalStorage()
 
-const landsAvl = ref([]);
+const landsAbs = ref([]);
 
 const loading = ref(false)
 const totalItems = ref(0)
@@ -29,21 +29,21 @@ const columnSorter = ref({})
 const tableSearch = ref('')
 
 const showForm = ref(false);
-const selectedAvailabilityId = ref(null);
+const selectedAbsorptionId = ref(null);
 
 const columns = [
   { key: 'land_condition', label: 'Land Condition' },
-  { key: 'avl_size_ha', label: 'Size ha' },
-  { key: 'avl_deal', label: 'Land Deal' },
-  { key: 'avl_minimum', label: 'Minimum' },
+  { key: 'abs_size_ha', label: 'Size ha' },
+  { key: 'abs_final_use', label: 'Final Use' },
+  { key: 'abs_closing_price', label: 'Closing Price' },
   { key: 'rail_spur', label: 'Rail Spur' },
   { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
 
-async function fetchLandsAvl() {
+async function fetchLandsAbs() {
   loading.value = true
   try {
-    const { data } = await API.landsAvailability.getLandsAvailability(props.landId, {
+    const { data } = await API.landsAbsorption.getLandsAbsorption(props.landId, {
       page: page.value,
       size: itemsPerPage.value,
       search: tableSearch.value,
@@ -51,35 +51,35 @@ async function fetchLandsAvl() {
     page.value = data.data.current_page
     totalItems.value = data.data.total
     totalPages.value = data.data.last_page
-    landsAvl.value = data.data.data.map(item => ({
+    landsAbs.value = data.data.data.map(item => ({
       ...item,
       land_condition: item.land_condition ?? '',
-      avl_size_ha: item.avl_size_ha ?? '',
-      avl_deal: item.avl_deal ?? '',
-      avl_minimum: item.avl_minimum ?? '',
+      abs_size_ha: item.abs_size_ha ?? '',
+      abs_final_use: item.abs_final_use ?? '',
+      abs_closing_price: item.abs_closing_price ?? '',
       rail_spur: item.rail_spur ? 'YES' : 'NO',
     }))
     loading.value = false
   } catch (error) {
-    console.error('Error fetching landsAvl:', error);
-    landsAvl.value = [];
+    console.error('Error fetching lands Absorptions:', error);
+    landsAbs.value = [];
   } finally {
     loading.value = false
   }
 }
 
-const handleEdit = ({ id: availabilityId }) => {
-  selectedAvailabilityId.value = availabilityId;
+const handleEdit = ({ id: absorptionId }) => {
+  selectedAbsorptionId.value = absorptionId;
   showForm.value = true;
 };
 
 const handleReturn = () => {
   showForm.value = false;
-  selectedAvailabilityId.value = null;
-  fetchLandsAvl();
+  selectedAbsorptionId.value = null;
+  fetchLandsAbs();
 };
 
-async function removeAvailability(availabilityId) {
+async function removeAbsorption(absorptionId) {
   try {
     const { isConfirmed } = await Swal.fire({
       title: "Are you sure?",
@@ -91,39 +91,39 @@ async function removeAvailability(availabilityId) {
       confirmButtonText: "Yes, delete it!"
     })
     if (isConfirmed) {
-      const { data } = await API.landsAvailability.deleteLandAvailability(props.landId, availabilityId);
+      const { data } = await API.landsAbsorption.deleteLandAbsorption(props.landId, absorptionId);
       Swal.fire('Deleted!', data.message, 'success')
-      fetchLandsAvl()
+      fetchLandsAbs()
     }
   } catch (error) {
-    console.error('Error fetching landsAvl:', error);
+    console.error('Error fetching landsAbs:', error);
     Swal.fire('Failed!', error.message, 'error')
   }
 }
 
-const handleAddAvailability = () => {
-  selectedAvailabilityId.value = 0;
+const handleAddAbsorption = () => {
+  selectedAbsorptionId.value = 0;
   showForm.value = true;
 };
 
 onMounted(() => {
-  fetchLandsAvl();
+  fetchLandsAbs();
 });
 
 watch(showForm, (newValue) => {
   emit('changeShowForm', newValue)
 })
 
-const formAvailabilityRef = ref(null)
+const formAbsorptionRef = ref(null)
 
-watch([page, itemsPerPage, tableSearch], fetchLandsAvl)
-watch([columnSorter, columnFilter], fetchLandsAvl, { deep: true })
+watch([page, itemsPerPage, tableSearch], fetchLandsAbs)
+watch([columnSorter, columnFilter], fetchLandsAbs, { deep: true })
 
 defineExpose({
   showForm,
   handleReturn,
   submit() {
-    formAvailabilityRef.value?.submit?.()
+    formAbsorptionRef.value?.submit?.()
   }
 })
 </script>
@@ -132,10 +132,10 @@ defineExpose({
   <div class="p-1">
     <div v-if="!showForm">
       <div class="mb-4 d-flex justify-content-between align-items-center">
-        <h2>Lands Availability</h2>
-        <CButton color="primary" @click="handleAddAvailability">
+        <h2>Lands Absorption</h2>
+        <CButton color="primary" @click="handleAddAbsorption">
           <CIcon name="cilPlus" class="me-2" />
-          Add Availability
+          Add Absorption
         </CButton>
       </div>
 
@@ -147,7 +147,7 @@ defineExpose({
             :column-sorter="{ external: true }"
             :table-filter="{ external: true }"
             :loading="loading"
-            :items="landsAvl"
+            :items="landsAbs"
             :paginationProps="{
               activePage: page,
               pages: totalPages
@@ -184,13 +184,15 @@ defineExpose({
             }"
           >
             <template #actions="{ item }">
-              <td class="d-flex gap-1">
-                <CButton color="primary" variant="outline" square size="sm" >
-                  <CIcon name="cilPencil" size="sm" @click="handleEdit(item)" />
-                </CButton>
-                <CButton color="danger" variant="outline" square size="sm" @click="removeAvailability(item.id)">
-                  <CIcon name="cilTrash" size="sm" />
-                </CButton>
+              <td style="vertical-align: middle;">
+                <div class="d-flex gap-1">
+                  <CButton color="primary" variant="outline" square size="sm" >
+                      <CIcon name="cilPencil" size="sm" @click="handleEdit(item)" />
+                  </CButton>
+                  <CButton color="danger" variant="outline" square size="sm" @click="removeAbsorption(item.id)">
+                    <CIcon name="cilTrash" size="sm" />
+                  </CButton>
+                </div>
               </td>
             </template>
           </CSmartTable>
@@ -200,15 +202,13 @@ defineExpose({
         </CCardBody>
       </CCard>
     </div>
-
-    <!-- Show form when editing -->
     <div v-else>
-      <LandsAvailabilityForm 
+      <LandsAbsorptionForm 
         :landId="props.landId"
-        :availabilityId="selectedAvailabilityId"
+        :absorptionId="selectedAbsorptionId"
         @return="handleReturn"
         @submitting="(value) => emit('submitting', value)"
-        ref="formAvailabilityRef"
+        ref="formAbsorptionRef"
       />
     </div>
   </div>

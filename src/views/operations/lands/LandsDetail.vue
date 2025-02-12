@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import LandsForm from './LandsForm.vue'
 import LandsAvailabilityIndex from './LandsAvailabilityIndex.vue';
+import LandsAbsorptionIndex from './LandsAbsorptionIndex.vue';
 
 const route = useRoute()
 const router = useRouter()
@@ -108,8 +109,7 @@ watch(activeItemKey, (newTab) => {
           <LandsAvailabilityIndex v-if="tabAvailabilityLoaded" :landId="landId" ref="availabilityRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" @changeShowForm="(value) => disabledSave = !value" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
-          absorptionId
-          <!-- <LandsForm v-if="tabDataLoaded" :landId="landId" ref="absorptionRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" /> -->
+          <LandsAbsorptionIndex v-if="tabAbsorptionLoaded" :landId="landId" ref="absorptionRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" @changeShowForm="(value) => disabledSave = !value" />
         </CTabPanel>
       </CTabContent>
     </CTabs>
