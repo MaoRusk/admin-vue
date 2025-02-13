@@ -194,7 +194,7 @@ async function fetchUserData() {
 // Actualizar los métodos
 async function fetchRoles() {
   try {
-    const { data: response } = await API.roles.getAllRoles();
+    const { data: response } = await API.roles.getRoles();
     // console.log('Roles obtenidos:', response.data); // Debug log
     
     if (response.success) {
@@ -243,7 +243,7 @@ async function submitRole(roleName) {
 
     if (response.success) {
       // Recargar roles
-      const { data: rolesResponse } = await API.roles.getAllRoles();
+      const { data: rolesResponse } = await API.roles.getRoles();
       
       if (rolesResponse.success) {
         // Actualizar la lista de roles
@@ -281,62 +281,68 @@ async function handleSubmit() {
   if (!isFormValid.value) {
     Swal.fire({
       title: 'Validation Error',
-      text: 'Please fill in all required fields correctly',
-      icon: 'warning'
+      text: 'Please fill all required fields correctly',
+      icon: 'error'
     });
     return;
   }
 
-  loading.value = true;
   try {
+    // Preparar los datos en el formato que espera el backend
     const userData = {
-      name: formData.value.name,
-      middle_name: formData.value.middleName,
-      last_name: formData.value.lastName,
-      user_name: formData.value.userName,
-      email: formData.value.email,
-      status: formData.value.status === 'Activo' ? 'Active' : 'Inactive',
-      role_id: selectedRole.value ? parseInt(selectedRole.value) : null,
-      company_id: 1,
+      name: formData.value.name.trim(),
+      middle_name: formData.value.middleName.trim(),
+      last_name: formData.value.lastName.trim(),
+      user_name: formData.value.userName.trim(),
+      email: formData.value.email.trim(),
       password: formData.value.password,
-      created_at: new Date().toISOString(),
-      created_by: 1,
-      deleted_at: "",
-      deleted_by: 0
+      password_confirmation: formData.value.confirmPassword,
+      status: formData.value.status,
+      role_id: selectedRole.value?.value || selectedRole.value, // Asegurarnos de obtener el ID correcto
+      company_id: 1, // Si es necesario, ajustar según tus necesidades
     };
 
+    // Log para debug
+    console.log('Sending user data:', userData);
+
     let response;
-    if (props.id === 0) {
+    if (isNewRecord.value) {
       response = await API.users.createUser(userData);
     } else {
-      if (formData.value.password === '********') {
-        delete userData.password;
-      }
       response = await API.users.updateUser(props.id, userData);
     }
 
-    // Check if response exists and has data property
-    if (response && response.data) {
-      await Swal.fire({
-        title: 'Success',
-        text: `User ${props.id === 0 ? 'created' : 'updated'} successfully`,
+    if (response.data.success) {
+      Swal.fire({
+        title: isNewRecord.value ? 'Created!' : 'Updated!',
+        text: `User has been ${isNewRecord.value ? 'created' : 'updated'} successfully`,
         icon: 'success',
-        timer: 1500
+        timer: 2000,
+        showConfirmButton: false
       });
-
-      router.push({ name: 'Users' });
-    } else {
-      throw new Error(response.data.message || 'Failed to save user');
+      router.push('/operations/users');
     }
   } catch (error) {
     console.error('Error saving user:', error);
-    Swal.fire({
-      title: 'Error',
-      text: error.response?.data?.message || `Failed to ${props.id === 0 ? 'create' : 'update'} user`,
-      icon: 'error'
-    });
-  } finally {
-    loading.value = false;
+    
+    // Mostrar errores de validación específicos si existen
+    if (error.response?.data?.errors) {
+      const errorMessages = Object.values(error.response.data.errors)
+        .flat()
+        .join('\n');
+      
+      Swal.fire({
+        title: 'Validation Error',
+        text: errorMessages,
+        icon: 'error'
+      });
+    } else {
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to save user',
+        icon: 'error'
+      });
+    }
   }
 }
 
