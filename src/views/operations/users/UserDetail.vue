@@ -17,7 +17,7 @@ const props = defineProps({
 });
 
 const userRoles = ref([]);
-const selectedRole = ref(null);  // Inicializar como array vacío en lugar de string
+const selectedRole = ref(null);  // Mantener como null inicialmente
 const loading = ref(false);
 const marketsCbo = ref([]);
 // const modulesCbo = ref([
@@ -196,17 +196,15 @@ async function fetchUserData() {
 async function fetchRoles() {
   try {
     const { data: response } = await API.roles.getRoles();
-    // console.log('Roles obtenidos:', response.data); // Debug log
+    console.log('Response from getRoles:', response); // Debug log
     
     if (response.success) {
-      userRoles.value = [
-        ...response.data.map(role => ({
-          value: role.id.toString(), // Asegurarse que sea string
-          label: role.name,
-          guardName: role.guard_name
-        }))
-      ];
-      // console.log('userRoles procesados:', userRoles.value); // Debug log
+      userRoles.value = response.data.map(role => ({
+        value: role.id.toString(),
+        label: role.name,
+        guardName: role.guard_name
+      }));
+      console.log('Processed userRoles:', userRoles.value); // Debug log
     }
   } catch (error) {
     console.error('Error fetching roles:', error);
@@ -219,12 +217,16 @@ async function fetchRoles() {
 }
 
 
-async function handleRoleChange(value) {
+const handleRoleChange = async (value) => {
+  console.log('Role changed to:', value); // Debug log
   selectedRole.value = value;
-  if (value[0]?.value === '5') {
-    fetchMarkets();
+  console.log('selectedRole.value after change:', selectedRole.value); // Debug log
+  
+  // Asegurarse de que value es un array y tiene al menos un elemento
+  if (Array.isArray(value) && value[0]?.value === '5') {
+    await fetchMarkets();
   }
-}
+};
 
 async function submitRole(roleName) {
   if (!roleName?.trim()) {
@@ -289,6 +291,8 @@ const handleSubmit = async () => {
   }
 
   try {
+    console.log('Selected role before submit:', selectedRole.value);
+    
     const userData = {
       name: formData.value.name.trim(),
       middle_name: formData.value.middleName?.trim() || null,
@@ -296,9 +300,11 @@ const handleSubmit = async () => {
       user_name: formData.value.userName.trim(),
       email: formData.value.email.trim(),
       status: formData.value.status === 'Activo' ? 'Active' : 'Inactive',
-      role_id: Number(selectedRole.value?.value) || null,
+      role_id: selectedRole.value?.[0]?.value ? Number(selectedRole.value[0].value) : null,
       company_id: 1
     };
+
+    console.log('userData being sent:', userData);
 
     if (isNewRecord.value || formData.value.password !== '********') {
       userData.password = formData.value.password;

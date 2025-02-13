@@ -9,7 +9,10 @@ defineOptions({
   inheritAttrs: false
 })
 const props = defineProps({
-  modelValue: { type: [String, Number] },
+  modelValue: { 
+    type: [String, Number, Array],
+    default: null 
+  },
   options: { type: Array, required: true },
   label: { type: String },
   btnTextSubmit: { type: String, default: 'Create' },
@@ -42,8 +45,13 @@ const form = reactive({
 })
 
 const selectedLabel = computed(() => {
-  const selected = props.options.find(opt => opt.value === props.modelValue)
-  return selected ? selected.label : 'Select...'
+  if (Array.isArray(props.modelValue)) {
+    const selected = props.modelValue[0];
+    const option = props.options.find(opt => opt.value === selected?.value);
+    return option ? option.label : 'Select...';
+  }
+  const selected = props.options.find(opt => opt.value === props.modelValue);
+  return selected ? selected.label : 'Select...';
 })
 
 async function onSubmit() {
@@ -126,8 +134,11 @@ function startEdit(option) {
 }
 
 function selectOption(option) {
-  emit('update:modelValue', option.value)
-  showDropdown.value = false  // Cerrar el dropdown al seleccionar una opción
+  emit('update:modelValue', [{
+    value: option.value,
+    label: option.label
+  }]);
+  showDropdown.value = false;
 }
 
 async function handleDelete() {
