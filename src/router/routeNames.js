@@ -18,6 +18,8 @@ export const ROUTE_NAMES = {
   INDUSTRIAL_PARKS: 'Industrial Parks',
   INDUSTRIAL_PARKS_DETAIL: 'Industrial Park Detail',
   COMPANIES: 'Companies',
+  COMPANIES_CREATE: 'CreateCompany',
+  COMPANIES_UPDATE: 'EditCompany',
   COMPANY_DETAIL: 'CompanyDetail',
   SECURITY: 'Security',
   POLICIES: 'Policies',

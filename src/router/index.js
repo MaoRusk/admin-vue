@@ -66,7 +66,7 @@ const routes = [
             name: ROUTE_NAMES.COMPANY_DETAIL,
             component: () => import('@/views/operations/companies/CompanyDetail.vue'),
             props: (route) => ({
-              id: Number(route.params.id),
+              id: isNaN(Number(route.params.id)) ? '0' : Number(route.params.id)
             }),
           },
           {
