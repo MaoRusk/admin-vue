@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import { cilArrowCircleLeft, cilTrash, cilPencil, cilPlus } from '@coreui/icons';
 import { API } from '../../../services';
 import MSelect from '../../../components/MSelect.vue';
+import { ROUTE_NAMES } from '../../../router/routeNames';
 
 const router = useRouter();
 
@@ -277,7 +278,7 @@ async function submitRole(roleName) {
   }
 }
 
-async function handleSubmit() {
+const handleSubmit = async () => {
   if (!isFormValid.value) {
     Swal.fire({
       title: 'Validation Error',
@@ -288,63 +289,74 @@ async function handleSubmit() {
   }
 
   try {
-    // Preparar los datos en el formato que espera el backend
     const userData = {
       name: formData.value.name.trim(),
-      middle_name: formData.value.middleName.trim(),
+      middle_name: formData.value.middleName?.trim() || null,
       last_name: formData.value.lastName.trim(),
       user_name: formData.value.userName.trim(),
       email: formData.value.email.trim(),
-      password: formData.value.password,
-      password_confirmation: formData.value.confirmPassword,
-      status: formData.value.status,
-      role_id: selectedRole.value?.value || selectedRole.value, // Asegurarnos de obtener el ID correcto
-      company_id: 1, // Si es necesario, ajustar según tus necesidades
+      status: formData.value.status === 'Activo' ? 'Active' : 'Inactive',
+      role_id: Number(selectedRole.value?.value) || null,
+      company_id: 1
     };
 
-    // Log para debug
-    console.log('Sending user data:', userData);
-
-    let response;
-    if (isNewRecord.value) {
-      response = await API.users.createUser(userData);
-    } else {
-      response = await API.users.updateUser(props.id, userData);
+    if (isNewRecord.value || formData.value.password !== '********') {
+      userData.password = formData.value.password;
+      userData.password_confirmation = formData.value.confirmPassword;
     }
 
-    if (response.data.success) {
-      Swal.fire({
+    const response = isNewRecord.value
+      ? await API.users.createUser(userData)
+      : await API.users.updateUser(props.id, userData);
+
+    if (response.status === 200 && response.data) {
+      await Swal.fire({
         title: isNewRecord.value ? 'Created!' : 'Updated!',
         text: `User has been ${isNewRecord.value ? 'created' : 'updated'} successfully`,
         icon: 'success',
         timer: 2000,
         showConfirmButton: false
       });
-      router.push('/operations/users');
+
+      try {
+        await router.push({ 
+          name: ROUTE_NAMES.USERS,
+          replace: true
+        });
+      } catch (routerError) {
+        window.location.href = '/#/operations/users';
+      }
+    } else {
+      throw new Error('Failed to save user');
     }
   } catch (error) {
-    console.error('Error saving user:', error);
-    
-    // Mostrar errores de validación específicos si existen
     if (error.response?.data?.errors) {
-      const errorMessages = Object.values(error.response.data.errors)
-        .flat()
+      const errorMessages = Object.entries(error.response.data.errors)
+        .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
         .join('\n');
       
       Swal.fire({
         title: 'Validation Error',
-        text: errorMessages,
+        html: errorMessages.replace(/\n/g, '<br>'),
         icon: 'error'
       });
     } else {
       Swal.fire({
         title: 'Error',
-        text: 'Failed to save user',
+        text: error.response?.data?.message || 'Failed to save user',
         icon: 'error'
       });
     }
   }
-}
+};
+
+// Agregar método para volver a la lista
+const goBack = () => {
+  router.push({ 
+    name: ROUTE_NAMES.USERS,
+    replace: true
+  });
+};
 
 async function handleDelete() {
   try {
@@ -425,12 +437,10 @@ async function createOptionGeneral(field, value) {
 
       <div style="display: flex; justify-content: right;">
         <div>
-          <router-link :to="{ name: 'Users' }">
-            <CButton color="primary" variant="outline">
-              <CIcon :content="cilArrowCircleLeft" size="sm" />
-              Return
-            </CButton>
-          </router-link>
+          <CButton color="primary" variant="outline" @click="goBack">
+            <CIcon :content="cilArrowCircleLeft" size="sm" />
+            Return
+          </CButton>
         </div>
       </div>
 
@@ -605,9 +615,11 @@ async function createOptionGeneral(field, value) {
                 <CButton 
                   color="primary" 
                   variant="outline" 
-                  @click="handleSubmit">
+                  @click="handleSubmit"
+                  :disabled="!isFormValid"
+                >
                   <CIcon :content="cilPencil" size="sm" />
-                  Update
+                  {{ isNewRecord ? 'Save' : 'Update' }}
                 </CButton>
             </div>
             </template>

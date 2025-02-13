@@ -9,6 +9,7 @@ export const ROUTE_NAMES = {
   USERS: 'Users',
   USERS_CREATE: 'CreateUser',
   USERS_UPDATE: 'UpdateUser',
+  USERS_DETAIL: 'UserDetail',
   DEVELOPERS: 'Developers',
   DEVELOPERS_CREATE: 'Create Developer',
   DEVELOPERS_UPDATE: 'Edit Developer',

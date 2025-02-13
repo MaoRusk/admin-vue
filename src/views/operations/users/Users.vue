@@ -154,6 +154,13 @@ onMounted(() => {
 
 watch([page, itemsPerPage, tableSearch], fetchUsers);
 watch([columnSorter, columnFilter], fetchUsers, { deep: true });
+
+const handleUpdate = (item) => {
+  router.push({
+    name: ROUTE_NAMES.USERS_UPDATE,
+    params: { id: item.id }
+  })
+}
 </script>
 
 <template>
