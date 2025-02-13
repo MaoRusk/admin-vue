@@ -22,13 +22,48 @@ const columnSorter = ref({});
 const tableSearch = ref('');
 
 const columns = [
-  { key: 'status', label: 'Status' },
-  { key: 'name', label: 'Name' },
-  { key: 'lastName', label: 'Last Name' },
-  { key: 'userName', label: 'User Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'roleName', label: 'Role' },
-  { key: 'actions', label: 'Actions', sorter: false, filter: false },
+  { 
+    key: 'status', 
+    label: 'Status',
+    _style: { width: '10%' } 
+  },
+  { 
+    key: 'name', 
+    label: 'Name',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'middleName', 
+    label: 'Middle Name',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'lastName', 
+    label: 'Last Name',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'userName', 
+    label: 'User Name',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'email', 
+    label: 'Email',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'roleName', 
+    label: 'Role',
+    _style: { width: '10%' }
+  },
+  { 
+    key: 'actions', 
+    label: 'Actions', 
+    sorter: false, 
+    filter: false,
+    _style: { width: '5%' }
+  },
 ];
 
 async function removeUser(id) {
@@ -70,27 +105,37 @@ async function fetchUsers() {
     }, columnFilter.value, columnSorter.value);
 
     if (response.success) {
-      page.value = response.current_page;
-      totalItems.value = response.total;
-      totalPages.value = response.last_page;
+      page.value = response.current_page || 1;
+      totalItems.value = response.total || response.data.length;
+      totalPages.value = response.last_page || 1;
 
-      // Obtener todos los roles una sola vez
-      const { data: rolesResponse } = await API.roles.getAllRoles();
-      const roles = rolesResponse.success ? rolesResponse.data : [];
-      
-      // Mapear usuarios con sus roles
-      users.value = response.data.map((item) => {
-        const userRole = roles.find(role => role.id === item.role_id);
-        return {
-          id: item.id,
-          name: item.name,
-          lastName: item.last_name,
-          userName: item.user_name,
-          email: item.email,
-          status: item.status,
-          roleName: userRole?.name || 'No Role',
-        };
-      });
+      users.value = response.data.map((item) => ({
+        id: item.id,
+        name: item.name,
+        lastName: item.last_name,
+        middleName: item.middle_name,
+        userName: item.user_name,
+        email: item.email,
+        status: item.status,
+        roleName: 'Pending...',
+        companyId: item.company_id,
+        roleId: item.role_id
+      }));
+
+      try {
+        const { data: rolesResponse } = await API.roles.getRoles();
+        if (rolesResponse.success) {
+          users.value = users.value.map(user => ({
+            ...user,
+            roleName: rolesResponse.data.find(role => role.id === user.roleId)?.name || 'No Role'
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+      }
+
+      console.log('Response:', response);
+      console.log('Mapped users:', users.value);
     }
   } catch (error) {
     console.error('Error fetching users:', error);
