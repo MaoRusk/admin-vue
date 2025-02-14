@@ -35,7 +35,16 @@
         validatedCustom01: null,
         errors: {
           name: '',
-        }
+        },
+        activeTab: '1',
+        contacts: [],
+        newContact: {
+          contact_name: '',
+          contact_email: '',
+          contact_phone: '',
+          contact_comments: '',
+          is_company_contact: 1,
+        },
       };
     },
 
@@ -60,6 +69,9 @@
 
     created() {
       this.loadCompany();
+      if (!this.isNew) {
+        this.loadContacts();
+      }
     },
 
     methods: {
@@ -179,6 +191,92 @@
       goBack() {
         this.$router.push({ name: ROUTE_NAMES.COMPANIES });
       },
+
+      async loadContacts() {
+        try {
+          const response = await API.contacts.getContacts(this.id);
+          this.contacts = response.data.data;
+        } catch (error) {
+          console.error('Error loading contacts:', error);
+        }
+      },
+
+      async saveContact() {
+        try {
+          if (this.newContact.id) {
+            await API.contacts.updateContact(this.id, this.newContact.id, this.newContact);
+          } else {
+            await API.contacts.createContact(this.id, this.newContact);
+          }
+          this.loadContacts();
+          this.resetContactForm();
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: `Contact ${this.newContact.id ? 'updated' : 'created'} successfully`,
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        } catch (error) {
+          console.error('Error saving contact:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Error saving contact',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
+      },
+
+      async deleteContact(contactId) {
+        try {
+          await API.contacts.deleteContact(this.id, contactId);
+          this.loadContacts();
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Contact deleted successfully',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        } catch (error) {
+          console.error('Error deleting contact:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Error deleting contact',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
+      },
+
+      editContact(contact) {
+        this.newContact = { ...contact };
+      },
+
+      resetContactForm() {
+        this.newContact = {
+          contact_name: '',
+          contact_email: '',
+          contact_phone: '',
+          contact_comments: '',
+          is_company_contact: 1,
+        };
+      },
     },
   });
 </script>
@@ -189,106 +287,232 @@
       <strong>{{ isNew ? 'New Company' : 'Edit Company' }}</strong>
     </CCardHeader>
     <CCardBody>
-      <CForm @submit.prevent="saveCompany">
-        <!-- Basic Information -->
-        <div class="mb-4">
-          <h6 class="mb-3">Basic Information</h6>
-          <CRow>
-            <CCol :md="6">
-              <CFormInput
-                label="Name"
-                v-model="company.name"
-                :feedback="errors.name"
-                :invalid="!!errors.name"
-                required
-                class="mb-3"
-              />
-            </CCol>
-            <CCol :md="6">
-              <CFormInput
-                label="Website"
-                v-model="company.website"
-                placeholder="www.example.com"
-                class="mb-3"
-              />
-            </CCol>
-          </CRow>
-        </div>
-
-        <!-- Brand Colors -->
-        <div class="mb-4">
-          <h6 class="mb-3">Brand Colors</h6>
-          <CRow>
-            <CCol :md="6">
-              <div class="mb-3">
-                <CFormLabel>Primary Color</CFormLabel>
-                <div class="d-flex align-items-center gap-2">
-                  <CFormInput
-                    type="color"
-                    v-model="company.primary_color"
-                    id="primaryColor"
-                    title="Choose primary color"
-                    style="width: 100px"
-                  />
-                  <span>{{ company.primary_color }}</span>
-                </div>
+      <CTabs v-model="activeTab">
+        <CNav variant="tabs">
+          <CNavItem>
+            <CNavLink :active="activeTab === '1'" @click="activeTab = '1'">
+              Company Information
+            </CNavLink>
+          </CNavItem>
+          <CNavItem v-if="!isNew">
+            <CNavLink :active="activeTab === '2'" @click="activeTab = '2'">
+              Contacts
+            </CNavLink>
+          </CNavItem>
+        </CNav>
+        
+        <CTabContent>
+          <!-- Company Information Tab -->
+          <CTabPane :visible="activeTab === '1'">
+            <CForm @submit.prevent="saveCompany">
+              <!-- Basic Information -->
+              <div class="mb-4">
+                <h6 class="mb-3">Basic Information</h6>
+                <CRow>
+                  <CCol :md="6">
+                    <CFormInput
+                      label="Name"
+                      v-model="company.name"
+                      :feedback="errors.name"
+                      :invalid="!!errors.name"
+                      required
+                      class="mb-3"
+                    />
+                  </CCol>
+                  <CCol :md="6">
+                    <CFormInput
+                      label="Website"
+                      v-model="company.website"
+                      placeholder="www.example.com"
+                      class="mb-3"
+                    />
+                  </CCol>
+                </CRow>
               </div>
-            </CCol>
-            <CCol :md="6">
-              <div class="mb-3">
-                <CFormLabel>Secondary Color</CFormLabel>
-                <div class="d-flex align-items-center gap-2">
-                  <CFormInput
-                    type="color"
-                    v-model="company.secondary_color"
-                    id="secondaryColor"
-                    title="Choose secondary color"
-                    style="width: 100px"
-                  />
-                  <span>{{ company.secondary_color }}</span>
-                </div>
-              </div>
-            </CCol>
-          </CRow>
-        </div>
 
-        <!-- Logo Section -->
-        <div class="mb-4">
-          <h6 class="mb-3">Company Logo</h6>
-          <CRow>
-            <CCol :md="12">
-              <div class="mb-3">
-                <CFormInput
-                  type="file"
-                  accept="image/*"
-                  @change="handleImageUpload"
-                  label="Upload Logo"
-                />
-                <small class="text-muted" v-if="company.logo_id">
-                  Current Logo ID: {{ company.logo_id }}
-                </small>
+              <!-- Brand Colors -->
+              <div class="mb-4">
+                <h6 class="mb-3">Brand Colors</h6>
+                <CRow>
+                  <CCol :md="6">
+                    <div class="mb-3">
+                      <CFormLabel>Primary Color</CFormLabel>
+                      <div class="d-flex align-items-center gap-2">
+                        <CFormInput
+                          type="color"
+                          v-model="company.primary_color"
+                          id="primaryColor"
+                          title="Choose primary color"
+                          style="width: 100px"
+                        />
+                        <span>{{ company.primary_color }}</span>
+                      </div>
+                    </div>
+                  </CCol>
+                  <CCol :md="6">
+                    <div class="mb-3">
+                      <CFormLabel>Secondary Color</CFormLabel>
+                      <div class="d-flex align-items-center gap-2">
+                        <CFormInput
+                          type="color"
+                          v-model="company.secondary_color"
+                          id="secondaryColor"
+                          title="Choose secondary color"
+                          style="width: 100px"
+                        />
+                        <span>{{ company.secondary_color }}</span>
+                      </div>
+                    </div>
+                  </CCol>
+                </CRow>
               </div>
-            </CCol>
-          </CRow>
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="d-flex gap-2 justify-content-end">
-          <CButton 
-            color="secondary" 
-            variant="outline" 
-            @click="goBack"
-          >
-            Cancel
-          </CButton>
-          <CButton 
-            color="primary" 
-            type="submit"
-          >
-            Save
-          </CButton>
-        </div>
-      </CForm>
+              <!-- Logo Section -->
+              <div class="mb-4">
+                <h6 class="mb-3">Company Logo</h6>
+                <CRow>
+                  <CCol :md="12">
+                    <div class="mb-3">
+                      <CFormInput
+                        type="file"
+                        accept="image/*"
+                        @change="handleImageUpload"
+                        label="Upload Logo"
+                      />
+                      <small class="text-muted" v-if="company.logo_id">
+                        Current Logo ID: {{ company.logo_id }}
+                      </small>
+                    </div>
+                  </CCol>
+                </CRow>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex gap-2 justify-content-end">
+                <CButton 
+                  color="secondary" 
+                  variant="outline" 
+                  @click="goBack"
+                >
+                  Cancel
+                </CButton>
+                <CButton 
+                  color="primary" 
+                  type="submit"
+                >
+                  Save
+                </CButton>
+              </div>
+            </CForm>
+          </CTabPane>
+
+          <!-- Contacts Tab -->
+          <CTabPane :visible="activeTab === '2'" v-if="!isNew">
+            <div class="mt-4">
+              <CCard>
+                <CCardHeader>
+                  <strong>Add/Edit Contact</strong>
+                </CCardHeader>
+                <CCardBody>
+                  <CForm @submit.prevent="saveContact">
+                    <CRow>
+                      <CCol :md="6">
+                        <CFormInput
+                          label="Name"
+                          v-model="newContact.contact_name"
+                          required
+                          class="mb-3"
+                        />
+                      </CCol>
+                      <CCol :md="6">
+                        <CFormInput
+                          label="Email"
+                          type="email"
+                          v-model="newContact.contact_email"
+                          required
+                          class="mb-3"
+                        />
+                      </CCol>
+                      <CCol :md="6">
+                        <CFormInput
+                          label="Phone"
+                          v-model="newContact.contact_phone"
+                          class="mb-3"
+                        />
+                      </CCol>
+                      <CCol :md="6">
+                        <CFormTextarea
+                          label="Comments"
+                          v-model="newContact.contact_comments"
+                          class="mb-3"
+                        />
+                      </CCol>
+                    </CRow>
+                    <div class="d-flex gap-2">
+                      <CButton type="submit" color="primary">
+                        {{ newContact.id ? 'Update' : 'Add' }} Contact
+                      </CButton>
+                      <CButton 
+                        v-if="newContact.id"
+                        type="button"
+                        color="secondary"
+                        @click="resetContactForm"
+                      >
+                        Cancel
+                      </CButton>
+                    </div>
+                  </CForm>
+                </CCardBody>
+              </CCard>
+
+              <CCard class="mt-4">
+                <CCardHeader>
+                  <strong>Contacts List</strong>
+                </CCardHeader>
+                <CCardBody>
+                  <CTable>
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableHeaderCell>Name</CTableHeaderCell>
+                        <CTableHeaderCell>Email</CTableHeaderCell>
+                        <CTableHeaderCell>Phone</CTableHeaderCell>
+                        <CTableHeaderCell>Comments</CTableHeaderCell>
+                        <CTableHeaderCell>Actions</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      <CTableRow v-for="contact in contacts" :key="contact.id">
+                        <CTableDataCell>{{ contact.contact_name }}</CTableDataCell>
+                        <CTableDataCell>{{ contact.contact_email }}</CTableDataCell>
+                        <CTableDataCell>{{ contact.contact_phone }}</CTableDataCell>
+                        <CTableDataCell>{{ contact.contact_comments }}</CTableDataCell>
+                        <CTableDataCell>
+                          <div class="d-flex gap-2">
+                            <CButton
+                              color="primary"
+                              size="sm"
+                              @click="editContact(contact)"
+                            >
+                              Edit
+                            </CButton>
+                            <CButton
+                              color="danger"
+                              size="sm"
+                              @click="deleteContact(contact.id)"
+                            >
+                              Delete
+                            </CButton>
+                          </div>
+                        </CTableDataCell>
+                      </CTableRow>
+                    </CTableBody>
+                  </CTable>
+                </CCardBody>
+              </CCard>
+            </div>
+          </CTabPane>
+        </CTabContent>
+      </CTabs>
     </CCardBody>
   </CCard>
 </template>

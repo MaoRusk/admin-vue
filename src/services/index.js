@@ -19,6 +19,7 @@ import Users from './Users'
 import Roles from './Roles'
 import Permissions from './Permissions'
 import Companies from './Companies'
+import Contacts from './Contacts'
 
 export const API = {
   auth: Auth,
@@ -42,4 +43,5 @@ export const API = {
   roles: Roles,
   permissions: Permissions,
   companies: Companies,
+  contacts: Contacts,
 }
