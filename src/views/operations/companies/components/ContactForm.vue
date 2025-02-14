@@ -15,13 +15,32 @@ export default defineComponent({
       }),
     },
   },
+  data() {
+    return {
+      isCollapsed: true, // Por defecto el formulario estará colapsado
+    };
+  },
+  watch: {
+    'contact.id': {
+      handler(newVal) {
+        // Si estamos editando un contacto, expandimos el formulario
+        this.isCollapsed = !newVal;
+      },
+      immediate: true
+    }
+  },
   emits: ['save', 'cancel'],
   methods: {
     handleSubmit() {
       this.$emit('save', this.contact);
+      this.isCollapsed = true; // Colapsamos después de guardar
     },
     handleCancel() {
       this.$emit('cancel');
+      this.isCollapsed = true; // Colapsamos después de cancelar
+    },
+    toggleForm() {
+      this.isCollapsed = !this.isCollapsed;
     },
   },
 });
@@ -29,67 +48,79 @@ export default defineComponent({
 
 <template>
   <CCard class="mb-4">
-    <CCardHeader class="d-flex justify-content-between align-items-center">
-      <strong>{{ contact.id ? 'Edit Contact' : 'Add New Contact' }}</strong>
+    <CCardHeader 
+      class="d-flex justify-content-between align-items-center cursor-pointer"
+      @click="toggleForm"
+    >
+      <div class="d-flex align-items-center">
+        <CIcon 
+          :icon="isCollapsed ? 'cil-plus' : 'cil-minus'"
+          class="me-2"
+        />
+        <strong>{{ contact.id ? 'Edit Contact' : 'Add New Contact' }}</strong>
+      </div>
       <CButton 
         v-if="contact.id"
         color="secondary"
         size="sm"
         variant="ghost"
-        @click="handleCancel"
+        @click.stop="handleCancel"
       >
         <CIcon icon="cil-x" /> Cancel
       </CButton>
     </CCardHeader>
-    <CCardBody>
-      <CForm @submit.prevent="handleSubmit">
-        <CRow>
-          <CCol :xs="12" class="mb-3">
-            <CFormInput
-              label="Name"
-              v-model="contact.contact_name"
-              required
-              placeholder="Enter contact name"
-            />
-          </CCol>
-          <CCol :xs="12" class="mb-3">
-            <CFormInput
-              label="Email"
-              type="email"
-              v-model="contact.contact_email"
-              required
-              placeholder="Enter email address"
-            />
-          </CCol>
-          <CCol :xs="12" class="mb-3">
-            <CFormInput
-              label="Phone"
-              v-model="contact.contact_phone"
-              placeholder="Enter phone number"
-              type="tel"
-            />
-          </CCol>
-          <CCol :xs="12" class="mb-3">
-            <CFormTextarea
-              label="Comments"
-              v-model="contact.contact_comments"
-              placeholder="Add any additional comments"
-              rows="3"
-            />
-          </CCol>
-        </CRow>
-        <div class="d-grid gap-2">
-          <CButton 
-            type="submit" 
-            color="primary"
-            size="lg"
-          >
-            <CIcon :icon="contact.id ? 'cil-save' : 'cil-plus'" class="me-2" />
-            {{ contact.id ? 'Update Contact' : 'Add Contact' }}
-          </CButton>
-        </div>
-      </CForm>
-    </CCardBody>
+    
+    <CCollapse :visible="!isCollapsed">
+      <CCardBody>
+        <CForm @submit.prevent="handleSubmit">
+          <CRow>
+            <CCol :xs="12" class="mb-3">
+              <CFormInput
+                label="Name"
+                v-model="contact.contact_name"
+                required
+                placeholder="Enter contact name"
+              />
+            </CCol>
+            <CCol :xs="12" class="mb-3">
+              <CFormInput
+                label="Email"
+                type="email"
+                v-model="contact.contact_email"
+                required
+                placeholder="Enter email address"
+              />
+            </CCol>
+            <CCol :xs="12" class="mb-3">
+              <CFormInput
+                label="Phone"
+                v-model="contact.contact_phone"
+                placeholder="Enter phone number"
+                type="tel"
+              />
+            </CCol>
+            <CCol :xs="12" class="mb-3">
+              <CFormTextarea
+                label="Comments"
+                v-model="contact.contact_comments"
+                placeholder="Add any additional comments"
+                rows="3"
+              />
+            </CCol>
+          </CRow>
+          <div class="d-grid gap-2">
+            <CButton 
+              type="submit" 
+              color="primary"
+              size="lg"
+            >
+              <CIcon :icon="contact.id ? 'cil-save' : 'cil-plus'" class="me-2" />
+              {{ contact.id ? 'Update Contact' : 'Add Contact' }}
+            </CButton>
+          </div>
+        </CForm>
+      </CCardBody>
+    </CCollapse>
   </CCard>
 </template>
 
@@ -107,6 +138,18 @@ export default defineComponent({
 .form-label {
   font-weight: 500;
   margin-bottom: 0.5rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.card-header {
+  transition: background-color 0.2s;
+}
+
+.card-header:hover {
+  background-color: #f8f9fa;
 }
 
 @media (max-width: 768px) {
