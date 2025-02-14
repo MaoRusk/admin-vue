@@ -50,7 +50,7 @@ export default defineComponent({
                 color="danger"
                 size="sm"
                 variant="ghost"
-                @click="$emit('delete', contact.id)"
+                @click="$emit('delete', contact)"
               >
                 <CIcon icon="cil-trash" />
               </CButton>

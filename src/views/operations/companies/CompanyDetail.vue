@@ -327,6 +327,48 @@
       goToCompanies() {
         this.$router.push({ name: ROUTE_NAMES.COMPANIES });
       },
+
+      async deleteContact(contact) {
+        try {
+          const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          });
+
+          if (result.isConfirmed) {
+            await API.contacts.deleteContact(this.id, contact.id);
+            await this.loadContacts();
+            
+            Swal.fire({
+              icon: 'success',
+              title: 'Deleted!',
+              text: 'Contact has been deleted.',
+              toast: true,
+              position: 'bottom',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting contact:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data?.message || 'Error deleting contact',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
+      },
     },
   });
 </script>
