@@ -288,154 +288,185 @@
         this.newContact = contactData;
         this.saveContact();
       },
+
+      goToCompanies() {
+        this.$router.push({ name: ROUTE_NAMES.COMPANIES });
+      },
     },
   });
 </script>
 
 <template>
-  <CCard class="mb-4">
-    <CCardHeader>
-      <strong>{{ isNew ? 'New Company' : 'Edit Company' }}</strong>
-    </CCardHeader>
-    <CCardBody>
-      <CTabs v-model="activeTab">
-        <CNav variant="tabs">
-          <CNavItem>
-            <CNavLink :active="activeTab === '1'" @click="activeTab = '1'">
-              Company Information
-            </CNavLink>
-          </CNavItem>
-          <CNavItem v-if="!isNew">
-            <CNavLink :active="activeTab === '2'" @click="activeTab = '2'">
-              Contacts
-            </CNavLink>
-          </CNavItem>
-        </CNav>
-        
-        <CTabContent>
-          <!-- Company Information Tab -->
-          <CTabPane :visible="activeTab === '1'">
-            <CForm @submit.prevent="saveCompany">
-              <!-- Basic Information -->
-              <div class="mb-4">
-                <h6 class="mb-3">Basic Information</h6>
-                <CRow>
-                  <CCol :md="6">
-                    <CFormInput
-                      label="Name"
-                      v-model="company.name"
-                      :feedback="errors.name"
-                      :invalid="!!errors.name"
-                      required
-                      class="mb-3"
-                    />
-                  </CCol>
-                  <CCol :md="6">
-                    <CFormInput
-                      label="Website"
-                      v-model="company.website"
-                      placeholder="www.example.com"
-                      class="mb-3"
-                    />
-                  </CCol>
-                </CRow>
-              </div>
+  <div>
+    <!-- Botón de retorno -->
+    <div class="mb-3" style="text-align: -webkit-right;">
+      <CButton 
+        color="primary" 
+        variant="outline"
+        @click="goToCompanies"
+        class="d-flex align-items-center gap-2"
+      >
+        <CIcon icon="cil-arrow-left" />
+        Back to Companies
+      </CButton>
+    </div>
 
-              <!-- Brand Colors -->
-              <div class="mb-4">
-                <h6 class="mb-3">Brand Colors</h6>
-                <CRow>
-                  <CCol :md="6">
-                    <div class="mb-3">
-                      <CFormLabel>Primary Color</CFormLabel>
-                      <div class="d-flex align-items-center gap-2">
-                        <CFormInput
-                          type="color"
-                          v-model="company.primary_color"
-                          id="primaryColor"
-                          title="Choose primary color"
-                          style="width: 100px"
-                        />
-                        <span>{{ company.primary_color }}</span>
-                      </div>
-                    </div>
-                  </CCol>
-                  <CCol :md="6">
-                    <div class="mb-3">
-                      <CFormLabel>Secondary Color</CFormLabel>
-                      <div class="d-flex align-items-center gap-2">
-                        <CFormInput
-                          type="color"
-                          v-model="company.secondary_color"
-                          id="secondaryColor"
-                          title="Choose secondary color"
-                          style="width: 100px"
-                        />
-                        <span>{{ company.secondary_color }}</span>
-                      </div>
-                    </div>
-                  </CCol>
-                </CRow>
-              </div>
-
-              <!-- Logo Section -->
-              <div class="mb-4">
-                <h6 class="mb-3">Company Logo</h6>
-                <CRow>
-                  <CCol :md="12">
-                    <div class="mb-3">
+    <CCard class="mb-4">
+      <CCardHeader>
+        <strong>{{ isNew ? 'New Company' : 'Edit Company' }}</strong>
+      </CCardHeader>
+      <CCardBody>
+        <CTabs v-model="activeTab">
+          <CNav variant="tabs">
+            <CNavItem>
+              <CNavLink :active="activeTab === '1'" @click="activeTab = '1'">
+                Company Information
+              </CNavLink>
+            </CNavItem>
+            <CNavItem v-if="!isNew">
+              <CNavLink :active="activeTab === '2'" @click="activeTab = '2'">
+                Contacts
+              </CNavLink>
+            </CNavItem>
+          </CNav>
+          
+          <CTabContent>
+            <!-- Company Information Tab -->
+            <CTabPane :visible="activeTab === '1'">
+              <CForm @submit.prevent="saveCompany">
+                <!-- Basic Information -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Basic Information</h6>
+                  <CRow>
+                    <CCol :md="6">
                       <CFormInput
-                        type="file"
-                        accept="image/*"
-                        @change="handleImageUpload"
-                        label="Upload Logo"
+                        label="Name"
+                        v-model="company.name"
+                        :feedback="errors.name"
+                        :invalid="!!errors.name"
+                        required
+                        class="mb-3"
                       />
-                      <small class="text-muted" v-if="company.logo_id">
-                        Current Logo ID: {{ company.logo_id }}
-                      </small>
-                    </div>
-                  </CCol>
-                </CRow>
-              </div>
+                    </CCol>
+                    <CCol :md="6">
+                      <CFormInput
+                        label="Website"
+                        v-model="company.website"
+                        placeholder="www.example.com"
+                        class="mb-3"
+                      />
+                    </CCol>
+                  </CRow>
+                </div>
 
-              <!-- Action Buttons -->
-              <div class="d-flex gap-2 justify-content-end">
-                <CButton 
-                  color="secondary" 
-                  variant="outline" 
-                  @click="goBack"
-                >
-                  Cancel
-                </CButton>
-                <CButton 
-                  color="primary" 
-                  type="submit"
-                >
-                  Save
-                </CButton>
-              </div>
-            </CForm>
-          </CTabPane>
+                <!-- Brand Colors -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Brand Colors</h6>
+                  <CRow>
+                    <CCol :md="6">
+                      <div class="mb-3">
+                        <CFormLabel>Primary Color</CFormLabel>
+                        <div class="d-flex align-items-center gap-2">
+                          <CFormInput
+                            type="color"
+                            v-model="company.primary_color"
+                            id="primaryColor"
+                            title="Choose primary color"
+                            style="width: 100px"
+                          />
+                          <span>{{ company.primary_color }}</span>
+                        </div>
+                      </div>
+                    </CCol>
+                    <CCol :md="6">
+                      <div class="mb-3">
+                        <CFormLabel>Secondary Color</CFormLabel>
+                        <div class="d-flex align-items-center gap-2">
+                          <CFormInput
+                            type="color"
+                            v-model="company.secondary_color"
+                            id="secondaryColor"
+                            title="Choose secondary color"
+                            style="width: 100px"
+                          />
+                          <span>{{ company.secondary_color }}</span>
+                        </div>
+                      </div>
+                    </CCol>
+                  </CRow>
+                </div>
 
-          <!-- Contacts Tab -->
-          <CTabPane :visible="activeTab === '2'" v-if="!isNew">
-            <div class="mt-4">
-              <ContactForm
-                :contact="newContact"
-                @save="handleSaveContact"
-                @cancel="resetContactForm"
-              />
+                <!-- Logo Section -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Company Logo</h6>
+                  <CRow>
+                    <CCol :md="12">
+                      <div class="mb-3">
+                        <CFormInput
+                          type="file"
+                          accept="image/*"
+                          @change="handleImageUpload"
+                          label="Upload Logo"
+                        />
+                        <small class="text-muted" v-if="company.logo_id">
+                          Current Logo ID: {{ company.logo_id }}
+                        </small>
+                      </div>
+                    </CCol>
+                  </CRow>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 justify-content-end">
+                  <CButton 
+                    color="secondary" 
+                    variant="outline" 
+                    @click="goBack"
+                  >
+                    Cancel
+                  </CButton>
+                  <CButton 
+                    color="primary" 
+                    type="submit"
+                  >
+                    Save
+                  </CButton>
+                </div>
+              </CForm>
+            </CTabPane>
+
+            <!-- Contacts Tab -->
+            <CTabPane :visible="activeTab === '2'" v-if="!isNew">
               <div class="mt-4">
-                <ContactsTable
-                  :contacts="contacts"
-                  @edit="editContact"
-                  @delete="deleteContact"
+                <ContactForm
+                  :contact="newContact"
+                  @save="handleSaveContact"
+                  @cancel="resetContactForm"
                 />
+                <div class="mt-4">
+                  <ContactsTable
+                    :contacts="contacts"
+                    @edit="editContact"
+                    @delete="deleteContact"
+                  />
+                </div>
               </div>
-            </div>
-          </CTabPane>
-        </CTabContent>
-      </CTabs>
-    </CCardBody>
-  </CCard>
+            </CTabPane>
+          </CTabContent>
+        </CTabs>
+      </CCardBody>
+    </CCard>
+  </div>
 </template>
+
+<style scoped>
+@media (max-width: 768px) {
+  .mb-3 {
+    margin-bottom: 1rem !important;
+  }
+  
+  .gap-2 {
+    gap: 0.5rem !important;
+  }
+}
+</style>
