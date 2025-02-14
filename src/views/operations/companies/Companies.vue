@@ -10,9 +10,19 @@ export default {
       companies: [],
       columns: [
         {
+          key: 'logo',
+          label: 'Logo',
+          _style: { width: '10%', textAlign: 'center' }
+        },
+        {
           key: 'name',
           label: 'Name',
-          _style: { width: '40%' }
+          _style: { width: '30%' }
+        },
+        {
+          key: 'colors',
+          label: 'Colors',
+          _style: { width: '30%' }
         },
         {
           key: 'actions',
@@ -23,6 +33,13 @@ export default {
     }
   },
   methods: {
+    getLogoUrl(logoUrl) {
+      if (!logoUrl) return null;
+      if (logoUrl.match(/^(http|https):\/\//)) {
+        return logoUrl;
+      }
+      return `https://laravel-back-production-9320.up.railway.app/storage/${logoUrl}`;
+    },
     async fetchData() {
       try {
         const response = await API.companies.getCompanies()
@@ -126,6 +143,51 @@ export default {
           hover
           responsive
         >
+          <template #logo="{ item }">
+            <td class="text-center">
+              <img 
+                v-if="getLogoUrl(item.logo_url)"
+                :src="getLogoUrl(item.logo_url)"
+                alt="Company Logo"
+                style="max-height: 40px; max-width: 100px; object-fit: contain;"
+              />
+              <span v-else class="text-muted small">No logo</span>
+            </td>
+          </template>
+
+          <template #colors="{ item }">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                  <div 
+                    class="color-box"
+                    :style="{
+                      backgroundColor: item.primary_color,
+                      width: '20px',
+                      height: '20px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px'
+                    }"
+                  ></div>
+                  <small>{{ item.primary_color }}</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <div 
+                    class="color-box"
+                    :style="{
+                      backgroundColor: item.secondary_color,
+                      width: '20px',
+                      height: '20px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px'
+                    }"
+                  ></div>
+                  <small>{{ item.secondary_color }}</small>
+                </div>
+              </div>
+            </td>
+          </template>
+
           <template #actions="{ item }">
             <td class="py-2 text-center">
               <CButton 
@@ -155,4 +217,26 @@ export default {
     </CCardBody>
   </CCard>
 </template>
+
+<style scoped>
+.color-box {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-3 {
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .d-flex {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+</style>
   

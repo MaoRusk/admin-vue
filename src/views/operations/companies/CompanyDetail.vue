@@ -29,19 +29,18 @@
           website: '',
           primary_color: '#4273D7',
           secondary_color: '#FCFCFC',
-          logo_id: null,
-          address: '',
-          city: '',
-          state: '',
-          postalCode: '',
-          country: '',
-          image: {},
+          image: null,
           logoUrl: null,
+          logo_id: null,
         },
-        validatedCustom01: null,
         errors: {
           name: '',
+          website: '',
+          primary_color: '',
+          secondary_color: '',
+          logo: '',
         },
+        isSubmitting: false,
         activeTab: '1',
         contacts: [],
         newContact: {
@@ -84,36 +83,37 @@
       async loadCompany() {
         if (!this.isNew) {
           try {
-            const companyId = Number(this.id);
-            if (isNaN(companyId)) {
-              throw new Error('Invalid company ID');
+            console.log('Loading company with ID:', this.id);
+            const response = await API.companies.getCompany(this.id);
+            
+            if (!response.data.success) {
+              throw new Error('Failed to load company data');
             }
             
-            const response = await API.companies.getCompany(companyId);
-            if (response.data.data) {
-              const companyData = response.data.data;
-              this.company = {
-                ...this.company,
-                name: companyData.name,
-                website: companyData.website,
-                primary_color: companyData.primary_color,
-                secondary_color: companyData.secondary_color,
-                logo_id: companyData.logo_id,
-              };
-            }
+            const companyData = response.data.data;
+            console.log('Loaded company data:', companyData);
+            
+            this.company = {
+              name: companyData.name || '',
+              website: companyData.website || '',
+              primary_color: (companyData.primary_color || '#4273D7').slice(0, 7),
+              secondary_color: (companyData.secondary_color || '#FCFCFC').slice(0, 7),
+              logo_id: companyData.logo_id,
+              logoUrl: companyData.logo_url,
+              image: null
+            };
           } catch (error) {
             console.error('Error loading company:', error);
             Swal.fire({
               icon: 'error',
               title: 'Error!',
-              text: 'Error loading company',
+              text: error.message || 'Error loading company',
               toast: true,
               position: 'bottom',
               showConfirmButton: false,
               timer: 3000,
               timerProgressBar: true
             });
-            // Redirigir al listado si hay un error
             this.goBack();
           }
         }
@@ -122,65 +122,102 @@
       clearErrors() {
         this.errors = {
           name: '',
+          website: '',
+          primary_color: '',
+          secondary_color: '',
+          logo: '',
         }
       },
 
       async saveCompany() {
-        this.clearErrors()
         try {
-          const formData = new FormData()
-          formData.append('name', this.company.name)
-          formData.append('website', this.company.website)
-          formData.append('primary_color', this.company.primary_color)
-          formData.append('secondary_color', this.company.secondary_color)
+          this.clearErrors();
+          this.isSubmitting = true;
+
+          const formData = new FormData();
+          
+          // Asegurarse de que los valores sean strings
+          const data = {
+            name: String(this.company.name || ''),
+            website: String(this.company.website || ''),
+            primary_color: String(this.company.primary_color || '#4273D7').slice(0, 7),
+            secondary_color: String(this.company.secondary_color || '#FCFCFC').slice(0, 7),
+          };
+
+          // Log de datos antes de enviar
+          console.log('Data to update:', data);
+
+          // Agregar campos al FormData
+          Object.entries(data).forEach(([key, value]) => {
+            formData.append(key, value);
+          });
+
+          if (!this.isNew) {
+            formData.append('_method', 'PUT');
+          }
 
           if (this.company.image instanceof File) {
-            formData.append('logo', this.company.image)
+            formData.append('logo', this.company.image);
           }
 
+          let response;
           if (this.isNew) {
-            await API.companies.createCompany(formData)
-            Swal.fire({
-              icon: 'success',
-              title: 'Created successfully!',
-              text: 'New company has been created.',
-              toast: true,
-              position: 'bottom',
-              showConfirmButton: false,
-              timer: 3000,
-              timerProgressBar: true
-            })
+            response = await API.companies.createCompany(formData);
           } else {
-            formData.append('_method', 'PUT')
-            await API.companies.updateCompany(this.id, formData)
-            Swal.fire({
+            console.log('Updating company with ID:', this.id);
+            response = await API.companies.updateCompany(this.id, formData);
+          }
+
+          console.log('API Response:', response.data);
+
+          if (response.data.success) {
+            // Recargar los datos de la compañía inmediatamente
+            if (!this.isNew) {
+              await this.loadCompany();
+            }
+
+            await Swal.fire({
               icon: 'success',
-              title: 'Updated successfully!',
-              text: 'Company has been updated.',
+              title: 'Success!',
+              text: `Company ${this.isNew ? 'created' : 'updated'} successfully`,
               toast: true,
               position: 'bottom',
               showConfirmButton: false,
               timer: 3000,
-              timerProgressBar: true
-            })
+              timerProgressBar: true,
+            });
+
+            // Redirección después de la actualización exitosa
+            await this.$router.push({ 
+              name: ROUTE_NAMES.COMPANIES,
+              query: { 
+                refresh: Date.now(),
+                updated: this.id
+              }
+            });
+          } else {
+            throw new Error(response.data.message || 'Update failed');
           }
-          this.goBack()
+
         } catch (error) {
-          console.error('Error saving company:', error)
-          if (error.response?.data?.errors) {
-            this.errors = error.response.data.errors
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error!',
-              text: 'Error saving company',
-              toast: true,
-              position: 'bottom',
-              showConfirmButton: false,
-              timer: 3000,
-              timerProgressBar: true
-            })
-          }
+          console.error('Error details:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status
+          });
+          
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data?.message || error.message || 'An error occurred while saving the company',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
+        } finally {
+          this.isSubmitting = false;
         }
       },
 
@@ -195,7 +232,12 @@
       },
 
       goBack() {
-        this.$router.push({ name: ROUTE_NAMES.COMPANIES });
+        this.$router.push({ 
+          name: ROUTE_NAMES.COMPANIES,
+          query: { 
+            refresh: Date.now() 
+          }
+        });
       },
 
       async loadContacts() {
