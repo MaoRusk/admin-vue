@@ -3,9 +3,15 @@
   import Swal from 'sweetalert2';
   import { ROUTE_NAMES } from '@/router/routeNames';
   import { API } from '@/services';
+  import ContactForm from './components/ContactForm.vue';
+  import ContactsTable from './components/ContactsTable.vue';
 
   export default defineComponent({
     name: 'CompanyDetail',
+    components: {
+      ContactForm,
+      ContactsTable,
+    },
     props: {
       id: {
         type: [String, Number],
@@ -277,6 +283,11 @@
           is_company_contact: 1,
         };
       },
+
+      handleSaveContact(contactData) {
+        this.newContact = contactData;
+        this.saveContact();
+      },
     },
   });
 </script>
@@ -409,106 +420,18 @@
           <!-- Contacts Tab -->
           <CTabPane :visible="activeTab === '2'" v-if="!isNew">
             <div class="mt-4">
-              <CCard>
-                <CCardHeader>
-                  <strong>Add/Edit Contact</strong>
-                </CCardHeader>
-                <CCardBody>
-                  <CForm @submit.prevent="saveContact">
-                    <CRow>
-                      <CCol :md="6">
-                        <CFormInput
-                          label="Name"
-                          v-model="newContact.contact_name"
-                          required
-                          class="mb-3"
-                        />
-                      </CCol>
-                      <CCol :md="6">
-                        <CFormInput
-                          label="Email"
-                          type="email"
-                          v-model="newContact.contact_email"
-                          required
-                          class="mb-3"
-                        />
-                      </CCol>
-                      <CCol :md="6">
-                        <CFormInput
-                          label="Phone"
-                          v-model="newContact.contact_phone"
-                          class="mb-3"
-                        />
-                      </CCol>
-                      <CCol :md="6">
-                        <CFormTextarea
-                          label="Comments"
-                          v-model="newContact.contact_comments"
-                          class="mb-3"
-                        />
-                      </CCol>
-                    </CRow>
-                    <div class="d-flex gap-2">
-                      <CButton type="submit" color="primary">
-                        {{ newContact.id ? 'Update' : 'Add' }} Contact
-                      </CButton>
-                      <CButton 
-                        v-if="newContact.id"
-                        type="button"
-                        color="secondary"
-                        @click="resetContactForm"
-                      >
-                        Cancel
-                      </CButton>
-                    </div>
-                  </CForm>
-                </CCardBody>
-              </CCard>
-
-              <CCard class="mt-4">
-                <CCardHeader>
-                  <strong>Contacts List</strong>
-                </CCardHeader>
-                <CCardBody>
-                  <CTable>
-                    <CTableHead>
-                      <CTableRow>
-                        <CTableHeaderCell>Name</CTableHeaderCell>
-                        <CTableHeaderCell>Email</CTableHeaderCell>
-                        <CTableHeaderCell>Phone</CTableHeaderCell>
-                        <CTableHeaderCell>Comments</CTableHeaderCell>
-                        <CTableHeaderCell>Actions</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      <CTableRow v-for="contact in contacts" :key="contact.id">
-                        <CTableDataCell>{{ contact.contact_name }}</CTableDataCell>
-                        <CTableDataCell>{{ contact.contact_email }}</CTableDataCell>
-                        <CTableDataCell>{{ contact.contact_phone }}</CTableDataCell>
-                        <CTableDataCell>{{ contact.contact_comments }}</CTableDataCell>
-                        <CTableDataCell>
-                          <div class="d-flex gap-2">
-                            <CButton
-                              color="primary"
-                              size="sm"
-                              @click="editContact(contact)"
-                            >
-                              Edit
-                            </CButton>
-                            <CButton
-                              color="danger"
-                              size="sm"
-                              @click="deleteContact(contact.id)"
-                            >
-                              Delete
-                            </CButton>
-                          </div>
-                        </CTableDataCell>
-                      </CTableRow>
-                    </CTableBody>
-                  </CTable>
-                </CCardBody>
-              </CCard>
+              <ContactForm
+                :contact="newContact"
+                @save="handleSaveContact"
+                @cancel="resetContactForm"
+              />
+              <div class="mt-4">
+                <ContactsTable
+                  :contacts="contacts"
+                  @edit="editContact"
+                  @delete="deleteContact"
+                />
+              </div>
             </div>
           </CTabPane>
         </CTabContent>
