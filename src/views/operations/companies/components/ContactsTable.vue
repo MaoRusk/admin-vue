@@ -6,8 +6,17 @@ export default defineComponent({
   props: {
     contacts: {
       type: Array,
-      default: () => [],
-    },
+      required: true,
+      default: () => []
+    }
+  },
+  computed: {
+    filteredContacts() {
+      // Filtrar los contactos nulos y asegurarse de que son contactos de compañía
+      return this.contacts
+        .filter(contact => contact && contact.is_company_contact === 1)
+        .sort((a, b) => a.contact_name.localeCompare(b.contact_name));
+    }
   },
   emits: ['edit', 'delete'],
 });
@@ -66,45 +75,52 @@ export default defineComponent({
 
       <!-- Vista desktop: Tabla -->
       <div class="d-none d-md-block">
-        <CTable hover responsive>
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell>Name</CTableHeaderCell>
-              <CTableHeaderCell>Email</CTableHeaderCell>
-              <CTableHeaderCell>Phone</CTableHeaderCell>
-              <CTableHeaderCell>Comments</CTableHeaderCell>
-              <CTableHeaderCell class="text-end">Actions</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            <CTableRow v-for="contact in contacts" :key="contact.id">
-              <CTableDataCell>{{ contact.contact_name }}</CTableDataCell>
-              <CTableDataCell>{{ contact.contact_email }}</CTableDataCell>
-              <CTableDataCell>{{ contact.contact_phone }}</CTableDataCell>
-              <CTableDataCell>{{ contact.contact_comments }}</CTableDataCell>
-              <CTableDataCell class="text-end">
-                <div class="d-flex gap-2 justify-content-end">
-                  <CButton
-                    color="primary"
-                    size="sm"
-                    variant="ghost"
-                    @click="$emit('edit', contact)"
-                  >
-                    <CIcon icon="cil-pencil" />
-                  </CButton>
-                  <CButton
-                    color="danger"
-                    size="sm"
-                    variant="ghost"
-                    @click="$emit('delete', contact.id)"
-                  >
-                    <CIcon icon="cil-trash" />
-                  </CButton>
-                </div>
-              </CTableDataCell>
-            </CTableRow>
-          </CTableBody>
-        </CTable>
+        <div class="table-responsive">
+          <CTable hover responsive>
+            <CTableHead>
+              <CTableRow>
+                <CTableHeaderCell>Name</CTableHeaderCell>
+                <CTableHeaderCell>Email</CTableHeaderCell>
+                <CTableHeaderCell>Phone</CTableHeaderCell>
+                <CTableHeaderCell>Comments</CTableHeaderCell>
+                <CTableHeaderCell class="text-center">Actions</CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+            <CTableBody>
+              <CTableRow v-for="contact in filteredContacts" :key="contact.id">
+                <CTableDataCell>{{ contact.contact_name }}</CTableDataCell>
+                <CTableDataCell>{{ contact.contact_email }}</CTableDataCell>
+                <CTableDataCell>{{ contact.contact_phone }}</CTableDataCell>
+                <CTableDataCell>{{ contact.contact_comments }}</CTableDataCell>
+                <CTableDataCell class="text-center">
+                  <div class="d-flex justify-content-center gap-2">
+                    <CButton
+                      color="primary"
+                      variant="outline"
+                      size="sm"
+                      @click="$emit('edit', contact)"
+                    >
+                      <CIcon icon="cil-pencil" />
+                    </CButton>
+                    <CButton
+                      color="danger"
+                      variant="outline"
+                      size="sm"
+                      @click="$emit('delete', contact)"
+                    >
+                      <CIcon icon="cil-trash" />
+                    </CButton>
+                  </div>
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow v-if="filteredContacts.length === 0">
+                <CTableDataCell colspan="5" class="text-center">
+                  No contacts found
+                </CTableDataCell>
+              </CTableRow>
+            </CTableBody>
+          </CTable>
+        </div>
       </div>
     </CCardBody>
   </CCard>
@@ -141,6 +157,23 @@ export default defineComponent({
 
   .contact-card:last-child {
     border-bottom: none;
+  }
+
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  :deep(.table td), :deep(.table th) {
+    padding: 0.5rem;
+  }
+
+  .d-flex.gap-2 {
+    gap: 0.25rem !important;
+  }
+
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
   }
 }
 </style> 

@@ -242,26 +242,53 @@
 
       async loadContacts() {
         try {
-          const response = await API.contacts.getContacts(this.id);
-          this.contacts = response.data.data;
+          const response = await API.contacts.getCompanyContacts(this.id);
+          console.log('Contacts response:', response);
+          if (response.data.success) {
+            this.contacts = response.data.data.filter(contact => contact !== null);
+          }
         } catch (error) {
           console.error('Error loading contacts:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Error loading contacts',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
         }
       },
 
-      async saveContact() {
+      async handleSaveContact(contactData) {
         try {
-          if (this.newContact.id) {
-            await API.contacts.updateContact(this.id, this.newContact.id, this.newContact);
+          if (contactData.id) {
+            // Actualizar contacto existente
+            await API.contacts.updateContact(this.id, contactData.id, {
+              ...contactData,
+              company_id: this.id
+            });
           } else {
-            await API.contacts.createContact(this.id, this.newContact);
+            // Crear nuevo contacto
+            contactData.is_company_contact = 1;
+            await API.contacts.createContact(this.id, {
+              ...contactData,
+              company_id: this.id
+            });
           }
-          this.loadContacts();
+          
+          // Recargar la lista de contactos
+          await this.loadContacts();
+          
+          // Resetear el formulario
           this.resetContactForm();
+          
           Swal.fire({
             icon: 'success',
             title: 'Success!',
-            text: `Contact ${this.newContact.id ? 'updated' : 'created'} successfully`,
+            text: `Contact ${contactData.id ? 'updated' : 'created'} successfully`,
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -273,36 +300,7 @@
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Error saving contact',
-            toast: true,
-            position: 'bottom',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-          });
-        }
-      },
-
-      async deleteContact(contactId) {
-        try {
-          await API.contacts.deleteContact(this.id, contactId);
-          this.loadContacts();
-          Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: 'Contact deleted successfully',
-            toast: true,
-            position: 'bottom',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-          });
-        } catch (error) {
-          console.error('Error deleting contact:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'Error deleting contact',
+            text: error.response?.data?.message || 'Error saving contact',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -326,11 +324,6 @@
         };
       },
 
-      handleSaveContact(contactData) {
-        this.newContact = contactData;
-        this.saveContact();
-      },
-
       goToCompanies() {
         this.$router.push({ name: ROUTE_NAMES.COMPANIES });
       },
@@ -349,7 +342,7 @@
         class="d-flex align-items-center gap-2"
       >
         <CIcon icon="cil-arrow-left" />
-        Back to Companies
+        Return
       </CButton>
     </div>
 
