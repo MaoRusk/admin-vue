@@ -606,8 +606,9 @@ defineExpose({
 
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Comments</CFormLabel>
-                  <CFormInput
+                  <CFormTextarea
                     v-model="absorption.abs_comments"
+                    rows="3"
                   />
                 </div>
 
