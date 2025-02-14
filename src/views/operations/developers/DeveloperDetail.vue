@@ -17,28 +17,22 @@
           </CCol>
         </CRow>
         <CRow class="mt-3">
-          <CCol :md="3">
+          <CCol :md="4">
             <CFormSwitch
               label="Is Developer"
               v-model="developer.is_developer"
             />
           </CCol>
-          <CCol :md="3">
+          <CCol :md="4">
             <CFormSwitch
               label="Is Builder"
               v-model="developer.is_builder"
             />
           </CCol>
-          <CCol :md="3">
+          <CCol :md="4">
             <CFormSwitch
               label="Is Owner"
               v-model="developer.is_owner"
-            />
-          </CCol>
-          <CCol :md="3">
-            <CFormSwitch
-              label="Is User Owner"
-              v-model="developer.is_user_owner"
             />
           </CCol>
         </CRow>
@@ -74,8 +68,7 @@ export default {
         name: '',
         is_developer: false,
         is_builder: false,
-        is_owner: false,
-        is_user_owner: false
+        is_owner: false
       },
       errors: {
         name: ''
@@ -97,8 +90,7 @@ export default {
               name: response.data.data.name,
               is_developer: Boolean(response.data.data.is_developer),
               is_builder: Boolean(response.data.data.is_builder),
-              is_owner: Boolean(response.data.data.is_owner),
-              is_user_owner: Boolean(response.data.data.is_user_owner)
+              is_owner: Boolean(response.data.data.is_owner)
             }
           }
         } catch (error) {
