@@ -113,21 +113,21 @@ export default {
 </script>
 
 <template>
+  <!-- Botón New Company responsive -->
   <CCard class="mb-4">
-    <CRow>
-      <CCol :xs="12" :xl="10">&nbsp;</CCol>
-      <CCol :xs="12" :xl="2">
-        <CCardBody>
-          <CButton color="success" @click="newCompany()">
+    <CCardBody class="p-3">
+      <CRow class="align-items-center">
+        <CCol :xs="12" class="text-end">
+          <CButton color="success" @click="newCompany()" class="w-100 w-sm-auto">
             <CIcon icon="cilPlus" class="me-2" />New Company
           </CButton>
-        </CCardBody>
-      </CCol>
-    </CRow>
+        </CCol>
+      </CRow>
+    </CCardBody>
   </CCard>
 
   <CCard class="mb-4">
-    <CCardBody>
+    <CCardBody class="p-3">
       <div class="table-responsive">
         <CSmartTable
           v-if="companies.length > 0"
@@ -143,73 +143,72 @@ export default {
           hover
           responsive
         >
+          <!-- Logo Column -->
           <template #logo="{ item }">
-            <td class="text-center">
-              <img 
-                v-if="getLogoUrl(item.logo_url)"
-                :src="getLogoUrl(item.logo_url)"
-                alt="Company Logo"
-                style="max-height: 40px; max-width: 100px; object-fit: contain;"
-              />
-              <span v-else class="text-muted small">No logo</span>
+            <td class="text-center py-2">
+              <div class="company-logo-container">
+                <img 
+                  v-if="getLogoUrl(item.logo_url)"
+                  :src="getLogoUrl(item.logo_url)"
+                  alt="Company Logo"
+                  class="company-logo"
+                />
+                <span v-else class="text-muted small">No logo</span>
+              </div>
             </td>
           </template>
 
+          <!-- Colors Column -->
           <template #colors="{ item }">
-            <td>
-              <div class="d-flex align-items-center gap-3">
-                <div class="d-flex align-items-center gap-2">
+            <td class="py-2">
+              <div class="colors-container">
+                <div class="color-item">
                   <div 
                     class="color-box"
                     :style="{
-                      backgroundColor: item.primary_color,
-                      width: '20px',
-                      height: '20px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px'
+                      backgroundColor: item.primary_color
                     }"
                   ></div>
-                  <small>{{ item.primary_color }}</small>
+                  <small class="color-value">{{ item.primary_color }}</small>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="color-item">
                   <div 
                     class="color-box"
                     :style="{
-                      backgroundColor: item.secondary_color,
-                      width: '20px',
-                      height: '20px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px'
+                      backgroundColor: item.secondary_color
                     }"
                   ></div>
-                  <small>{{ item.secondary_color }}</small>
+                  <small class="color-value">{{ item.secondary_color }}</small>
                 </div>
               </div>
             </td>
           </template>
 
+          <!-- Actions Column -->
           <template #actions="{ item }">
-            <td class="py-2 text-center">
-              <CButton 
-                color="primary" 
-                variant="outline" 
-                square 
-                size="sm" 
-                @click="viewDetails(item)"
-                class="mx-1 my-1"
-              >
-                <CIcon icon="cil-pencil" />
-              </CButton>
-              <CButton 
-                color="danger" 
-                variant="outline" 
-                square 
-                size="sm" 
-                class="mx-1 my-1"
-                @click="deleteCompany(item)"
-              >
-                <CIcon icon="cil-trash" />
-              </CButton>
+            <td class="text-center py-2">
+              <div class="actions-container">
+                <CButton 
+                  color="primary" 
+                  variant="outline" 
+                  square 
+                  size="sm" 
+                  @click="viewDetails(item)"
+                  class="action-button"
+                >
+                  <CIcon icon="cil-pencil" />
+                </CButton>
+                <CButton 
+                  color="danger" 
+                  variant="outline" 
+                  square 
+                  size="sm" 
+                  @click="deleteCompany(item)"
+                  class="action-button"
+                >
+                  <CIcon icon="cil-trash" />
+                </CButton>
+              </div>
             </td>
           </template>
         </CSmartTable>
@@ -219,24 +218,118 @@ export default {
 </template>
 
 <style scoped>
+/* Estilos base */
+.company-logo {
+  max-height: 40px;
+  max-width: 100px;
+  object-fit: contain;
+}
+
 .color-box {
-  display: inline-block;
-  vertical-align: middle;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.gap-3 {
+.colors-container {
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
+.color-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actions-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  margin: 0.25rem;
+}
+
+/* Estilos responsive */
 @media (max-width: 768px) {
-  .d-flex {
+  .company-logo-container {
+    padding: 0.5rem;
+  }
+
+  .company-logo {
+    max-width: 80px;
+  }
+
+  .colors-container {
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .color-item {
+    justify-content: flex-start;
+  }
+
+  .color-value {
+    font-size: 0.75rem;
+  }
+
+  .actions-container {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .action-button {
+    padding: 0.375rem 0.5rem;
+  }
+
+  /* Ajustes para la tabla en móvil */
+  :deep(.table) {
+    font-size: 0.875rem;
+  }
+
+  :deep(.table td) {
+    padding: 0.5rem;
+  }
+
+  /* Ajuste para el botón New Company */
+  .w-100.w-sm-auto {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 576px) {
+  .company-logo {
+    max-width: 60px;
+  }
+
+  .color-box {
+    width: 16px;
+    height: 16px;
+  }
+
+  .action-button {
+    padding: 0.25rem 0.375rem;
+  }
+
+  :deep(.table) {
+    font-size: 0.75rem;
+  }
+}
+
+/* Ajustes para modo oscuro si es necesario */
+@media (prefers-color-scheme: dark) {
+  .color-box {
+    border-color: #444;
   }
 }
 </style>
   
+
