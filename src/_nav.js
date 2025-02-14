@@ -1,4 +1,3 @@
-import i18next from '@/i18n'
 import { ROUTE_NAMES } from './router/routeNames'
 
 export default [
@@ -77,6 +76,12 @@ export default [
         to: '/operations/buildings/pending-approvals',
       },
     ],
+  },
+  {
+    component: 'CNavItem',
+    name: 'Lands',
+    to: { name: ROUTE_NAMES.LANDS_INDEX },
+    icon: 'cilTerrain',
   },
   {
     component: 'CNavItem',

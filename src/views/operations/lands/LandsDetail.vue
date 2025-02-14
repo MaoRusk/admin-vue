@@ -1,0 +1,133 @@
+<script setup>
+import { ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router'
+
+import { ROUTE_NAMES } from '../../../router/routeNames';
+import LandsForm from './LandsForm.vue'
+import LandsAvailabilityIndex from './LandsAvailabilityIndex.vue';
+import LandsAbsorptionIndex from './LandsAbsorptionIndex.vue';
+
+const route = useRoute()
+const router = useRouter()
+
+const landId = computed(() => Number(route.params.landId) || null)
+const disabledTab = computed(() => !landId.value)
+
+const submittingForm = ref(false)
+const disabledSave = ref(false)
+
+const landRef = ref(null);
+const availabilityRef = ref(null);
+const absorptionRef = ref(null);
+
+const tabLandLoaded = ref(false);
+const tabAvailabilityLoaded = ref(false);
+const tabAbsorptionLoaded = ref(false);
+
+const activeItemKey = ref(route.query.tab || 'Land')
+const tabs = ['Land', 'Availability', 'Absorption'];
+
+function dispatchSubmitForm() {
+  if (activeItemKey.value === 'Land') {
+    landRef.value?.submit?.()
+  } else if (activeItemKey.value === 'Availability') {
+    availabilityRef.value?.submit?.()
+  } else if (activeItemKey.value === 'Absorption') {
+    absorptionRef.value?.submit?.()
+  }
+}
+
+function showList() {
+  if (activeItemKey.value === 'Land') {
+    router.push({ name: ROUTE_NAMES.LANDS_INDEX })
+  } else if (activeItemKey.value === 'Availability') {
+    availabilityRef.value?.handleReturn?.()
+  } else if (activeItemKey.value === 'Absorption') {
+    absorptionRef.value?.handleReturn?.()
+  }
+}
+
+watch(() => route.query.tab, (newTab) => {
+  if (['Land', 'Availability', 'Absorption'].includes(newTab)) {
+    activeItemKey.value = newTab
+  } else {
+    activeItemKey.value = 'Land'
+  }
+}, { immediate: true })
+
+function changeTab(tab) {
+  activeItemKey.value = tab
+  router.push({
+    name: route.name,
+    params: route.params,
+    query: { ...route.query, tab }
+  })
+}
+
+watch(activeItemKey, (newTab) => {
+  if (newTab === 'Land') {
+    tabLandLoaded.value = true
+  } else if (newTab === 'Availability') {
+    tabAvailabilityLoaded.value = true
+    disabledSave.value = !(availabilityRef.value?.showForm ?? false)
+  } else if (newTab === 'Absorption') {
+    tabAbsorptionLoaded.value = true
+    disabledSave.value = !(absorptionRef.value?.showForm ?? false)
+  }
+  if (['Land'].includes(newTab)) {
+    disabledSave.value = false
+  }
+}, { immediate: true })
+</script>
+<template>
+  <div>
+    <CCard class="container-btn-flotante">
+      <CCardBody class="ps-1 py-3">
+        <CRow class="justify-content-center">
+          <CCol xs="auto" class="btns-flotantes-customer-moviles">
+            <CLoadingButton color="success" variant="outline" @click="dispatchSubmitForm" class="me-3" :loading="submittingForm" :disabled="disabledSave">
+              <CIcon name="cilSave" size="sm" /> Save
+            </CLoadingButton>
+            <CButton color="primary" variant="outline" @click="showList()">
+              <CIcon name="cilArrowCircleLeft" size="sm" /> List
+            </CButton>
+          </CCol>
+        </CRow>
+      </CCardBody>
+    </CCard>
+    <!-- TODO. quitar cuando se detecte error, bug: aveces cuando se da click sobre un tab, no se muestra su contenido, coloco variable para monitorear -->
+    {{ activeItemKey }}
+    <CTabs :activeItemKey="activeItemKey">
+      <CTabList variant="tabs" class="mt-4">
+        <CTab v-for="tab in tabs" :itemKey="tab" :key="tab" :disabled="tab !== 'Land' && disabledTab" @click="changeTab(tab)">{{ tab }}</CTab>
+      </CTabList>
+      <CTabContent>
+        <CTabPanel class="p-3" itemKey="Land">
+          <LandsForm v-if="tabLandLoaded" :landId="landId" ref="landRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
+        </CTabPanel>
+        <CTabPanel class="p-3" itemKey="Availability">
+          <LandsAvailabilityIndex v-if="tabAvailabilityLoaded" :landId="landId" ref="availabilityRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" @changeShowForm="(value) => disabledSave = !value" />
+        </CTabPanel>
+        <CTabPanel class="p-3" itemKey="Absorption">
+          <LandsAbsorptionIndex v-if="tabAbsorptionLoaded" :landId="landId" ref="absorptionRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" @changeShowForm="(value) => disabledSave = !value" />
+        </CTabPanel>
+      </CTabContent>
+    </CTabs>
+  </div>
+</template>
+
+<style scoped>
+.nav-item {
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: background-color 0.2s;
+}
+
+.nav-item:hover {
+  background-color: #f8f9fa;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+}
+</style>

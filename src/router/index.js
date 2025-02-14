@@ -44,6 +44,22 @@ const routes = [
         },
         children: [
           {
+            path: '/operations/lands',
+            name: ROUTE_NAMES.LANDS_INDEX,
+            component: () => import('@/views/operations/lands/LandsIndex.vue'),
+          },
+          {
+            path: '/operations/lands/create',
+            name: ROUTE_NAMES.LANDS_CREATE,
+            component: () => import('@/views/operations/lands/LandsDetail.vue'),
+          },
+          {
+            path: '/operations/lands/:landId/edit',
+            name: ROUTE_NAMES.LANDS_UPDATE,
+            component: () => import('@/views/operations/lands/LandsDetail.vue'),
+          },
+
+          {
             path: 'policies',
             name: ROUTE_NAMES.POLICIES,
             component: () => import('@/views/operations/policies/Policies.vue'),
