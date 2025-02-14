@@ -21,22 +21,17 @@ export default {
         {
           key: 'is_developer',
           label: 'Developer',
-          _style: { width: '15%' },
+          _style: { width: '20%' },
         },
         {
           key: 'is_builder',
           label: 'Builder',
-          _style: { width: '15%' },
+          _style: { width: '20%' },
         },
         {
           key: 'is_owner',
           label: 'Owner',
-          _style: { width: '15%' },
-        },
-        {
-          key: 'is_user_owner',
-          label: 'User Owner',
-          _style: { width: '15%' },
+          _style: { width: '20%' },
         },
         {
           key: 'actions',
@@ -168,14 +163,6 @@ export default {
           <td>
             <CBadge :color="item.is_owner ? 'success' : 'danger'">
               {{ item.is_owner ? 'Yes' : 'No' }}
-            </CBadge>
-          </td>
-        </template>
-
-        <template #is_user_owner="{ item }">
-          <td>
-            <CBadge :color="item.is_user_owner ? 'success' : 'danger'">
-              {{ item.is_user_owner ? 'Yes' : 'No' }}
             </CBadge>
           </td>
         </template>
