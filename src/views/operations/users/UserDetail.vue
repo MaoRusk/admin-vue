@@ -439,106 +439,98 @@ async function createOptionGeneral(field, value) {
 </script>
 
 <template>
-    <CContainer>
+  <CCard>
+    <CCardHeader style="text-align: right;">
+      <CButton color="primary" variant="outline" @click="goBack">
+        <CIcon :content="cilArrowCircleLeft" size="sm" />
+        Return
+      </CButton>
+    </CCardHeader>
 
-      <div style="display: flex; justify-content: right;">
-        <div>
-          <CButton color="primary" variant="outline" @click="goBack">
-            <CIcon :content="cilArrowCircleLeft" size="sm" />
-            Return
-          </CButton>
-        </div>
-      </div>
-
-        <CRow>
-            <CCol :md="6">
-            <CCol>
-              <CFormInput
-                type="text"
-                label="Name *"
-                placeholder="name"
-                v-model="formData.name"
-                :class="{'is-invalid': formData.name.trim() === ''}"
-                aria-label="default input example"
-              />
-              <div v-if="formData.name.trim() === ''" class="invalid-feedback">
-                This field is required
-              </div>
-            </CCol>
-            <CCol>
-              <CFormInput 
-                type="text"
-                label="Middle Name" 
-                placeholder="Middle name" 
-                v-model="formData.middleName"
-                aria-label="default input example"
-              />
-            </CCol>
-            <CCol>
-                <CFormInput type="text"
-                label="Last Name *" 
-                placeholder="lastName" 
-                v-model="formData.lastName"
-                :class="{'is-invalid': formData.lastName.trim() === ''}"
-                aria-label="default input example"/>
+    <CCardBody>
+      <CRow>
+        <CCol :md="6">
+          <CCard class="mb-4">
+            <CCardBody>
+              <CCol>
+                <CFormInput
+                  type="text"
+                  label="Name *"
+                  placeholder="name"
+                  v-model="formData.name"
+                  :class="{'is-invalid': formData.name.trim() === ''}"
+                  aria-label="default input example"
+                />
+                <div v-if="formData.name.trim() === ''" class="invalid-feedback">
+                  This field is required
+                </div>
+              </CCol>
+              <CCol>
+                <CFormInput 
+                  type="text"
+                  label="Middle Name" 
+                  placeholder="Middle name" 
+                  v-model="formData.middleName"
+                  aria-label="default input example"
+                />
+              </CCol>
+              <CCol>
+                <CFormInput 
+                  type="text"
+                  label="Last Name *" 
+                  placeholder="lastName" 
+                  v-model="formData.lastName"
+                  :class="{'is-invalid': formData.lastName.trim() === ''}"
+                  aria-label="default input example"
+                />
                 <div v-if="formData.lastName.trim() === ''" class="invalid-feedback">
                   This field is required
                 </div>
-            </CCol>
-            <CCol>
-              <MSelect
-                label="Select Role *"
-                :options="userRoles"
-                v-model="selectedRole"
-                @update:modelValue="handleRoleChange"
-                @submitOption="value => createOptionGeneral('role', value)"
-                create-option
-                size="sm"
-                required
-              />               
-            </CCol>
-            <CCol>
-              <MSelect
-                v-if="selectedUserType === '5'"
-                label="Select Markets *"
-                :options="marketsCbo"
-                v-model="selectedMarket"
-                @update:modelValue="handleMarketsChange"
-                size="sm"
-                required
-              />
-            </CCol>
+              </CCol>
+              <CCol>
+                <MSelect
+                  label="Select Role *"
+                  :options="userRoles"
+                  v-model="selectedRole"
+                  @update:modelValue="handleRoleChange"
+                  @submitOption="value => createOptionGeneral('role', value)"
+                  create-option
+                  size="sm"
+                  required
+                />               
+              </CCol>
+              <CCol v-if="selectedUserType === '5'">
+                <MSelect
+                  label="Select Markets *"
+                  :options="marketsCbo"
+                  v-model="selectedMarket"
+                  @update:modelValue="handleMarketsChange"
+                  size="sm"
+                  required
+                />
+              </CCol>
+            </CCardBody>
+          </CCard>
+        </CCol>
 
-            <CCol>
-            </CCol>
-            <CCol>
-              <!-- <MSelect 
-                label="Select Admin Modules"
-                :options="modulesCbo"
-                v-model="selectedValues"
-                @update:modelValue="handleModulesCbo"
-                size="sm"
-              /> -->
-            </CCol>
-            </CCol>
-            <CCol :md="6">
-              
-            <CCol>
+        <CCol :md="6">
+          <CCard class="mb-4">
+            <CCardBody>
+              <CCol>
                 <CFormInput 
-                type="text"
-                label="UserName *" 
-                placeholder="userName" 
-                v-model="formData.userName"
-                :class="{'is-invalid': formData.userName.trim() === ''}"
-                aria-label="default input example"
-                required
+                  type="text"
+                  label="UserName *" 
+                  placeholder="userName" 
+                  v-model="formData.userName"
+                  :class="{'is-invalid': formData.userName.trim() === ''}"
+                  aria-label="default input example"
+                  required
                 />
                 <div v-if="formData.userName.trim() === ''" class="invalid-feedback">
                   This field is required
                 </div>
-            </CCol>
-            <CCol>
-              <div style="">
+              </CCol>
+              <CCol>
                 <CFormInput
                   label="Password *" 
                   type="password"
@@ -549,95 +541,120 @@ async function createOptionGeneral(field, value) {
                 <div v-if="formData.password.trim() === ''" class="invalid-feedback">
                   This field is required
                 </div>
-              </div>
-
-            </CCol>
-            <CCol v-if="props.id == 0 || props.id === ''">
-              <CFormInput
-                label="Confirm Password"
-                type="password"
-                v-model="formData.confirmPassword"
-                :class="{'is-invalid': formData.confirmPassword.trim() === ''}"
-                id="confirmInputPassword"
-                :invalid="!isPasswordMatch"
-                :feedback="isPasswordMatch ? 'Passwords match' : 'Passwords do not match'"
-              />
-              <div v-if="formData.confirmPassword.trim() === ''" class="invalid-feedback">
-                This field is required
-              </div>
-            </CCol>
-            <CCol>
-              <div style="display: flex; justify-content: left; align-items: center;">
-                <label for="status">Status</label>
-                <div style="margin-left: 1rem; padding-top: 1rem;">
-                  <CFormCheck 
-                    inline 
-                    type="radio" 
-                    name="status" 
-                    id="statusActive" 
-                    value="Activo"
-                    label="Activo"
-                    :checked="formData.status === 'Activo'"
-                    @change="formData.status = 'Activo'"
-                  />
-                  <CFormCheck 
-                    inline 
-                    type="radio" 
-                    name="status" 
-                    id="statusInactive" 
-                    value="Inactivo"
-                    label="Inactivo"
-                    :checked="formData.status === 'Inactivo'"
-                    @change="formData.status = 'Inactivo'"
-                  />    
+              </CCol>
+              <CCol v-if="props.id == 0 || props.id === ''">
+                <CFormInput
+                  label="Confirm Password"
+                  type="password"
+                  v-model="formData.confirmPassword"
+                  :class="{'is-invalid': formData.confirmPassword.trim() === ''}"
+                  id="confirmInputPassword"
+                  :invalid="!isPasswordMatch"
+                  :feedback="isPasswordMatch ? 'Passwords match' : 'Passwords do not match'"
+                />
+                <div v-if="formData.confirmPassword.trim() === ''" class="invalid-feedback">
+                  This field is required
                 </div>
-              </div>
-            </CCol>
-            <CCol>
-              <CFormInput
-                type="email"
-                label="Email *"
-                placeholder="email@example.com"
-                v-model="formData.email"
-                :class="{'is-invalid': !isValidEmail || formData.email.trim() === ''}"
-                aria-label="email input"
-              />
-              <div v-if="formData.email.trim() === ''" class="invalid-feedback">
-                This field is required
-              </div>
-              <div v-else-if="!isValidEmail" class="invalid-feedback">
-                Please enter a valid email address
-              </div>
-            </CCol>
-            </CCol>
-        </CRow>
-        <CRow>
-            <template v-if="props.id != 0 && props.id !== ''">
-              <div style="display: flex; justify-content: center;padding:1rem">
-                <CButton color="danger" variant="outline" @click="handleDelete()" style="margin-right: 1rem;">
+              </CCol>
+              <CCol>
+                <div class="mb-3">
+                  <label for="status">Status</label>
+                  <div class="mt-2">
+                    <CFormCheck 
+                      inline 
+                      type="radio" 
+                      name="status" 
+                      id="statusActive" 
+                      value="Activo"
+                      label="Activo"
+                      :checked="formData.status === 'Activo'"
+                      @change="formData.status = 'Activo'"
+                    />
+                    <CFormCheck 
+                      inline 
+                      type="radio" 
+                      name="status" 
+                      id="statusInactive" 
+                      value="Inactivo"
+                      label="Inactivo"
+                      :checked="formData.status === 'Inactivo'"
+                      @change="formData.status = 'Inactivo'"
+                    />    
+                  </div>
+                </div>
+              </CCol>
+              <CCol>
+                <CFormInput
+                  type="email"
+                  label="Email *"
+                  placeholder="email@example.com"
+                  v-model="formData.email"
+                  :class="{'is-invalid': !isValidEmail || formData.email.trim() === ''}"
+                  aria-label="email input"
+                />
+                <div v-if="formData.email.trim() === ''" class="invalid-feedback">
+                  This field is required
+                </div>
+                <div v-else-if="!isValidEmail" class="invalid-feedback">
+                  Please enter a valid email address
+                </div>
+              </CCol>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+
+      <CCard class="mb-4">
+        <CCardBody>
+          <CRow>
+            <CCol class="text-center">
+              <template v-if="props.id != 0 && props.id !== ''">
+                <!-- <CButton 
+                  color="danger" 
+                  variant="outline" 
+                  @click="handleDelete()" 
+                  class="mx-2"
+                >
                   <CIcon :content="cilTrash" size="sm" />
-                  Delete Employee
-                </CButton>
+                  Delete
+                </CButton> -->
                 <CButton 
                   color="primary" 
                   variant="outline" 
                   @click="handleSubmit"
                   :disabled="!isFormValid"
+                  class="mx-2"
                 >
                   <CIcon :content="cilPencil" size="sm" />
-                  {{ isNewRecord ? 'Save' : 'Update' }}
+                  Save
                 </CButton>
-            </div>
-            </template>
-            <template v-else>
-              <div style="display: flex; justify-content: center;padding:1rem">
+              </template>
+              <template v-else>
                 <CButton 
-                color="success" 
+                  color="success" 
+                  variant="outline" 
+                  type="submit"
+                  @click="handleSubmit"
+                  :disabled="!isFormValid"
+                  class="mx-2"
+                >
+                  <CIcon :content="cilPlus" size="sm" />
+                  Save
+                </CButton>
+              </template>
+              <CButton 
+                color="secondary" 
                 variant="outline" 
-                type="submit"
-                @click="handleSubmit" >Save</CButton>
-              </div>
-            </template>
-        </CRow>
-    </CContainer>
+                @click="goBack" 
+                class="mx-2"
+              >
+                Cancel
+              </CButton>
+
+            </CCol>
+          </CRow>
+        </CCardBody>
+      </CCard>
+    </CCardBody>
+  </CCard>
 </template>

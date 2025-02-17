@@ -23,6 +23,11 @@ const tableSearch = ref('');
 
 const columns = [
   { 
+    key: 'id', 
+    label: 'ID',
+    _style: { width: '5%' } 
+  },
+  { 
     key: 'status', 
     label: 'Status',
     _style: { width: '10%' } 
@@ -60,9 +65,9 @@ const columns = [
   { 
     key: 'actions', 
     label: 'Actions', 
+    _style: { width: '10%', textAlign: 'center' },
     sorter: false, 
-    filter: false,
-    _style: { width: '5%' }
+    filter: false
   },
 ];
 
@@ -164,86 +169,90 @@ const handleUpdate = (item) => {
 </script>
 
 <template>
-  <div class="d-flex justify-content-end mb-3">
-    <CButton 
-      color="success" 
-      variant="outline" 
-      @click="$router.push({ name: ROUTE_NAMES.USERS_CREATE })"
-    >
-      <CIcon :content="cilPlus" size="sm" />
-      New User
-    </CButton>
-  </div>
+  <CCard class="mb-4">
+    <CRow>
+      <CCol :xs="12" :xl="2">
+        <CCardBody style="text-align: right;">
+          <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.USERS_CREATE })">
+            <CIcon :content="cilPlus" class="me-2" />
+            New User
+          </CButton>
+        </CCardBody>
+      </CCol>
+    </CRow>
+  </CCard>
 
-  <CSmartTable
-    :pagination="{ external: true }"
-    :column-filter="{ external: true }"
-    :column-sorter="{ external: true }"
-    :table-filter="{ external: true }"
-    :loading="loading"
-    :items="users"
-    :paginationProps="{
-      activePage: page,
-      pages: totalPages
-    }"
-    :columns="columns"
-    cleaner
-    footer
-    header
-    items-per-page-select
-    :items-per-page="itemsPerPage"
-    :table-props="{
-      hover: true,
-      striped: true,
-      responsive: true,
-    }"
-    @active-page-change="(_activePage) => {
-      page = _activePage;
-    }"
-    @items-per-page-change="(_itemsPerPage) => {
-      page = 1;
-      itemsPerPage = _itemsPerPage;
-      storage.setItem(USERS_ITEMS_PER_PAGE, _itemsPerPage);
-    }"
-    @sorter-change="(sorter) => {
-      columnSorter = sorter;
-    }"
-    @table-filter-change="(filter) => {
-      page = 1;
-      tableSearch = filter;
-    }"
-    @column-filter-change="(filter) => {
-      page = 1;
-      columnFilter = filter;
-    }"
-  >
-    <template #actions="{ item }">
-      <td class="d-flex gap-1">
-        <CButton 
-          color="primary" 
-          variant="outline" 
-          square 
-          size="sm" 
-          @click="$router.push({ 
-            name: ROUTE_NAMES.USERS_UPDATE, 
-            params: { id: item.id } 
-          })"
-        >
-          <CIcon :content="cilEyedropper" size="sm" />
-        </CButton>
-        <CButton 
-          color="danger" 
-          variant="outline" 
-          square 
-          size="sm" 
-          @click="removeUser(item.id)"
-        >
-          <CIcon :content="cilTrash" size="sm" />
-        </CButton>
-      </td>
-    </template>
-  </CSmartTable>
-  <div>
-    Total records {{ totalItems }}
-  </div>
+  <CCard class="mb-4">
+    <CCardBody>
+      <CSmartTable
+        v-if="users.length > 0"
+        :active-page="page"
+        :items="users"
+        :columns="columns"
+        :items-per-page="itemsPerPage"
+        :loading="loading"
+        :pagination="{ external: true }"
+        :table-filter="true"
+        cleaner
+        hover
+        :table-filter-label="'Search:'"
+        :table-filter-placeholder="'Type something...'"
+        @active-page-change="(_activePage) => {
+          page = _activePage;
+        }"
+        @items-per-page-change="(_itemsPerPage) => {
+          page = 1;
+          itemsPerPage = _itemsPerPage;
+          storage.setItem(USERS_ITEMS_PER_PAGE, _itemsPerPage);
+        }"
+        @sorter-change="(sorter) => {
+          columnSorter = sorter;
+        }"
+        @table-filter-change="(filter) => {
+          page = 1;
+          tableSearch = filter;
+        }"
+        @column-filter-change="(filter) => {
+          page = 1;
+          columnFilter = filter;
+        }"
+      >
+        <template #status="{ item }">
+          <td>
+            <CBadge :color="item.status ? 'success' : 'danger'">
+              {{ item.status ? 'Active' : 'Inactive' }}
+            </CBadge>
+          </td>
+        </template>
+
+        <template #actions="{ item }">
+          <td class="py-2" style="text-align: center">
+            <CButton 
+              color="primary" 
+              variant="outline" 
+              square 
+              size="sm" 
+              @click="handleUpdate(item)"
+              class="mx-1"
+            >
+              <CIcon icon="cil-pencil" />
+            </CButton>
+            <CButton 
+              color="danger" 
+              variant="outline" 
+              square 
+              size="sm" 
+              class="mx-1"
+              @click="removeUser(item.id)"
+            >
+              <CIcon icon="cil-trash" />
+            </CButton>
+          </td>
+        </template>
+      </CSmartTable>
+      <div v-if="users.length > 0">
+        Total records {{ totalItems }}
+      </div>
+    </CCardBody>
+  </CCard>
 </template>
