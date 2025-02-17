@@ -184,74 +184,76 @@ const handleUpdate = (item) => {
 
   <CCard class="mb-4">
     <CCardBody>
-      <CSmartTable
-        v-if="users.length > 0"
-        :active-page="page"
-        :items="users"
-        :columns="columns"
-        :items-per-page="itemsPerPage"
-        :loading="loading"
-        :pagination="{ external: true }"
-        :table-filter="true"
-        cleaner
-        hover
-        :table-filter-label="'Search:'"
-        :table-filter-placeholder="'Type something...'"
-        @active-page-change="(_activePage) => {
-          page = _activePage;
-        }"
-        @items-per-page-change="(_itemsPerPage) => {
-          page = 1;
-          itemsPerPage = _itemsPerPage;
-          storage.setItem(USERS_ITEMS_PER_PAGE, _itemsPerPage);
-        }"
-        @sorter-change="(sorter) => {
-          columnSorter = sorter;
-        }"
-        @table-filter-change="(filter) => {
-          page = 1;
-          tableSearch = filter;
-        }"
-        @column-filter-change="(filter) => {
-          page = 1;
-          columnFilter = filter;
-        }"
-      >
-        <template #status="{ item }">
-          <td>
-            <CBadge :color="item.status ? 'success' : 'danger'">
-              {{ item.status ? 'Active' : 'Inactive' }}
-            </CBadge>
-          </td>
-        </template>
-
-        <template #actions="{ item }">
-          <td class="py-2" style="text-align: center">
-            <CButton 
-              color="primary" 
-              variant="outline" 
-              square 
-              size="sm" 
-              @click="handleUpdate(item)"
-              class="mx-1"
-            >
-              <CIcon icon="cil-pencil" />
-            </CButton>
-            <CButton 
-              color="danger" 
-              variant="outline" 
-              square 
-              size="sm" 
-              class="mx-1"
-              @click="removeUser(item.id)"
-            >
-              <CIcon icon="cil-trash" />
-            </CButton>
-          </td>
-        </template>
-      </CSmartTable>
-      <div v-if="users.length > 0">
-        Total records {{ totalItems }}
+      <div class="table-responsive">
+        <CSmartTable
+          v-if="users.length > 0"
+          :active-page="page"
+          :items="users"
+          :columns="columns"
+          :items-per-page="itemsPerPage"
+          :loading="loading"
+          :pagination="{ external: true }"
+          :table-filter="true"
+          cleaner
+          hover
+          :table-filter-label="'Search:'"
+          :table-filter-placeholder="'Type something...'"
+          @active-page-change="(_activePage) => {
+            page = _activePage;
+          }"
+          @items-per-page-change="(_itemsPerPage) => {
+            page = 1;
+            itemsPerPage = _itemsPerPage;
+            storage.setItem(USERS_ITEMS_PER_PAGE, _itemsPerPage);
+          }"
+          @sorter-change="(sorter) => {
+            columnSorter = sorter;
+          }"
+          @table-filter-change="(filter) => {
+            page = 1;
+            tableSearch = filter;
+          }"
+          @column-filter-change="(filter) => {
+            page = 1;
+            columnFilter = filter;
+          }"
+        >
+          <template #status="{ item }">
+            <td>
+              <CBadge :color="item.status ? 'success' : 'danger'">
+                {{ item.status ? 'Active' : 'Inactive' }}
+              </CBadge>
+            </td>
+          </template>
+  
+          <template #actions="{ item }">
+            <td class="py-2" style="text-align: center">
+              <CButton 
+                color="primary" 
+                variant="outline" 
+                square 
+                size="sm" 
+                @click="handleUpdate(item)"
+                class="mx-1"
+              >
+                <CIcon icon="cil-pencil" />
+              </CButton>
+              <CButton 
+                color="danger" 
+                variant="outline" 
+                square 
+                size="sm" 
+                class="mx-1"
+                @click="removeUser(item.id)"
+              >
+                <CIcon icon="cil-trash" />
+              </CButton>
+            </td>
+          </template>
+        </CSmartTable>
+        <div v-if="users.length > 0">
+          Total records {{ totalItems }}
+        </div>
       </div>
     </CCardBody>
   </CCard>
