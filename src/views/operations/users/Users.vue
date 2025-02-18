@@ -22,13 +22,53 @@ const columnSorter = ref({});
 const tableSearch = ref('');
 
 const columns = [
-  { key: 'status', label: 'Status' },
-  { key: 'name', label: 'Name' },
-  { key: 'lastName', label: 'Last Name' },
-  { key: 'userName', label: 'User Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'roleName', label: 'Role' },
-  { key: 'actions', label: 'Actions', sorter: false, filter: false },
+  { 
+    key: 'id', 
+    label: 'ID',
+    _style: { width: '5%' } 
+  },
+  { 
+    key: 'status', 
+    label: 'Status',
+    _style: { width: '10%' } 
+  },
+  { 
+    key: 'name', 
+    label: 'Name',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'middleName', 
+    label: 'Middle Name',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'lastName', 
+    label: 'Last Name',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'userName', 
+    label: 'User Name',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'email', 
+    label: 'Email',
+    _style: { width: '15%' }
+  },
+  { 
+    key: 'roleName', 
+    label: 'Role',
+    _style: { width: '10%' }
+  },
+  { 
+    key: 'actions', 
+    label: 'Actions', 
+    _style: { width: '10%', textAlign: 'center' },
+    sorter: false, 
+    filter: false
+  },
 ];
 
 async function removeUser(id) {
@@ -70,27 +110,37 @@ async function fetchUsers() {
     }, columnFilter.value, columnSorter.value);
 
     if (response.success) {
-      page.value = response.current_page;
-      totalItems.value = response.total;
-      totalPages.value = response.last_page;
+      page.value = response.current_page || 1;
+      totalItems.value = response.total || response.data.length;
+      totalPages.value = response.last_page || 1;
 
-      // Obtener todos los roles una sola vez
-      const { data: rolesResponse } = await API.roles.getAllRoles();
-      const roles = rolesResponse.success ? rolesResponse.data : [];
-      
-      // Mapear usuarios con sus roles
-      users.value = response.data.map((item) => {
-        const userRole = roles.find(role => role.id === item.role_id);
-        return {
-          id: item.id,
-          name: item.name,
-          lastName: item.last_name,
-          userName: item.user_name,
-          email: item.email,
-          status: item.status,
-          roleName: userRole?.name || 'No Role',
-        };
-      });
+      users.value = response.data.map((item) => ({
+        id: item.id,
+        name: item.name,
+        lastName: item.last_name,
+        middleName: item.middle_name,
+        userName: item.user_name,
+        email: item.email,
+        status: item.status,
+        roleName: 'Pending...',
+        companyId: item.company_id,
+        roleId: item.role_id
+      }));
+
+      try {
+        const { data: rolesResponse } = await API.roles.getRoles();
+        if (rolesResponse.success) {
+          users.value = users.value.map(user => ({
+            ...user,
+            roleName: rolesResponse.data.find(role => role.id === user.roleId)?.name || 'No Role'
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+      }
+
+      console.log('Response:', response);
+      console.log('Mapped users:', users.value);
     }
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -109,89 +159,102 @@ onMounted(() => {
 
 watch([page, itemsPerPage, tableSearch], fetchUsers);
 watch([columnSorter, columnFilter], fetchUsers, { deep: true });
+
+const handleUpdate = (item) => {
+  router.push({
+    name: ROUTE_NAMES.USERS_UPDATE,
+    params: { id: item.id }
+  })
+}
 </script>
 
 <template>
-  <div class="d-flex justify-content-end mb-3">
-    <CButton 
-      color="success" 
-      variant="outline" 
-      @click="$router.push({ name: ROUTE_NAMES.USERS_CREATE })"
-    >
-      <CIcon :content="cilPlus" size="sm" />
-      New User
-    </CButton>
-  </div>
+  <CCard class="mb-4">
+    <CRow>
+      <CCol :xs="12" :xl="2">
+        <CCardBody style="text-align: right;">
+          <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.USERS_CREATE })">
+            <CIcon :content="cilPlus" class="me-2" />
+            New User
+          </CButton>
+        </CCardBody>
+      </CCol>
+    </CRow>
+  </CCard>
 
-  <CSmartTable
-    :pagination="{ external: true }"
-    :column-filter="{ external: true }"
-    :column-sorter="{ external: true }"
-    :table-filter="{ external: true }"
-    :loading="loading"
-    :items="users"
-    :paginationProps="{
-      activePage: page,
-      pages: totalPages
-    }"
-    :columns="columns"
-    cleaner
-    footer
-    header
-    items-per-page-select
-    :items-per-page="itemsPerPage"
-    :table-props="{
-      hover: true,
-      striped: true,
-      responsive: true,
-    }"
-    @active-page-change="(_activePage) => {
-      page = _activePage;
-    }"
-    @items-per-page-change="(_itemsPerPage) => {
-      page = 1;
-      itemsPerPage = _itemsPerPage;
-      storage.setItem(USERS_ITEMS_PER_PAGE, _itemsPerPage);
-    }"
-    @sorter-change="(sorter) => {
-      columnSorter = sorter;
-    }"
-    @table-filter-change="(filter) => {
-      page = 1;
-      tableSearch = filter;
-    }"
-    @column-filter-change="(filter) => {
-      page = 1;
-      columnFilter = filter;
-    }"
-  >
-    <template #actions="{ item }">
-      <td class="d-flex gap-1">
-        <CButton 
-          color="primary" 
-          variant="outline" 
-          square 
-          size="sm" 
-          @click="$router.push({ 
-            name: ROUTE_NAMES.USERS_UPDATE, 
-            params: { id: item.id } 
-          })"
+  <CCard class="mb-4">
+    <CCardBody>
+      <div class="table-responsive">
+        <CSmartTable
+          v-if="users.length > 0"
+          :active-page="page"
+          :items="users"
+          :columns="columns"
+          :items-per-page="itemsPerPage"
+          :loading="loading"
+          :pagination="{ external: true }"
+          :table-filter="true"
+          cleaner
+          hover
+          :table-filter-label="'Search:'"
+          :table-filter-placeholder="'Type something...'"
+          @active-page-change="(_activePage) => {
+            page = _activePage;
+          }"
+          @items-per-page-change="(_itemsPerPage) => {
+            page = 1;
+            itemsPerPage = _itemsPerPage;
+            storage.setItem(USERS_ITEMS_PER_PAGE, _itemsPerPage);
+          }"
+          @sorter-change="(sorter) => {
+            columnSorter = sorter;
+          }"
+          @table-filter-change="(filter) => {
+            page = 1;
+            tableSearch = filter;
+          }"
+          @column-filter-change="(filter) => {
+            page = 1;
+            columnFilter = filter;
+          }"
         >
-          <CIcon :content="cilEyedropper" size="sm" />
-        </CButton>
-        <CButton 
-          color="danger" 
-          variant="outline" 
-          square 
-          size="sm" 
-          @click="removeUser(item.id)"
-        >
-          <CIcon :content="cilTrash" size="sm" />
-        </CButton>
-      </td>
-    </template>
-  </CSmartTable>
-  <div>
-    Total records {{ totalItems }}
-  </div>
+          <template #status="{ item }">
+            <td>
+              <CBadge :color="item.status ? 'success' : 'danger'">
+                {{ item.status ? 'Active' : 'Inactive' }}
+              </CBadge>
+            </td>
+          </template>
+  
+          <template #actions="{ item }">
+            <td class="py-2" style="text-align: center">
+              <CButton 
+                color="primary" 
+                variant="outline" 
+                square 
+                size="sm" 
+                @click="handleUpdate(item)"
+                class="mx-1"
+              >
+                <CIcon icon="cil-pencil" />
+              </CButton>
+              <CButton 
+                color="danger" 
+                variant="outline" 
+                square 
+                size="sm" 
+                class="mx-1"
+                @click="removeUser(item.id)"
+              >
+                <CIcon icon="cil-trash" />
+              </CButton>
+            </td>
+          </template>
+        </CSmartTable>
+        <div v-if="users.length > 0">
+          Total records {{ totalItems }}
+        </div>
+      </div>
+    </CCardBody>
+  </CCard>
 </template>

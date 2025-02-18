@@ -141,24 +141,27 @@ const routes = [
                 component: Users,
                 meta: {
                   requiresAuth: true,
+                  label: 'Users'
                 },
               },
               {
                 path: 'users/create',
                 name: ROUTE_NAMES.USERS_CREATE,
                 component: UserDetail,
-                props: { id: 0 }, // Para nuevo usuario
+                props: { id: 0 },
                 meta: {
                   requiresAuth: true,
+                  label: 'Create User'
                 },
               },
               {
-                path: 'users/:id',
+                path: 'users/:id/edit',
                 name: ROUTE_NAMES.USERS_UPDATE,
                 component: UserDetail,
                 props: true,
                 meta: {
                   requiresAuth: true,
+                  label: 'Edit User'
                 },
               },
               {
