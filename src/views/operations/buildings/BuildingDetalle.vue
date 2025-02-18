@@ -28,7 +28,6 @@ const buildingImagesRef = ref(null);
 const tabDataLoaded = ref(false);
 const tabAvailabilityLoaded = ref(false);
 const tabContactLoaded = ref(false);
-const tabImagesLoaded = ref(false);
 const tabAbsorptionLoaded = ref(false);
 
 function dispatchSubmitForm() {
@@ -40,8 +39,6 @@ function dispatchSubmitForm() {
     buildingAbsorptionRef.value?.submit?.()
   } else if (activeTab.value === 'ContactBuilding') {
     buildingImagesRef.value?.submit?.()
-  } else if (activeTab.value === 'Files') {
-    buildingContactRef.value?.submit?.()
   }
 }
 
@@ -56,16 +53,14 @@ watch(activeTab, () => {
     disabledSave.value = !(buildingAbsorptionRef.value?.showForm ?? false)
   } else if (activeTab.value === 'ContactBuilding') {
     tabContactLoaded.value = true
-  } else if (activeTab.value === 'Files') {
-    tabImagesLoaded.value = true
   }
-  if (['DataBuilding', 'Files', 'ContactBuilding'].includes(activeTab.value)) {
+  if (['DataBuilding', 'ContactBuilding'].includes(activeTab.value)) {
     disabledSave.value = false
   }
 }, { immediate: true })
 
 watch(() => route.query.tab, (newTab) => {
-  if (['DataBuilding', 'Availability', 'Absorption', 'ContactBuilding', 'Files'].includes(newTab)) {
+  if (['DataBuilding', 'Availability', 'Absorption', 'ContactBuilding'].includes(newTab)) {
     activeTab.value = newTab
   } else {
     activeTab.value = 'DataBuilding'
@@ -82,7 +77,7 @@ function changeTab(tab) {
 }
 
 function showList() {
-  if (['DataBuilding', 'ContactBuilding', 'Files'].includes(activeTab.value)) {
+  if (['DataBuilding', 'ContactBuilding'].includes(activeTab.value)) {
     router.push({ name: ROUTE_NAMES.BUILDINGS })
   } else if (activeTab.value === 'Availability') {
     buildingAvailabilityRef.value?.handleReturn?.()
@@ -116,7 +111,6 @@ function showList() {
         <CTab itemKey="Availability" @click="changeTab('Availability')" :disabled="disabledTab">Availability</CTab>
         <CTab itemKey="Absorption" @click="changeTab('Absorption')" :disabled="disabledTab">Absorption</CTab>
         <CTab itemKey="ContactBuilding" @click="changeTab('ContactBuilding')" :disabled="disabledTab">Building Contact</CTab>
-        <CTab itemKey="Files" @click="changeTab('Files')" :disabled="disabledTab">Files</CTab>
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">
@@ -130,9 +124,6 @@ function showList() {
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
           <BuildingContact v-if="tabContactLoaded" :buildingId="buildingId" ref="buildingContactRef" />
-        </CTabPanel>
-        <CTabPanel class="p-3" itemKey="Files">
-          <BuildingImages v-if="tabImagesLoaded" :buildingId="buildingId" ref="buildingImagesRef" />
         </CTabPanel>
       </CTabContent>
     </CTabs>
