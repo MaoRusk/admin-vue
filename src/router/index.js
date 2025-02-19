@@ -254,6 +254,7 @@ const routes = [
             path: 'broker/create',
             name: ROUTE_NAMES.BROKERS_CREATE,
             component: BrokerDetail,
+            props: { id: 0 },
             meta: {
               requiresAuth: true,
               label: 'Create Broker',
