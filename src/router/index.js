@@ -258,6 +258,34 @@ const routes = [
             name: 'TenantDetail',
             component: () => import('@/views/operations/tenants/TenantDetail.vue'),
           },
+          {
+            path: '/operations/reits',
+            name: ROUTE_NAMES.REITS,
+            component: () => import('@/views/operations/reits/Reits.vue'),
+            meta: {
+              requiresAuth: true,
+              label: 'REITs',
+            },
+          },
+          {
+            path: '/operations/reits/create',
+            name: ROUTE_NAMES.REITS_CREATE,
+            component: () => import('@/views/operations/reits/ReitDetail.vue'),
+            meta: {
+              requiresAuth: true,
+              label: 'Create REIT',
+            },
+          },
+          {
+            path: '/operations/reits/:id',
+            name: ROUTE_NAMES.REITS_UPDATE,
+            component: () => import('@/views/operations/reits/ReitDetail.vue'),
+            props: true,
+            meta: {
+              requiresAuth: true,
+              label: 'Edit REIT',
+            },
+          },
         ],
       },
       {

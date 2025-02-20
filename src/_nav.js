@@ -60,6 +60,12 @@ export default [
     icon: 'cil-building',
   },
   {
+    component: 'CNavItem',
+    name: 'REITs',
+    to: '/operations/reits',
+    icon: 'cil-building',
+  },
+  {
     component: 'CNavGroup',
     name: 'Market Size',
     to: '/operations',
