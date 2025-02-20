@@ -108,7 +108,7 @@ const saveDeveloper = async () => {
                 <h5 class="mb-0">
                   {{ isCreating ? 'Nuevo Developer' : 'Editar Developer' }}
                 </h5>
-                <router-link to="../developers">
+                <router-link :to="{ name: ROUTE_NAMES.DEVELOPERS }">
                   <CButton color="primary" variant="outline">
                     <CIcon icon="cil-arrow-circle-left" class="me-2" />
                     return
@@ -165,7 +165,7 @@ const saveDeveloper = async () => {
                 <CButton
                   type="button"
                   color="secondary"
-                  @click="router.push('/operations/developers')"
+                  @click="router.push({ name: ROUTE_NAMES.DEVELOPERS })"
                 >
                   Cancelar
                 </CButton>

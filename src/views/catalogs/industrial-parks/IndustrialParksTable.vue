@@ -64,6 +64,7 @@ import IndustrialParksService from '@/services/IndustrialParks'
 import MarketsService from '@/services/Markets'
 import SubmarketsService from '@/services/Submarkets'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '../../../router/routeNames';
 
 export default {
   name: 'IndustrialParksTable',
@@ -141,10 +142,10 @@ export default {
       }
     },
     newIndustrialPark() {
-      this.$router.push('/operacion/industrial-parks/0')
+      this.$router.push({ name: ROUTE_NAMES.INDUSTRIAL_PARKS_DETAIL, params: { id: 0 } })
     },
     viewDetails(item) {
-      this.$router.push(`/operacion/industrial-parks/${item.id}`)
+      this.$router.push({ name: ROUTE_NAMES.INDUSTRIAL_PARKS_DETAIL, params: { id: item.id } })
     },
     async deleteIndustrialPark(item) {
       const result = await Swal.fire({

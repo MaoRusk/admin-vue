@@ -136,7 +136,7 @@ export default {
       }
     },
     goBack() {
-      this.$router.push('/operacion/tenants')
+      this.$router.back()
     }
   },
   mounted() {
