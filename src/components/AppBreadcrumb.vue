@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useTranslation } from 'i18next-vue'
-
 import router from '@/router'
 
 const breadcrumbs = ref()
@@ -11,8 +10,7 @@ const { i18next } = useTranslation()
 const getBreadcrumbs = () => {
   return router.currentRoute.value.matched.map((route) => {
     return {
-      active: route.path === router.currentRoute.value.fullPath,
-      // @ts-expect-error We need to find a solution on how to pass the function.
+      active: route.name === router.currentRoute.value.name,
       name: typeof route.name === 'function' ? route.name() : route.name,
       path: `${router.options.history.base}${route.path}`,
     }
