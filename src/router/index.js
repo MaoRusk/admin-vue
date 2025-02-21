@@ -157,32 +157,32 @@ const routes = [
             component: () => import('@/views/catalogs/tenants/TenantDetail.vue'),
           },
           {
-            path: '/operations/reits',
+            path: 'reits',
             name: ROUTE_NAMES.REITS,
-            component: () => import('@/views/operations/reits/Reits.vue'),
+            component: () => import('@/views/catalogs/reits/Reits.vue'),
             meta: {
               requiresAuth: true,
-              label: 'REITs',
-            },
+              label: 'REITs'
+            }
           },
           {
-            path: '/operations/reits/create',
+            path: 'reits/create',
             name: ROUTE_NAMES.REITS_CREATE,
-            component: () => import('@/views/operations/reits/ReitDetail.vue'),
+            component: () => import('@/views/catalogs/reits/ReitDetail.vue'),
             meta: {
               requiresAuth: true,
-              label: 'Create REIT',
-            },
+              label: 'Create REIT'
+            }
           },
           {
-            path: '/operations/reits/:id',
+            path: 'reits/:id',
             name: ROUTE_NAMES.REITS_UPDATE,
-            component: () => import('@/views/operations/reits/ReitDetail.vue'),
+            component: () => import('@/views/catalogs/reits/ReitDetail.vue'),
             props: true,
             meta: {
               requiresAuth: true,
-              label: 'Edit REIT',
-            },
+              label: 'Edit REIT'
+            }
           },
         ],
       },
