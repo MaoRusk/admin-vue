@@ -18,6 +18,7 @@ watch(
   }
 )
 
+
 const props = defineProps({
   buildingId: Number
 })
@@ -25,39 +26,39 @@ const props = defineProps({
 const emit = defineEmits(['submitting'])
 
 const buildingEmpty = {
-  region_id: '', 
-  market_id: '', 
-  submarket_id: '', 
-  industrial_park_id: '', 
-  builder_id: '', 
-  developer_id: '', 
-  owner_id: '', 
-  building_name: '', 
-  building_size_sf: '', 
-  latitud: '', 
-  longitud: '', 
-  year_built: '', 
-  clear_height_ft: '', 
-  total_land_sf: '', 
-  offices_space_sf: '', 
+  region_id: '',
+  market_id: '',
+  sub_market_id: '',
+  industrial_park_id: '',
+  builder_id: '',
+  developer_id: '',
+  owner_id: '',
+  building_name: '',
+  building_size_sf: '',
+  latitud: '',
+  longitud: '',
+  year_built: '',
+  clear_height_ft: '',
+  total_land_sf: '',
+  offices_space_sf: '',
   has_crane: false,
   has_rail_spur: false,
   has_leed: false,
-  ventilation: '', 
-  roof_system: '', 
-  skylights_sf: '', 
-  coverage: '', 
-  expansion_land: '', 
-  class: '', 
-  type_generation: '', 
-  currency: '', 
-  tenancy: '', 
-  construction_type: '', 
-  lightning: '', 
-  fire_protection_system: [], 
-  deal: '', 
-  loading_door: '', 
-  above_market_tis: [], 
+  ventilation: '',
+  roof_system: '',
+  skylights_sf: '',
+  coverage: '',
+  expansion_land: '',
+  class: '',
+  type_generation: '',
+  currency: '',
+  tenancy: '',
+  construction_type: '',
+  lightning: '',
+  fire_protection_system: [],
+  deal: '',
+  loading_door: '',
+  above_market_tis: [],
   status: 'Active',
   floor_thickness_in: '',
   floor_resistance: '',
@@ -76,11 +77,13 @@ const buildingEmpty = {
   bay_size_value_2: '',
 
   sfSm: false,
+  files_by_type: '',
 }
 
 const building = reactive({...buildingEmpty})
 const formHtmlElement = ref(null)
 const VALUE_SEPARATOR = ' x '
+
 
 const validateRangeInputs = (model, field1, field2, fieldName) => {
   if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
@@ -109,10 +112,23 @@ const validateRangeKvas = () => {
 
 const coverage = computed(() => building.building_size_sf && building.total_land_sf ? ((+building.building_size_sf / +building.total_land_sf) * 100).toFixed(2) : '')
 
+
 async function onSubmit() {
-  emit('submitting', true)
+  emit('submitting', true);
   try {
     let data;
+    const formData = new FormData();
+
+    Object.keys(building.files).forEach(filePrefix => {
+      if (Array.isArray(building.files[filePrefix])) {
+        building.files[filePrefix].forEach(file => {
+          formData.append("files[]", file);
+        });
+      } else {
+        console.warn(`Files for prefix "${filePrefix}" not found or dont have array type.`);
+      }
+    });
+
     const body = {
       ...building,
       hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${VALUE_SEPARATOR}${building.hvacArea}` : '',
@@ -120,38 +136,69 @@ async function onSubmit() {
       bay_size: (building.bay_size_value_1 && building.bay_size_value_2) ? `${building.bay_size_value_1}${VALUE_SEPARATOR}${building.bay_size_value_2}` : '',
       kvas: (building.kvas_value_1 && building.kvas_value_2) ? `${building.kvas_value_1}${VALUE_SEPARATOR}${building.kvas_value_2}` : '',
       coverage: `${coverage.value}`,
-      fire_protection_system: building.fire_protection_system.length ? building.fire_protection_system : null,
-      above_market_tis: building.above_market_tis.length ? building.above_market_tis : null,
-    }
+      fire_protection_system: Array.isArray(building.fire_protection_system) ? building.fire_protection_system : [],
+      above_market_tis: Array.isArray(building.above_market_tis) ? building.above_market_tis : [],
+    };
+
+    Object.keys(body).forEach((key) => {
+      let value = body[key];
+
+      if (typeof value === "boolean") {
+        value = value ? 1 : 0;
+      } else if (value === "true") {
+        value = 1;
+      } else if (value === "false") {
+        value = 0;
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach(item => formData.append(`${key}[]`, item));
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, value);
+      }
+    });
+
     if (props.buildingId) {
-      ({ data } = await API.buildings.updateBuilding(props.buildingId, body));
+      ({ data } = await API.buildings.updateBuilding(props.buildingId, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      }));
     } else {
-      ({ data } = await API.buildings.createBuilding(body));
+      ({ data } = await API.buildings.createBuilding(formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      }));
     }
-    emit('submitting', false)
+
+    emit('submitting', false);
     Swal.fire({
       icon: 'success',
       title: 'Success',
       text: data.message,
     });
-    router.push({ name: ROUTE_NAMES.BUILDINGS, params: { buildingId: data.data.id } })
+
+    router.push({ name: ROUTE_NAMES.BUILDINGS, params: { buildingId: data.data.id } });
+
   } catch (e) {
-    emit('submitting', false)
-    Swal.fire(e.response.data.message, JSON.stringify(e.response.data.errors), 'error')
+    emit('submitting', false);
+    console.error(e);
+    console.error("❌ Error sending:", e.response?.data || e);
+    Swal.fire(e.response?.data?.message || "Error", JSON.stringify(e.response?.data?.errors) || "Unknown error", 'error');
   }
 }
+
+
+
 
 const fetchBuildingData = async () => {
   try {
     const buildingId = props.buildingId;
     const { data } = await API.buildings.getBuilding(buildingId);
-    ['region_id', 'market_id', 'submarket_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id']
+    ['region_id', 'market_id', 'sub_market_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id']
     .forEach(prop => building[prop] = data.data[prop] ? +(data.data[prop]) : '');
     ['building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height_ft', 'total_land_sf', 'expansion_up_to_sf', 'offices_space_sf', 'ventilation', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'deal', 'loading_door', 'status', 'floor_thickness_in', 'floor_resistance']
     .forEach(prop => building[prop] = data.data[prop] ? `${data.data[prop]}` : '');
     ['has_crane', 'has_rail_spur', 'has_leed']
     .forEach(prop => building[prop] = Boolean(data.data[prop]));
-    ['fire_protection_system', 'above_market_tis']
+    ['fire_protection_system', 'above_market_tis', 'files_by_type']
     .forEach(prop => building[prop] = data.data[prop] ? data.data[prop] : []);
 
     building.year_built = data.data.year_built ? `${data.data.year_built}` : ''
@@ -194,6 +241,57 @@ const generationsTypes = reactive({ loading: false, items: []})
 const typesLightnings = reactive({ loading: false, items: []})
 const loadingDoors = reactive({ loading: false, items: []})
 const technicalImprovements = reactive({ loading: false, items: []})
+const files = ref([])
+
+const handleFiles = (filePrefix, event) => {
+  if (!event || !event.target || !event.target.files) {
+    console.error("Error: Failed to get files from event.");
+    return;
+  }
+
+  const files = Array.from(event.target.files);
+
+  if (files.length === 0) {
+    console.log("No files selected.");
+    return;
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/jpeg', 'image/png', 'application/pdf', 'application/vnd.google-earth.kmz'];
+
+  const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
+
+  if (invalidFiles.length > 0) {
+    console.error("Invalid files:", invalidFiles);
+    return;
+  }
+
+  const updatedFiles = files.map(file => {
+    const randomNumber = Math.floor(Math.random() * 1000);
+    const newFileName = `${filePrefix}${randomNumber}_${file.name}`;
+
+    return new File([file], newFileName, { type: file.type });
+  });
+
+  if (!building) {
+    console.error("Error: building object not initialized.");
+    return;
+  }
+
+  if (!building.files) {
+    building.files = {};
+  }
+
+  if (!building.files[filePrefix]) {
+    building.files[filePrefix] = [];
+  }
+
+  building.files[filePrefix] = [
+    ...building.files[filePrefix],
+    ...updatedFiles
+  ];
+
+  console.log("Updated files:", building.files);
+};
 
 async function fetchBuildingStatuses() {
   statuses.loading = true
@@ -360,7 +458,7 @@ async function saveOptionGeneral(field, values, update = false) {
         is_developer: !!values.is_developer,
         is_owner: !!values.is_owner,
         market_id: building.market_id,
-        submarket_id: building.submarket_id
+        sub_market_id: building.sub_market_id
       }
       if (update) {
         ({ data } = await API.developers.updateDeveloper(values.id, body));
@@ -373,15 +471,15 @@ async function saveOptionGeneral(field, values, update = false) {
         building[field] = data.data.id
       }
       await Promise.all([
-        fetchOwners(building.market_id, building.submarket_id),
-        fetchDevelopers(building.market_id, building.submarket_id),
-        fetchBuilders(building.market_id, building.submarket_id),
+        fetchOwners(building.market_id, building.sub_market_id),
+        fetchDevelopers(building.market_id, building.sub_market_id),
+        fetchBuilders(building.market_id, building.sub_market_id),
       ])
     } else if (field === 'industrial_park_id') {
       const body = {
         name: values.name,
         market_id: building.market_id,
-        submarket_id: building.submarket_id
+        sub_market_id: building.sub_market_id
       }
       if (update) {
         ({ data } = await API.industrialparks.updateIndustrialPark(values.id, body))
@@ -389,12 +487,12 @@ async function saveOptionGeneral(field, values, update = false) {
         ({ data } = await API.industrialparks.createIndustrialPark(body))
         building[field] = data.data.id
       }
-      await fetchIndustrialParks(building.market_id, building.submarket_id)
+      await fetchIndustrialParks(building.market_id, building.sub_market_id)
     }
   } catch (error) {
     console.error('Error:', error);
     if (error instanceof AxiosError) {
-      const errorMessage = error.response?.data?.errors 
+      const errorMessage = error.response?.data?.errors
         ? Object.values(error.response.data.errors).flat().join('\n')
         : error.response?.data?.message || 'An error occurred';
       Swal.fire({
@@ -443,7 +541,7 @@ async function deleteOptionGeneral(field, optionReactive) {
       await fetchDevelopers();
     } else if (field === 'industrial_park_id') {
       ({ data } = await API.industrialparks.deleteIndustrialPark(option.id))
-      await fetchIndustrialParks(building.market_id, building.submarket_id)
+      await fetchIndustrialParks(building.market_id, building.sub_market_id)
     }
     console.info(data)
     if (building[field] === option.id) {
@@ -452,7 +550,7 @@ async function deleteOptionGeneral(field, optionReactive) {
   } catch (error) {
     console.error('Error with developer:', error);
     if (error instanceof AxiosError) {
-      const errorMessage = error.response?.data?.errors 
+      const errorMessage = error.response?.data?.errors
         ? Object.values(error.response.data.errors).flat().join('\n')
         : error.response?.data?.message || 'An error occurred';
       Swal.fire({
@@ -494,22 +592,21 @@ watch(() => building.region_id, async () => {
 watch(() => building.market_id, async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
-    // building.submarket_id = props.buildingId ? building.submarket_id : ''
-    if (!submarkets.items.find(item => item.value === building.submarket_id)) {
-      building.submarket_id = ''
+    if (!submarkets.items.find(item => item.value === building.sub_market_id)) {
+      building.su_bmarket_id = ''
     }
   } else {
-    building.submarket_id = ''
+    building.sub_market_id = ''
   }
 })
 
-watch(() => building.submarket_id, async () => {
-  if (building.submarket_id) {
+watch(() => building.sub_market_id, async () => {
+  if (building.sub_market_id) {
     await Promise.all([
-      fetchIndustrialParks(building.market_id, building.submarket_id),
-      fetchOwners(building.market_id, building.submarket_id),
-      fetchBuilders(building.market_id, building.submarket_id),
-      fetchDevelopers(building.market_id, building.submarket_id),
+      fetchIndustrialParks(building.market_id, building.sub_market_id),
+      fetchOwners(building.market_id, building.sub_market_id),
+      fetchBuilders(building.market_id, building.sub_market_id),
+      fetchDevelopers(building.market_id, building.sub_market_id),
     ])
     if (!industrialParks.items.find(item => item.id === building.industrial_park_id)) building.industrial_park_id = ''
     if (!owners.items.find(item => item.id === building.owner_id)) building.owner_id = ''
@@ -571,7 +668,7 @@ defineExpose({
                 </CCol>
                 <CCol :md="3">
                   <div class="mt-2">
-                    <CFormInput 
+                    <CFormInput
                       type="number"
                       v-model="building.building_size_sf"
                       label="Building Size (SF) *"
@@ -581,7 +678,7 @@ defineExpose({
                 </CCol>
                 <CCol md="3">
                   <div class="mt-2">
-                    <CFormInput 
+                    <CFormInput
                       type="number"
                       v-model="building.expansion_land"
                       label="Expansion Land (SF) *"
@@ -592,8 +689,8 @@ defineExpose({
                 <!-- TOTAL LAND -->
                 <div class="col-md-3">
                   <div class="mt-2">
-                    <CFormInput 
-                      type="number" 
+                    <CFormInput
+                      type="number"
                       v-model="building.total_land_sf"
                       label="Total Land (SF)"
                     />
@@ -601,7 +698,7 @@ defineExpose({
                 </div>
                 <CCol md="3">
                   <div class="mt-2">
-                    <CFormInput 
+                    <CFormInput
                       type="number"
                       v-model="building.expansion_up_to_sf"
                       label="Expansion up to SF *"
@@ -640,7 +737,7 @@ defineExpose({
               </CRow>
             </CCardBody>
           </CCard>
-          
+
           <!-- *** LOCATION *** -->
           <CCard id="location" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
             <CCardBody class="card-body-customer-buildings">
@@ -683,7 +780,7 @@ defineExpose({
             <div class="mt-2">
               <label class="form-label">Submarket *</label>
               <MASelect
-                v-model="building.submarket_id"
+                v-model="building.sub_market_id"
                 :options="submarkets.items"
                 :reduce="option => option.value"
                 label="label"
@@ -705,7 +802,7 @@ defineExpose({
                 label="name"
                 placeholder="Select..."
                 :loading="industrialParks.loading"
-                :disabled="!building.submarket_id"
+                :disabled="!building.sub_market_id"
                 required
                 edit-options
                 @submitOption="(option, update) => { saveOptionGeneral('industrial_park_id', option, update) }"
@@ -735,7 +832,7 @@ defineExpose({
               />
             </div>
           </div>
-          
+
           <!-- *** PROPERTY DETAILS *** -->
           <CCard id="property-details" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
             <CCardBody class="card-body-customer-buildings">
@@ -756,7 +853,7 @@ defineExpose({
                       label="name"
                       placeholder="Select..."
                       :loading="owners.loading"
-                      :disabled="!building.submarket_id"
+                      :disabled="!building.sub_market_id"
                       required
                       edit-options
                       @submitOption="(option, update) => { saveOptionGeneral('owner_id', option, update) }"
@@ -810,7 +907,7 @@ defineExpose({
                       label="name"
                       placeholder="Select..."
                       :loading="developers.loading"
-                      :disabled="!building.submarket_id"
+                      :disabled="!building.sub_market_id"
                       required
                       edit-options
                       @submitOption="(option, update) => { saveOptionGeneral('developer_id', option, update) }"
@@ -864,7 +961,7 @@ defineExpose({
                       label="name"
                       placeholder="Select..."
                       :loading="builders.loading"
-                      :disabled="!building.submarket_id"
+                      :disabled="!building.sub_market_id"
                       required
                       edit-options
                       @submitOption="(option, update) => { saveOptionGeneral('builder_id', option, update) }"
@@ -910,7 +1007,7 @@ defineExpose({
               </CRow>
             </CCardBody>
           </CCard>
-  
+
           <!-- *** TRANSACTIONS AND AGREEMENTS *** -->
           <CCard id="transactions-agreements" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
             <CCardBody class="card-body-customer-buildings">
@@ -989,8 +1086,8 @@ defineExpose({
                   </div>
                   <!-- HEIGHT -->
                   <div class="mt-2">
-                    <CFormInput 
-                      type="number" 
+                    <CFormInput
+                      type="number"
                       v-model="building.clear_height_ft"
                       label="Clear Height FT"
                       max="99"
@@ -998,16 +1095,16 @@ defineExpose({
                   </div>
                   <!-- COVERAGE -->
                   <div class="mt-2">
-                    <CFormInput 
-                      type="number" 
+                    <CFormInput
+                      type="number"
                       :value="coverage"
                       label="Coverage (read only)"
                       readonly
                     />
                   </div>
                   <div class="mt-2">
-                    <CFormInput 
-                      type="number" 
+                    <CFormInput
+                      type="number"
                       v-model="building.offices_space_sf"
                       label="Offices Space SF"
                     />
@@ -1135,14 +1232,14 @@ defineExpose({
                   <div class="mt-2">
                     <label class="form-label">KVAS</label>
                     <CInputGroup>
-                      <CFormInput 
-                        type="number" 
+                      <CFormInput
+                        type="number"
                         v-model="building.kvas_value_1"
                         placeholder="value 1"
                         @blur="validateRangeKvas"
                       />
                       <CInputGroupText>@</CInputGroupText>
-                      <CFormInput 
+                      <CFormInput
                         type="number"
                         v-model="building.kvas_value_2"
                         placeholder="value 2"
@@ -1154,15 +1251,15 @@ defineExpose({
                   <div class="mt-2">
                     <label class="form-label">Bay Size *</label>
                     <CInputGroup>
-                      <CFormInput 
-                        type="number" 
+                      <CFormInput
+                        type="number"
                         v-model="building.bay_size_value_1"
                         placeholder="value 1"
                         required
                         @blur="validateRangeBaySize"
                       />
                       <CInputGroupText>@</CInputGroupText>
-                      <CFormInput 
+                      <CFormInput
                         type="number"
                         v-model="building.bay_size_value_2"
                         placeholder="value 2"
@@ -1175,14 +1272,14 @@ defineExpose({
                   <div class="mt-2">
                     <label class="form-label">HVAC Production Area (TON)</label>
                     <CInputGroup>
-                      <CFormInput 
-                        type="number" 
+                      <CFormInput
+                        type="number"
                         v-model="building.hvacProduction"
                         placeholder="Production"
                         @blur="validateRangeHvac"
                       />
                       <CInputGroupText>@</CInputGroupText>
-                      <CFormInput 
+                      <CFormInput
                         type="number"
                         v-model="building.hvacArea"
                         placeholder="Area"
@@ -1194,15 +1291,15 @@ defineExpose({
                   <div class="mt-2">
                     <label class="form-label">Column Spacing FT *</label>
                     <CInputGroup>
-                      <CFormInput 
-                        type="number" 
+                      <CFormInput
+                        type="number"
                         v-model="building.columns_spacing_value_1"
                         placeholder="value 1"
                         required
                         @blur="validateRangeColumnsSpacing"
                       />
                       <CInputGroupText>@</CInputGroupText>
-                      <CFormInput 
+                      <CFormInput
                         type="number"
                         v-model="building.columns_spacing_value_2"
                         placeholder="value 2"
@@ -1219,7 +1316,7 @@ defineExpose({
                     <!-- CRANE -->
                     <div class="switch-item">
                       <label class="switch-label">Crane</label>
-                      <CFormSwitch 
+                      <CFormSwitch
                         size="lg"
                         v-model="building.has_crane"
                       />
@@ -1227,7 +1324,7 @@ defineExpose({
                     <!-- LEED -->
                     <div class="switch-item">
                       <label class="switch-label">LEED</label>
-                      <CFormSwitch 
+                      <CFormSwitch
                         size="lg"
                         v-model="building.has_leed"
                       />
@@ -1235,7 +1332,7 @@ defineExpose({
                     <!-- RAIL SPUR -->
                     <div class="switch-item">
                       <label class="switch-label">Rail Spur</label>
-                      <CFormSwitch 
+                      <CFormSwitch
                         size="lg"
                         v-model="building.has_rail_spur"
                       />
@@ -1245,6 +1342,86 @@ defineExpose({
               </CRow>
             </CCardBody>
           </CCard>
+
+            <!-- *** FILES  *** -->
+          <CCard id="files" class="card text-secondary mb-3 mt-4 border-secondary card-header-customer-buildings " >
+            <CCardBody class="card-body-customer-buildings">
+              Files
+            </CCardBody>
+          </CCard>
+          <CCard class="card-customer-buildings">
+            <CCardBody>
+              <CRow>
+                <CCol md>
+                  <div class="col-md-4">
+                    <div class="mt-2">
+                      <label class="form-label">Upload Front Page File</label>
+                      <input type="file" name="files" @change="handleFiles('frontpage', $event)" />
+                        <div v-for="(files, type) in building.files_by_type" :key="type">
+                        <div v-if="type === 'Front Page' && files.length" class="flex gap-2">
+                          <div class="relative">
+                            <img :src="files[0].path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div class="mt-2">
+                      <label class="form-label">Upload Gallery Files</label>
+                      <input type="file" name="files" multiple @change="handleFiles('gallery1', $event)" />
+
+                      <div v-for="(files, type) in building.files_by_type" :key="type">
+                        <div v-if="type === 'Gallery' && files.length" class="flex gap-2">
+                          <div v-for="(file, index) in files" :key="index" class="flex">
+                            <img :src="file.path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-2">
+                      <label class="form-label">Upload Aerial File</label>
+                      <input type="file" name="files" @change="handleFiles('aerial', $event)" />
+                      <div v-for="(files, type) in building.files_by_type" :key="type">
+                        <div v-if="type === 'Aerial' && files.length" class="flex gap-2">
+                          <div class="relative">
+                            <img :src="files[0].path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-2">
+                      <label class="form-label">Upload 360 File</label>
+                      <input type="file" name="files" @change="handleFiles('360', $event)" />
+                      <div v-for="(files, type) in building.files_by_type" :key="type">
+                        <div v-if="type === '360' && files.length" class="flex gap-2">
+                          <div class="relative">
+                            <img :src="files[0].path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-2">
+                      <label class="form-label">Upload Layout File</label>
+                      <input type="file" name="files" @change="handleFiles('layout', $event)" />
+                      <div v-for="(files, type) in building.files_by_type" :key="type">
+                        <div v-if="type === 'Layout' && files.length" class="flex gap-2">
+                          <div class="relative">
+                            <img :src="files[0].path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </CCol>
+              </CRow>
+            </CCardBody>
+          </CCard>
+
         </CRow>
       </CCol>
     </CRow>
@@ -1258,6 +1435,9 @@ defineExpose({
   padding: 0.5rem;
 }
 
+.flex {
+  display:flex;
+}
 .switch-item {
   display: flex;
   justify-content: space-between;
