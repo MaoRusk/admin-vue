@@ -185,6 +185,34 @@ const routes = [
               label: 'Edit Broker'
             }
           },
+          {
+            path: 'reits',
+            name: ROUTE_NAMES.REITS,
+            component: () => import('@/views/catalogs/reits/Reits.vue'),
+            meta: {
+              requiresAuth: true,
+              label: 'REITs'
+            }
+          },
+          {
+            path: 'reits/create',
+            name: ROUTE_NAMES.REITS_CREATE,
+            component: () => import('@/views/catalogs/reits/ReitDetail.vue'),
+            meta: {
+              requiresAuth: true,
+              label: 'Create REIT'
+            }
+          },
+          {
+            path: 'reits/:id',
+            name: ROUTE_NAMES.REITS_UPDATE,
+            component: () => import('@/views/catalogs/reits/ReitDetail.vue'),
+            props: true,
+            meta: {
+              requiresAuth: true,
+              label: 'Edit REIT'
+            }
+          },
         ],
       },
 
