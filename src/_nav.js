@@ -114,4 +114,18 @@ export default [
     to: { name: ROUTE_NAMES.LANDS_INDEX },
     icon: 'cilTerrain',
   },
+
+  {
+    component: 'CNavGroup',
+    name: 'REITs',
+    icon: 'cilInstitution',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'REITs Annual',
+        to: { name: ROUTE_NAMES.REIT_ANNUAL_INDEX },
+        icon: 'cilGraph',
+      },
+    ],
+  },
 ]

@@ -22,6 +22,7 @@ import Lands from './Lands'
 import LandsAbsorption from './LandsAbsorption'
 import LandsAvailability from './LandsAvailable'
 import Companies from './Companies'
+import ReitAnnual from './ReitAnnual'
 
 export const API = {
   auth: Auth,
@@ -48,4 +49,5 @@ export const API = {
   landsAbsorption: LandsAbsorption,
   landsAvailability: LandsAvailability,
   companies: Companies,
+  ReitAnnual: ReitAnnual,
 }
