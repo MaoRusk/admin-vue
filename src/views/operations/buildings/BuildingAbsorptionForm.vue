@@ -89,39 +89,18 @@ const fireProtectionSystems = reactive({ loading: false, items: []})
 const deals = reactive({ loading: false, items: []})
 const shelters = reactive({ loading: false, items: []})
 
-// TODO, no encontre catalogo en backend
 async function fetchCompanyTypes() {
   companyTypes.loading = true
-  const { data } = await new Promise(r => {
-    r({
-      data: {
-        data: [
-          { value: 'Existing Company', label: 'Existing Company' },
-          { value: 'New Company in Market', label: 'New Company in Market' },
-          { value: 'New Company in Mexico', label: 'New Company in Mexico' }
-        ]
-      }
-    })
-  });
+  const { data } = await API.buildings.getBuildingsCompanyTypes()
   companyTypes.loading = false
-  companyTypes.items = data.data.map(({ value, label }) => ({ label: label, value: value}))
+  companyTypes.items = Object.values(data.data).map((value) => ({ label: value, value}))
 }
 
-// TODO, no encontre catalogo en backend
 async function fetchFinalUses() {
   finalUses.loading = true
-  const { data } = await new Promise(r => {
-    r({
-      data: {
-        data: [
-          { value: 'Manufacturing', label: 'Manufacturing' },
-          { value: 'Logistic', label: 'Logistic' },
-        ]
-      }
-    })
-  });
+  const { data } = await API.buildings.getBuildingsFinalUses()
   finalUses.loading = false
-  finalUses.items = data.data.map(({ value, label }) => ({ label: label, value: value}))
+  finalUses.items = Object.values(data.data).map((value) => ({ label: value, value}))
 }
 
 async function fetchBuildingTechnicalImprovements() {
@@ -424,7 +403,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="absorption-form p-4">
+  <div class="">
     <CCard>
       <CCardHeader class="d-flex justify-content-between align-items-center">
         <h3>{{ isNewRecord ? 'New Absorption' : 'Edit Absorption' }}</h3>

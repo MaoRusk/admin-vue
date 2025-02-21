@@ -1,5 +1,6 @@
 export const AUTH_TOKEN = 'auth_token'
 export const AUTH_USER = 'auth_user'
 export const BUILDINGS_ITEMS_PER_PAGE = 'BUILDINGS_ITEMS_PER_PAGE'
+export const LANDS_ITEMS_PER_PAGE = 'LANDS_ITEMS_PER_PAGE'
+export const BUILDING_CONTACTS_ITEMS_PER_PAGE = 'BUILDING_CONTACTS_ITEMS_PER_PAGE'
 export const USERS_ITEMS_PER_PAGE = 'users_items_per_page'
-
