@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import { cilArrowCircleLeft, cilTrash, cilPencil, cilPlus } from '@coreui/icons';
 import { API } from '../../../services';
 import MSelect from '../../../components/MSelect.vue';
+import { ROUTE_NAMES } from '../../../router/routeNames';
 
 const router = useRouter();
 
@@ -16,7 +17,7 @@ const props = defineProps({
 });
 
 const userRoles = ref([]);
-const selectedRole = ref(null);  // Inicializar como array vacío en lugar de string
+const selectedRole = ref(null);  // Mantener como null inicialmente
 const loading = ref(false);
 const marketsCbo = ref([]);
 // const modulesCbo = ref([
@@ -194,18 +195,16 @@ async function fetchUserData() {
 // Actualizar los métodos
 async function fetchRoles() {
   try {
-    const { data: response } = await API.roles.getAllRoles();
-    // console.log('Roles obtenidos:', response.data); // Debug log
+    const { data: response } = await API.roles.getRoles();
+    console.log('Response from getRoles:', response); // Debug log
     
     if (response.success) {
-      userRoles.value = [
-        ...response.data.map(role => ({
-          value: role.id.toString(), // Asegurarse que sea string
-          label: role.name,
-          guardName: role.guard_name
-        }))
-      ];
-      // console.log('userRoles procesados:', userRoles.value); // Debug log
+      userRoles.value = response.data.map(role => ({
+        value: role.id.toString(),
+        label: role.name,
+        guardName: role.guard_name
+      }));
+      console.log('Processed userRoles:', userRoles.value); // Debug log
     }
   } catch (error) {
     console.error('Error fetching roles:', error);
@@ -218,12 +217,16 @@ async function fetchRoles() {
 }
 
 
-async function handleRoleChange(value) {
+const handleRoleChange = async (value) => {
+  console.log('Role changed to:', value); // Debug log
   selectedRole.value = value;
-  if (value[0]?.value === '5') {
-    fetchMarkets();
+  console.log('selectedRole.value after change:', selectedRole.value); // Debug log
+  
+  // Asegurarse de que value es un array y tiene al menos un elemento
+  if (Array.isArray(value) && value[0]?.value === '5') {
+    await fetchMarkets();
   }
-}
+};
 
 async function submitRole(roleName) {
   if (!roleName?.trim()) {
@@ -243,7 +246,7 @@ async function submitRole(roleName) {
 
     if (response.success) {
       // Recargar roles
-      const { data: rolesResponse } = await API.roles.getAllRoles();
+      const { data: rolesResponse } = await API.roles.getRoles();
       
       if (rolesResponse.success) {
         // Actualizar la lista de roles
@@ -277,68 +280,89 @@ async function submitRole(roleName) {
   }
 }
 
-async function handleSubmit() {
+const handleSubmit = async () => {
   if (!isFormValid.value) {
     Swal.fire({
       title: 'Validation Error',
-      text: 'Please fill in all required fields correctly',
-      icon: 'warning'
+      text: 'Please fill all required fields correctly',
+      icon: 'error'
     });
     return;
   }
 
-  loading.value = true;
   try {
+    console.log('Selected role before submit:', selectedRole.value);
+    
     const userData = {
-      name: formData.value.name,
-      middle_name: formData.value.middleName,
-      last_name: formData.value.lastName,
-      user_name: formData.value.userName,
-      email: formData.value.email,
+      name: formData.value.name.trim(),
+      middle_name: formData.value.middleName?.trim() || null,
+      last_name: formData.value.lastName.trim(),
+      user_name: formData.value.userName.trim(),
+      email: formData.value.email.trim(),
       status: formData.value.status === 'Activo' ? 'Active' : 'Inactive',
-      role_id: selectedRole.value ? parseInt(selectedRole.value) : null,
-      company_id: 1,
-      password: formData.value.password,
-      created_at: new Date().toISOString(),
-      created_by: 1,
-      deleted_at: "",
-      deleted_by: 0
+      role_id: selectedRole.value?.[0]?.value ? Number(selectedRole.value[0].value) : null,
+      company_id: 1
     };
 
-    let response;
-    if (props.id === 0) {
-      response = await API.users.createUser(userData);
-    } else {
-      if (formData.value.password === '********') {
-        delete userData.password;
-      }
-      response = await API.users.updateUser(props.id, userData);
+    console.log('userData being sent:', userData);
+
+    if (isNewRecord.value || formData.value.password !== '********') {
+      userData.password = formData.value.password;
+      userData.password_confirmation = formData.value.confirmPassword;
     }
 
-    // Check if response exists and has data property
-    if (response && response.data) {
+    const response = isNewRecord.value
+      ? await API.users.createUser(userData)
+      : await API.users.updateUser(props.id, userData);
+
+    if (response.status === 200 && response.data) {
       await Swal.fire({
-        title: 'Success',
-        text: `User ${props.id === 0 ? 'created' : 'updated'} successfully`,
+        title: isNewRecord.value ? 'Created!' : 'Updated!',
+        text: `User has been ${isNewRecord.value ? 'created' : 'updated'} successfully`,
         icon: 'success',
-        timer: 1500
+        timer: 2000,
+        showConfirmButton: false
       });
 
-      router.push({ name: 'Users' });
+      try {
+        await router.push({ 
+          name: ROUTE_NAMES.USERS,
+          replace: true
+        });
+      } catch (routerError) {
+        window.location.href = '/#/operations/users';
+      }
     } else {
-      throw new Error(response.data.message || 'Failed to save user');
+      throw new Error('Failed to save user');
     }
   } catch (error) {
-    console.error('Error saving user:', error);
-    Swal.fire({
-      title: 'Error',
-      text: error.response?.data?.message || `Failed to ${props.id === 0 ? 'create' : 'update'} user`,
-      icon: 'error'
-    });
-  } finally {
-    loading.value = false;
+    if (error.response?.data?.errors) {
+      const errorMessages = Object.entries(error.response.data.errors)
+        .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+        .join('\n');
+      
+      Swal.fire({
+        title: 'Validation Error',
+        html: errorMessages.replace(/\n/g, '<br>'),
+        icon: 'error'
+      });
+    } else {
+      Swal.fire({
+        title: 'Error',
+        text: error.response?.data?.message || 'Failed to save user',
+        icon: 'error'
+      });
+    }
   }
-}
+};
+
+// Agregar método para volver a la lista
+const goBack = () => {
+  router.push({ 
+    name: ROUTE_NAMES.USERS,
+    replace: true
+  });
+};
 
 async function handleDelete() {
   try {
@@ -415,108 +439,98 @@ async function createOptionGeneral(field, value) {
 </script>
 
 <template>
-    <CContainer>
+  <CCard>
+    <CCardHeader style="text-align: right;">
+      <CButton color="primary" variant="outline" @click="goBack">
+        <CIcon :content="cilArrowCircleLeft" size="sm" />
+        Return
+      </CButton>
+    </CCardHeader>
 
-      <div style="display: flex; justify-content: right;">
-        <div>
-          <router-link :to="{ name: 'Users' }">
-            <CButton color="primary" variant="outline">
-              <CIcon :content="cilArrowCircleLeft" size="sm" />
-              Return
-            </CButton>
-          </router-link>
-        </div>
-      </div>
-
-        <CRow>
-            <CCol :md="6">
-            <CCol>
-              <CFormInput
-                type="text"
-                label="Name *"
-                placeholder="name"
-                v-model="formData.name"
-                :class="{'is-invalid': formData.name.trim() === ''}"
-                aria-label="default input example"
-              />
-              <div v-if="formData.name.trim() === ''" class="invalid-feedback">
-                This field is required
-              </div>
-            </CCol>
-            <CCol>
-              <CFormInput 
-                type="text"
-                label="Middle Name" 
-                placeholder="Middle name" 
-                v-model="formData.middleName"
-                aria-label="default input example"
-              />
-            </CCol>
-            <CCol>
-                <CFormInput type="text"
-                label="Last Name *" 
-                placeholder="lastName" 
-                v-model="formData.lastName"
-                :class="{'is-invalid': formData.lastName.trim() === ''}"
-                aria-label="default input example"/>
+    <CCardBody>
+      <CRow>
+        <CCol :md="6">
+          <CCard class="mb-4">
+            <CCardBody>
+              <CCol>
+                <CFormInput
+                  type="text"
+                  label="Name *"
+                  placeholder="name"
+                  v-model="formData.name"
+                  :class="{'is-invalid': formData.name.trim() === ''}"
+                  aria-label="default input example"
+                />
+                <div v-if="formData.name.trim() === ''" class="invalid-feedback">
+                  This field is required
+                </div>
+              </CCol>
+              <CCol>
+                <CFormInput 
+                  type="text"
+                  label="Middle Name" 
+                  placeholder="Middle name" 
+                  v-model="formData.middleName"
+                  aria-label="default input example"
+                />
+              </CCol>
+              <CCol>
+                <CFormInput 
+                  type="text"
+                  label="Last Name *" 
+                  placeholder="lastName" 
+                  v-model="formData.lastName"
+                  :class="{'is-invalid': formData.lastName.trim() === ''}"
+                  aria-label="default input example"
+                />
                 <div v-if="formData.lastName.trim() === ''" class="invalid-feedback">
                   This field is required
                 </div>
-            </CCol>
-            <CCol>
-              <MSelect
-                label="Select Role *"
-                :options="userRoles"
-                v-model="selectedRole"
-                @update:modelValue="handleRoleChange"
-                @submitOption="value => createOptionGeneral('role', value)"
-                create-option
-                size="sm"
-                required
-              />               
-            </CCol>
-            <CCol>
-              <MSelect
-                v-if="selectedUserType === '5'"
-                label="Select Markets *"
-                :options="marketsCbo"
-                v-model="selectedMarket"
-                @update:modelValue="handleMarketsChange"
-                size="sm"
-                required
-              />
-            </CCol>
+              </CCol>
+              <CCol>
+                <MSelect
+                  label="Select Role *"
+                  :options="userRoles"
+                  v-model="selectedRole"
+                  @update:modelValue="handleRoleChange"
+                  @submitOption="value => createOptionGeneral('role', value)"
+                  create-option
+                  size="sm"
+                  required
+                />               
+              </CCol>
+              <CCol v-if="selectedUserType === '5'">
+                <MSelect
+                  label="Select Markets *"
+                  :options="marketsCbo"
+                  v-model="selectedMarket"
+                  @update:modelValue="handleMarketsChange"
+                  size="sm"
+                  required
+                />
+              </CCol>
+            </CCardBody>
+          </CCard>
+        </CCol>
 
-            <CCol>
-            </CCol>
-            <CCol>
-              <!-- <MSelect 
-                label="Select Admin Modules"
-                :options="modulesCbo"
-                v-model="selectedValues"
-                @update:modelValue="handleModulesCbo"
-                size="sm"
-              /> -->
-            </CCol>
-            </CCol>
-            <CCol :md="6">
-              
-            <CCol>
+        <CCol :md="6">
+          <CCard class="mb-4">
+            <CCardBody>
+              <CCol>
                 <CFormInput 
-                type="text"
-                label="UserName *" 
-                placeholder="userName" 
-                v-model="formData.userName"
-                :class="{'is-invalid': formData.userName.trim() === ''}"
-                aria-label="default input example"
-                required
+                  type="text"
+                  label="UserName *" 
+                  placeholder="userName" 
+                  v-model="formData.userName"
+                  :class="{'is-invalid': formData.userName.trim() === ''}"
+                  aria-label="default input example"
+                  required
                 />
                 <div v-if="formData.userName.trim() === ''" class="invalid-feedback">
                   This field is required
                 </div>
-            </CCol>
-            <CCol>
-              <div style="">
+              </CCol>
+              <CCol>
                 <CFormInput
                   label="Password *" 
                   type="password"
@@ -527,93 +541,120 @@ async function createOptionGeneral(field, value) {
                 <div v-if="formData.password.trim() === ''" class="invalid-feedback">
                   This field is required
                 </div>
-              </div>
-
-            </CCol>
-            <CCol v-if="props.id == 0 || props.id === ''">
-              <CFormInput
-                label="Confirm Password"
-                type="password"
-                v-model="formData.confirmPassword"
-                :class="{'is-invalid': formData.confirmPassword.trim() === ''}"
-                id="confirmInputPassword"
-                :invalid="!isPasswordMatch"
-                :feedback="isPasswordMatch ? 'Passwords match' : 'Passwords do not match'"
-              />
-              <div v-if="formData.confirmPassword.trim() === ''" class="invalid-feedback">
-                This field is required
-              </div>
-            </CCol>
-            <CCol>
-              <div style="display: flex; justify-content: left; align-items: center;">
-                <label for="status">Status</label>
-                <div style="margin-left: 1rem; padding-top: 1rem;">
-                  <CFormCheck 
-                    inline 
-                    type="radio" 
-                    name="status" 
-                    id="statusActive" 
-                    value="Activo"
-                    label="Activo"
-                    :checked="formData.status === 'Activo'"
-                    @change="formData.status = 'Activo'"
-                  />
-                  <CFormCheck 
-                    inline 
-                    type="radio" 
-                    name="status" 
-                    id="statusInactive" 
-                    value="Inactivo"
-                    label="Inactivo"
-                    :checked="formData.status === 'Inactivo'"
-                    @change="formData.status = 'Inactivo'"
-                  />    
+              </CCol>
+              <CCol v-if="props.id == 0 || props.id === ''">
+                <CFormInput
+                  label="Confirm Password"
+                  type="password"
+                  v-model="formData.confirmPassword"
+                  :class="{'is-invalid': formData.confirmPassword.trim() === ''}"
+                  id="confirmInputPassword"
+                  :invalid="!isPasswordMatch"
+                  :feedback="isPasswordMatch ? 'Passwords match' : 'Passwords do not match'"
+                />
+                <div v-if="formData.confirmPassword.trim() === ''" class="invalid-feedback">
+                  This field is required
                 </div>
-              </div>
-            </CCol>
-            <CCol>
-              <CFormInput
-                type="email"
-                label="Email *"
-                placeholder="email@example.com"
-                v-model="formData.email"
-                :class="{'is-invalid': !isValidEmail || formData.email.trim() === ''}"
-                aria-label="email input"
-              />
-              <div v-if="formData.email.trim() === ''" class="invalid-feedback">
-                This field is required
-              </div>
-              <div v-else-if="!isValidEmail" class="invalid-feedback">
-                Please enter a valid email address
-              </div>
-            </CCol>
-            </CCol>
-        </CRow>
-        <CRow>
-            <template v-if="props.id != 0 && props.id !== ''">
-              <div style="display: flex; justify-content: center;padding:1rem">
-                <CButton color="danger" variant="outline" @click="handleDelete()" style="margin-right: 1rem;">
+              </CCol>
+              <CCol>
+                <div class="mb-3">
+                  <label for="status">Status</label>
+                  <div class="mt-2">
+                    <CFormCheck 
+                      inline 
+                      type="radio" 
+                      name="status" 
+                      id="statusActive" 
+                      value="Activo"
+                      label="Activo"
+                      :checked="formData.status === 'Activo'"
+                      @change="formData.status = 'Activo'"
+                    />
+                    <CFormCheck 
+                      inline 
+                      type="radio" 
+                      name="status" 
+                      id="statusInactive" 
+                      value="Inactivo"
+                      label="Inactivo"
+                      :checked="formData.status === 'Inactivo'"
+                      @change="formData.status = 'Inactivo'"
+                    />    
+                  </div>
+                </div>
+              </CCol>
+              <CCol>
+                <CFormInput
+                  type="email"
+                  label="Email *"
+                  placeholder="email@example.com"
+                  v-model="formData.email"
+                  :class="{'is-invalid': !isValidEmail || formData.email.trim() === ''}"
+                  aria-label="email input"
+                />
+                <div v-if="formData.email.trim() === ''" class="invalid-feedback">
+                  This field is required
+                </div>
+                <div v-else-if="!isValidEmail" class="invalid-feedback">
+                  Please enter a valid email address
+                </div>
+              </CCol>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+
+      <CCard class="mb-4">
+        <CCardBody>
+          <CRow>
+            <CCol class="text-center">
+              <template v-if="props.id != 0 && props.id !== ''">
+                <!-- <CButton 
+                  color="danger" 
+                  variant="outline" 
+                  @click="handleDelete()" 
+                  class="mx-2"
+                >
                   <CIcon :content="cilTrash" size="sm" />
-                  Delete Employee
-                </CButton>
+                  Delete
+                </CButton> -->
                 <CButton 
                   color="primary" 
                   variant="outline" 
-                  @click="handleSubmit">
+                  @click="handleSubmit"
+                  :disabled="!isFormValid"
+                  class="mx-2"
+                >
                   <CIcon :content="cilPencil" size="sm" />
-                  Update
+                  Save
                 </CButton>
-            </div>
-            </template>
-            <template v-else>
-              <div style="display: flex; justify-content: center;padding:1rem">
+              </template>
+              <template v-else>
                 <CButton 
-                color="success" 
+                  color="success" 
+                  variant="outline" 
+                  type="submit"
+                  @click="handleSubmit"
+                  :disabled="!isFormValid"
+                  class="mx-2"
+                >
+                  <CIcon :content="cilPlus" size="sm" />
+                  Save
+                </CButton>
+              </template>
+              <CButton 
+                color="secondary" 
                 variant="outline" 
-                type="submit"
-                @click="handleSubmit" >Save</CButton>
-              </div>
-            </template>
-        </CRow>
-    </CContainer>
+                @click="goBack" 
+                class="mx-2"
+              >
+                Cancel
+              </CButton>
+
+            </CCol>
+          </CRow>
+        </CCardBody>
+      </CCard>
+    </CCardBody>
+  </CCard>
 </template>

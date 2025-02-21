@@ -62,6 +62,7 @@
 <script>
 import RolesService from '@/services/Roles'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '../../../router/routeNames';
 
 export default {
   name: 'Roles',
@@ -107,10 +108,10 @@ export default {
       }
     },
     newRole() {
-      this.$router.push('/seguridad/roles/create')
+      this.$router.push({ name: ROUTE_NAMES.ROLES_CREATE })
     },
     viewDetails(item) {
-      this.$router.push(`/seguridad/roles/${item.id}`)
+      this.$router.push({ name: ROUTE_NAMES.ROLES_UPDATE, params: { id: item.id } })
     },
     async deleteRole(item) {
       const result = await Swal.fire({
