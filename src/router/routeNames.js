@@ -24,9 +24,9 @@ export const ROUTE_NAMES = {
   POLICIES: 'Policies',
   POLICY_DETAIL: 'Policy Detail',
   INDUSTRIES: 'Industries',
-  BROKERS: 'Brokers',
-  BROKERS_CREATE: 'CreateBroker',
-  BROKERS_UPDATE: 'EditBroker',
+  BROKERS_INDEX: 'Brokers',
+  BROKERS_CREATE: 'Create Broker',
+  BROKERS_UPDATE: 'Edit Broker',
   INDUSTRY_CREATE: 'Industry Create',
   INDUSTRY_UPDATE: 'Industry Update',
 

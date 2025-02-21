@@ -77,7 +77,7 @@ export default [
       {
         component: 'CNavItem',
         name: 'Brokers',
-        to: { name: ROUTE_NAMES.TENANTS_INDEX },
+        to: { name: ROUTE_NAMES.BROKERS_INDEX },
         icon: 'cil-people',
       },
     ],
