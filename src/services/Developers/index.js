@@ -7,6 +7,7 @@ export default {
     if (is_builder) params.is_builder = is_builder
     if (is_developer) params.is_developer = is_developer
 
+    // TODO: cambiar claves. una vez que pase la prueba con cliente
     if (marketId) params.market_id = marketId
     if (submarketId) params.submarket_id = submarketId
 
@@ -33,19 +34,19 @@ export default {
       },
     }
   },
-  createDeveloper({ name, is_developer, is_builder, is_owner, market_id, submarket_id }) {
+  createDeveloper({ name, is_developer, is_builder, is_owner, market_id, sub_market_id }) {
     return httpClient.post(`/developers`, {
       name,
       is_developer,
       is_builder,
       is_owner,
       market_id,
-      submarket_id,
+      sub_market_id,
     })
   },
   updateDeveloper(
     developerId,
-    { name, is_developer, is_builder, is_owner, market_id, submarket_id },
+    { name, is_developer, is_builder, is_owner, market_id, sub_market_id },
   ) {
     return httpClient.put(`/developers/${developerId}`, {
       name,
@@ -53,7 +54,7 @@ export default {
       is_builder,
       is_owner,
       market_id,
-      submarket_id,
+      sub_market_id,
     })
   },
   deleteDeveloper(developerId) {

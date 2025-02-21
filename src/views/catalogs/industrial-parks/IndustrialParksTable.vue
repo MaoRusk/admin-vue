@@ -102,7 +102,7 @@ export default {
       return this.industrialParks.map(park => ({
         ...park,
         market_name: this.markets[park.market_id]?.name || '-',
-        submarket_name: this.submarkets[park.submarket_id]?.name || '-'
+        submarket_name: this.submarkets[park.sub_market_id]?.name || '-'
       }))
     }
   },
