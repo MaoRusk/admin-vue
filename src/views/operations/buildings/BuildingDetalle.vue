@@ -29,6 +29,7 @@ const tabDataLoaded = ref(false);
 const tabAvailabilityLoaded = ref(false);
 const tabContactLoaded = ref(false);
 const tabAbsorptionLoaded = ref(false);
+const tabImagesLoaded = ref(false);
 
 function dispatchSubmitForm() {
   if (activeTab.value === 'DataBuilding') {
@@ -55,8 +56,9 @@ watch(activeTab, () => {
     disabledSave.value = !(buildingAbsorptionRef.value?.showForm ?? false)
   } else if (activeTab.value === 'ContactBuilding') {
     tabContactLoaded.value = true
+    disabledSave.value = !(buildingContactRef.value?.showForm ?? false)
   }
-  if (['DataBuilding', 'ContactBuilding'].includes(activeTab.value)) {
+  if (['DataBuilding', 'Files'].includes(activeTab.value)) {
     disabledSave.value = false
   }
 }, { immediate: true })
