@@ -335,7 +335,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="building-form p-4">
+  <div class="">
     <CCard>
       <CCardHeader class="d-flex justify-content-between align-items-center">
         <h3>{{ isNewRecord ? 'New Availability' : 'Edit Availability' }}</h3>

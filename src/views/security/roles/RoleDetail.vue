@@ -115,6 +115,7 @@
 import RolesService from '@/services/Roles'
 import PermissionsService from '@/services/Permissions'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '../../../router/routeNames';
 
 export default {
   name: 'RoleDetail',
@@ -281,7 +282,7 @@ export default {
       }
     },
     goBack() {
-      this.$router.push('/seguridad/roles')
+      this.$router.push({ name: ROUTE_NAMES.ROLES })
     },
     isAllSelectedForAction(action) {
       const availablePermissionsForAction = Object.keys(this.groupedPermissions)

@@ -18,6 +18,10 @@ import BuildingsAbsorption from './BuildingsAbsorption'
 import Users from './Users'
 import Roles from './Roles'
 import Permissions from './Permissions'
+import Lands from './Lands'
+import LandsAbsorption from './LandsAbsorption'
+import LandsAvailability from './LandsAvailable'
+import Companies from './Companies'
 
 export const API = {
   auth: Auth,
@@ -40,4 +44,8 @@ export const API = {
   users: Users,
   roles: Roles,
   permissions: Permissions,
+  lands: Lands,
+  landsAbsorption: LandsAbsorption,
+  landsAvailability: LandsAvailability,
+  companies: Companies,
 }

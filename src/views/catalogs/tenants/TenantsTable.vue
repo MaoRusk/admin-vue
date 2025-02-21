@@ -62,6 +62,7 @@
 <script>
 import TenantsService from '@/services/Tenants'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '../../../router/routeNames';
 
 export default {
   data() {
@@ -103,11 +104,11 @@ export default {
     },
 
     newTenant() {
-      this.$router.push({ name: 'TenantDetail', params: { id: 0 } })
+      this.$router.push({ name: ROUTE_NAMES.TENANTS_DETAIL, params: { id: 0 } })
     },
 
     viewDetails(item) {
-      this.$router.push({ name: 'TenantDetail', params: { id: item.id } })
+      this.$router.push({ name: ROUTE_NAMES.TENANTS_DETAIL, params: { id: item.id } })
     },
 
     async deleteTenant(item) {

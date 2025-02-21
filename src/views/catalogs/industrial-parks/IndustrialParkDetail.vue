@@ -64,6 +64,7 @@ import IndustrialParksService from '@/services/IndustrialParks'
 import MarketsService from '@/services/Markets'
 import SubmarketsService from '@/services/Submarkets'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '../../../router/routeNames';
 
 export default {
   name: 'IndustrialParkDetail',
@@ -218,7 +219,7 @@ export default {
       }
     },
     goBack() {
-      this.$router.push('/operacion/industrial-parks')
+      this.$router.push({ name: ROUTE_NAMES.INDUSTRIAL_PARKS })
     }
   },
   watch: {
