@@ -156,6 +156,63 @@ const routes = [
             name: ROUTE_NAMES.TENANTS_DETAIL,
             component: () => import('@/views/catalogs/tenants/TenantDetail.vue'),
           },
+          {
+            path: 'brokers',
+            name: ROUTE_NAMES.BROKERS_INDEX,
+            component: () => import('@/views/catalogs/brokers/Brokers.vue'),
+            meta: {
+              requiresAuth: true,
+              label: 'Brokers'
+            }
+          },
+          {
+            path: 'brokers/create',
+            name: ROUTE_NAMES.BROKERS_CREATE,
+            component: () => import('@/views/catalogs/brokers/BrokerDetail.vue'),
+            props: { id: 0 },
+            meta: {
+              requiresAuth: true,
+              label: 'Create Broker'
+            }
+          },
+          {
+            path: 'brokers/:id',
+            name: ROUTE_NAMES.BROKERS_UPDATE,
+            component: () => import('@/views/catalogs/brokers/BrokerDetail.vue'),
+            props: true,
+            meta: {
+              requiresAuth: true,
+              label: 'Edit Broker'
+            }
+          },
+          {
+            path: 'reits',
+            name: ROUTE_NAMES.REITS,
+            component: () => import('@/views/catalogs/reits/Reits.vue'),
+            meta: {
+              requiresAuth: true,
+              label: 'REITs'
+            }
+          },
+          {
+            path: 'reits/create',
+            name: ROUTE_NAMES.REITS_CREATE,
+            component: () => import('@/views/catalogs/reits/ReitDetail.vue'),
+            meta: {
+              requiresAuth: true,
+              label: 'Create REIT'
+            }
+          },
+          {
+            path: 'reits/:id',
+            name: ROUTE_NAMES.REITS_UPDATE,
+            component: () => import('@/views/catalogs/reits/ReitDetail.vue'),
+            props: true,
+            meta: {
+              requiresAuth: true,
+              label: 'Edit REIT'
+            }
+          },
         ],
       },
 

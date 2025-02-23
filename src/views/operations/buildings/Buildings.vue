@@ -146,9 +146,6 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
         <CButton color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Absorption' } })">
           <CIcon name="cilIndustrySlash" size="sm" />
         </CButton>
-        <CButton color="primary" variant="outline" square size="sm" title="Go to files" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Files' } })">
-          <CIcon name="cilImage" size="sm" />
-        </CButton>
         <CButton color="primary" variant="outline" square size="sm" title="Go to contacts" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'ContactBuilding' } })">
           <CIcon name="cilContact" size="sm" />
         </CButton>

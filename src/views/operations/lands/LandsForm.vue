@@ -27,7 +27,7 @@ const emit = defineEmits(['submitting'])
 const landEmpty = {
   region_id: '', 
   market_id: '', 
-  submarket_id: '', 
+  sub_market_id: '', 
   industrial_park_id: '', 
   developer_id: '', 
   owner_id: '', 
@@ -71,7 +71,6 @@ async function onSubmit() {
     let data;
     const body = {
       ...land,
-      sub_market_id: land.submarket_id,
       kvas: (land.kvas_value_1 && land.kvas_value_2) ? `${land.kvas_value_1}${VALUE_SEPARATOR}${land.kvas_value_2}` : '',
     }
     if (props.landId) {
@@ -95,11 +94,10 @@ async function onSubmit() {
 async function fetchLand() {
   try {
     const { data } = await API.lands.getLand(props.landId);
-    ['region_id', 'market_id', 'industrial_park_id', 'developer_id', 'owner_id']
+    ['region_id', 'market_id', 'sub_market_id', 'industrial_park_id', 'developer_id', 'owner_id']
     .forEach(prop => land[prop] = data.data[prop] ? +(data.data[prop]) : '');
     ['currency', 'status', 'land_name', 'latitud', 'longitud', 'size_ha', 'zoning', 'parcel_shape']
     .forEach(prop => land[prop] = data.data[prop] ? `${data.data[prop]}` : '');
-    if (data.data.sub_market_id) land.submarket_id = +data.data.sub_market_id
     if (data.data.kvas && data.data.kvas.length > VALUE_SEPARATOR.length) {
       ([land.kvas_value_1, land.kvas_value_2] = data.data.kvas.split(VALUE_SEPARATOR))
     }
@@ -226,7 +224,7 @@ async function saveOptionGeneral(field, values, update = false) {
         is_developer: !!values.is_developer,
         is_owner: !!values.is_owner,
         market_id: land.market_id,
-        submarket_id: land.submarket_id
+        sub_market_id: land.sub_market_id
       }
       if (update) {
         ({ data } = await API.developers.updateDeveloper(values.id, body));
@@ -238,14 +236,14 @@ async function saveOptionGeneral(field, values, update = false) {
         land[field] = data.data.id
       }
       await Promise.all([
-        fetchOwners(land.market_id, land.submarket_id),
-        fetchDevelopers(land.market_id, land.submarket_id),
+        fetchOwners(land.market_id, land.sub_market_id),
+        fetchDevelopers(land.market_id, land.sub_market_id),
       ])
     } else if (field === 'industrial_park_id') {
       const body = {
         name: values.name,
         market_id: land.market_id,
-        submarket_id: land.submarket_id
+        sub_market_id: land.sub_market_id
       }
       if (update) {
         ({ data } = await API.industrialparks.updateIndustrialPark(values.id, body))
@@ -253,7 +251,7 @@ async function saveOptionGeneral(field, values, update = false) {
         ({ data } = await API.industrialparks.createIndustrialPark(body))
         land[field] = data.data.id
       }
-      await fetchIndustrialParks(land.market_id, land.submarket_id)
+      await fetchIndustrialParks(land.market_id, land.sub_market_id)
     }
   } catch (error) {
     console.error('Error:', error);
@@ -307,7 +305,7 @@ async function deleteOptionGeneral(field, optionReactive) {
       await fetchDevelopers();
     } else if (field === 'industrial_park_id') {
       ({ data } = await API.industrialparks.deleteIndustrialPark(option.id))
-      await fetchIndustrialParks(land.market_id, land.submarket_id)
+      await fetchIndustrialParks(land.market_id, land.sub_market_id)
     }
     console.info(data)
     if (land[field] === option.id) {
@@ -358,20 +356,20 @@ watch(() => land.region_id, async () => {
 watch(() => land.market_id, async () => {
   if (land.market_id) {
     await fetchSubmarkets(land.market_id)
-    if (!submarkets.items.find(item => item.value === land.submarket_id)) {
-      land.submarket_id = ''
+    if (!submarkets.items.find(item => item.value === land.sub_market_id)) {
+      land.sub_market_id = ''
     }
   } else {
-    land.submarket_id = ''
+    land.sub_market_id = ''
   }
 })
 
-watch(() => land.submarket_id, async () => {
-  if (land.submarket_id) {
+watch(() => land.sub_market_id, async () => {
+  if (land.sub_market_id) {
     await Promise.all([
-      fetchIndustrialParks(land.market_id, land.submarket_id),
-      fetchOwners(land.market_id, land.submarket_id),
-      fetchDevelopers(land.market_id, land.submarket_id),
+      fetchIndustrialParks(land.market_id, land.sub_market_id),
+      fetchOwners(land.market_id, land.sub_market_id),
+      fetchDevelopers(land.market_id, land.sub_market_id),
     ])
     if (!industrialParks.items.find(item => item.id === land.industrial_park_id)) land.industrial_park_id = ''
     if (!owners.items.find(item => item.id === land.owner_id)) land.owner_id = ''
@@ -534,7 +532,7 @@ defineExpose({
             <div class="col-md-4 mt-2">
               <label class="form-label">Submarket *</label>
               <MASelect
-                v-model="land.submarket_id"
+                v-model="land.sub_market_id"
                 :options="submarkets.items"
                 :reduce="option => option.value"
                 label="label"
@@ -554,7 +552,7 @@ defineExpose({
                 label="name"
                 placeholder="Select..."
                 :loading="industrialParks.loading"
-                :disabled="!land.submarket_id"
+                :disabled="!land.sub_market_id"
                 required
                 edit-options
                 @submitOption="(option, update) => { saveOptionGeneral('industrial_park_id', option, update) }"
@@ -601,7 +599,7 @@ defineExpose({
                       label="name"
                       placeholder="Select..."
                       :loading="owners.loading"
-                      :disabled="!land.submarket_id"
+                      :disabled="!land.sub_market_id"
                       required
                       edit-options
                       @submitOption="(option, update) => { saveOptionGeneral('owner_id', option, update) }"
@@ -654,7 +652,7 @@ defineExpose({
                       label="name"
                       placeholder="Select..."
                       :loading="developers.loading"
-                      :disabled="!land.submarket_id"
+                      :disabled="!land.sub_market_id"
                       required
                       edit-options
                       @submitOption="(option, update) => { saveOptionGeneral('developer_id', option, update) }"

@@ -24,6 +24,9 @@ export const ROUTE_NAMES = {
   POLICIES: 'Policies',
   POLICY_DETAIL: 'Policy Detail',
   INDUSTRIES: 'Industries',
+  BROKERS_INDEX: 'Brokers',
+  BROKERS_CREATE: 'Create Broker',
+  BROKERS_UPDATE: 'Edit Broker',
   INDUSTRY_CREATE: 'Industry Create',
   INDUSTRY_UPDATE: 'Industry Update',
 
@@ -31,6 +34,9 @@ export const ROUTE_NAMES = {
   LANDS_CREATE: 'Create Lands',
   LANDS_UPDATE: 'Edit Lands',
 
+  REITS: 'REITs',
+  REITS_CREATE: 'Create REIT',
+  REITS_UPDATE: 'Edit REIT',
   TENANTS_INDEX: 'Tenants',
   TENANTS_DETAIL: 'Tenant Detail',
 
