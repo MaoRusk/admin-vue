@@ -54,24 +54,16 @@ async function fetchReit() {
   loading.value = true
 
   try {
-    // const { data } = await API.ReitAnnual.getAllReitAnnual({
-    //   page: page.value,
-    //   size: itemsPerPage.value,
-    //   search: tableSearch.value,
-    // }, columnFilter.value, columnSorter.value);
-    // page.value = data.data.current_page
-    // totalItems.value = data.data.total
-    // totalPages.value = data.data.last_page
+    const { data } = await API.ReitAnnual.getAllReitAnnual({
+      page: page.value,
+      size: itemsPerPage.value,
+      search: tableSearch.value,
+    }, columnFilter.value, columnSorter.value);
+    page.value = data.data.current_page
+    totalItems.value = data.data.total
+    totalPages.value = data.data.last_page
 
-    // reits.value = data.data.data.map((item) => ({
-    //   ...item,
-    //   reitName: item.reit?.name || '-',
-    // }))
-    const { data } = await API.ReitAnnual.getAllReitAnnual()
-    page.value = 1
-    totalPages.value = 1
-    totalItems.value = data.data.length
-    reits.value = data.data.map((item) => ({
+    reits.value = data.data.data.map((item) => ({
       ...item,
       reitName: item.reit?.name || '-',
     }))
