@@ -47,7 +47,7 @@ async function removeReit(id) {
       fetchReit()
     }
   } catch (error) {
-    console.error('Error fetching land:', error);
+    console.error('Error fetching reit:', error);
   }
 }
 
@@ -75,7 +75,7 @@ async function fetchReit() {
     }))
     loading.value = false
   } catch (error) {
-    console.error('Error fetching lands:', error);
+    console.error('Error fetching REITs:', error);
     reits.value = [];
   } finally {
     loading.value = false
