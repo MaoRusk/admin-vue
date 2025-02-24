@@ -45,5 +45,14 @@ export default {
 
   deleteCompany(companyId) {
     return httpClient.delete(`/companies/${companyId}`)
+  },
+
+  // Método para obtener la URL completa de una imagen
+  getImageUrl(path) {
+    if (!path) return null;
+    if (path.match(/^(http|https):\/\//)) {
+      return path;
+    }
+    return `${httpClient.defaults.baseURL}/storage/${path}`;
   }
 } 

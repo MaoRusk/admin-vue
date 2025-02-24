@@ -55,17 +55,7 @@
 
     computed: {
       imageUrl() {
-        const logoUrl = this.company.logoUrl
-        // Si la URL ya es una URL completa, retornarla directamente
-        if (logoUrl && logoUrl.match(/^(http|https):\/\//)) {
-          return logoUrl
-        }
-        // Si es una ruta relativa y no contiene ya la URL base
-        else if (logoUrl && !logoUrl.includes('laravel-back-production-9320.up.railway.app')) {
-          return `https://laravel-back-production-9320.up.railway.app/storage/${logoUrl}`
-        }
-        // Si no hay URL, retornar null o una imagen por defecto
-        return null
+        return API.companies.getImageUrl(this.company.logoUrl);
       },
       isNew() {
         return !this.id || this.id === '0' || this.id === 0;
@@ -189,7 +179,7 @@
 
             // Redirección después de la actualización exitosa
             await this.$router.push({ 
-              name: ROUTE_NAMES.COMPANIES,
+              name: ROUTE_NAMES.COMPANIES_INDEX,
               query: { 
                 refresh: Date.now(),
                 updated: this.id
@@ -233,7 +223,7 @@
 
       goBack() {
         this.$router.push({ 
-          name: ROUTE_NAMES.COMPANIES,
+          name: ROUTE_NAMES.COMPANIES_INDEX,
           query: { 
             refresh: Date.now() 
           }
@@ -325,7 +315,7 @@
       },
 
       goToCompanies() {
-        this.$router.push({ name: ROUTE_NAMES.COMPANIES });
+        this.$router.push({ name: ROUTE_NAMES.COMPANIES_INDEX });
       },
 
       async deleteContact(contact) {

@@ -34,11 +34,7 @@ export default {
   },
   methods: {
     getLogoUrl(logoUrl) {
-      if (!logoUrl) return null;
-      if (logoUrl.match(/^(http|https):\/\//)) {
-        return logoUrl;
-      }
-      return `https://laravel-back-production-9320.up.railway.app/storage/${logoUrl}`;
+      return API.companies.getImageUrl(logoUrl);
     },
     async fetchData() {
       try {
@@ -59,10 +55,16 @@ export default {
       }
     },
     newCompany() {
-      this.$router.push('/operations/company/create')
+      this.$router.push({ 
+        name: ROUTE_NAMES.COMPANY_DETAIL,
+        params: { id: '0' }
+      });
     },
     viewDetails(item) {
-      this.$router.push(`/operations/company/${item.id}`)
+      this.$router.push({ 
+        name: ROUTE_NAMES.COMPANY_DETAIL,
+        params: { id: item.id }
+      });
     },
     async deleteCompany(item) {
       const result = await Swal.fire({
@@ -118,7 +120,7 @@ export default {
     <CCardBody class="p-3">
       <CRow class="align-items-center">
         <CCol :xs="12" class="text-end">
-          <CButton color="success" @click="newCompany()" class="w-100 w-sm-auto">
+          <CButton color="success" @click="newCompany()">
             <CIcon icon="cilPlus" class="me-2" />New Company
           </CButton>
         </CCol>
@@ -297,11 +299,6 @@ export default {
     padding: 0.5rem;
   }
 
-  /* Ajuste para el botón New Company */
-  .w-100.w-sm-auto {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
 }
 
 /* Ajustes para pantallas muy pequeñas */
