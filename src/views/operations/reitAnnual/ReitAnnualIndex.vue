@@ -22,10 +22,11 @@ const tableSearch = ref('')
 
 const columns = [
   { key: 'reitName', label: 'REIT' },
-  { key: 'type', label: 'Type' },
   { key: 'year', label: 'Year' },
-  { key: 'quarter', label: 'Quarter' },
-  { key: 'cap_rate', label: 'Cap Rate' },
+  { key: 'noi', label: 'NOI' },
+  { key: 'cap_rate', label: 'CAP Rate' },
+  { key: 'occupancy', label: 'Occupancy' },
+  { key: 'sqft', label: 'sqft' },
   { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
 
@@ -58,13 +59,18 @@ async function fetchReit() {
       page: page.value,
       size: itemsPerPage.value,
       search: tableSearch.value,
-    }, columnFilter.value, columnSorter.value);
+    }, {...columnFilter.value, type: 'annual'}, columnSorter.value);
     page.value = data.data.current_page
     totalItems.value = data.data.total
     totalPages.value = data.data.last_page
 
     reits.value = data.data.data.map((item) => ({
       ...item,
+      year: item.year || '-',
+      noi: item.noi || '-',
+      cap_rate: item.cap_rate || '-',
+      occupancy: item.occupancy || '-',
+      sqft: item.sqft || '-',
       reitName: item.reit?.name || '-',
     }))
     loading.value = false

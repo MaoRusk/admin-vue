@@ -21,22 +21,20 @@ watch(
 const reitAnnualId = computed(() => Number(route.params.reitAnnualId) || null)
 
 const reitEmpty = {
-  reit_id: '', // 'required|exists:cat_reits,id',
-  year: '', // 'required|integer|min:1900|max:' . date('Y'),
-  quarter: '', // 'nullable|string|in:Q1,Q2,Q3,Q4',
-  noi: '', // 'required|numeric|min:0|max:999999.99',
-  cap_rate: '', // 'required|numeric|min:0|max:99.99',
-  occupancy: '', // 'required|numeric|min:0|max:100',
-  m2: '', // 'nullable|integer|min:0',
-  sqft: '', // 'required|numeric|min:0|max:9999999999.99',
-  buildings: '', // 'required|integer|min:0',
-  customer_retention_rate: '', // 'required|numeric|min:0|max:100',
-  average_rent: '', // 'required|numeric|min:0|max:999999.99',
-  contracts: '', // 'required|numeric|min:0|max:99.99',
-  rental_income: '', // 'required|numeric|min:0|max:99999999.99',
-  dolar: '', // 'required|numeric|min:0|max:99999.99',
-  prop_investment: '', // 'required|numeric|min:0|max:99999999.99',
-  type: '', // 'required|in:annual,quarter',
+  reit_id: '',
+  year: '',
+  noi: '',
+  cap_rate: '',
+  occupancy: '',
+  m2: '',
+  sqft: '',
+  buildings: '',
+  customer_retention_rate: '',
+  average_rent: '',
+  contracts: '',
+  rental_income: '',
+  dolar: '',
+  prop_investment: '',
 }
 
 const reit = reactive({ ...reitEmpty })
@@ -46,6 +44,7 @@ async function onSubmit() {
     let data;
     const body = {
       ...reit,
+      type: 'annual'
     }
     if (reitAnnualId.value) {
       ({ data } = await API.ReitAnnual.updateReitAnnual(reitAnnualId.value, body));
@@ -68,7 +67,7 @@ async function fetchReit() {
     const { data } = await API.ReitAnnual.getReitAnnual(reitAnnualId.value);
     ['reit_id']
     .forEach(prop => reit[prop] = data.data[prop] ? +(data.data[prop]) : '');
-    ['year', 'quarter', 'noi', 'cap_rate', 'occupancy', 'm2', 'sqft', 'buildings', 'customer_retention_rate', 'average_rent', 'contracts', 'rental_income', 'dolar', 'prop_investment', 'type']
+    ['year', 'noi', 'cap_rate', 'occupancy', 'm2', 'sqft', 'buildings', 'customer_retention_rate', 'average_rent', 'contracts', 'rental_income', 'dolar', 'prop_investment']
     .forEach(prop => reit[prop] = data.data[prop] ? `${data.data[prop]}` : '');
   } catch (error) {
     Swal.fire({
@@ -83,9 +82,9 @@ const reits = reactive({ loading: false, items: []})
 
 async function fetchReits() {
   reits.loading = true
-  const { data } = {data: {data: [{id: 1, name: 'Reit 1'}]}};
+  const data = await API.reits.getReits()
   reits.loading = false
-  reits.items = data.data.sort((a, b) => a.name.localeCompare(b.name))
+  reits.items = data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
 onMounted(async () => {
@@ -128,28 +127,8 @@ onMounted(async () => {
                 </div>
 
                 <div class="col-md-4 mt-2">
-                  <label class="form-label">Type *</label>
-                  <MASelect
-                    v-model="reit.type"
-                    :options="['annual', 'quarter']"
-                    required
-                    placeholder="Select..."
-                  />
-                </div>
-
-                <div class="col-md-4 mt-2">
                   <label class="form-label">Year *</label>
-                  <CDatePicker label="Year Built" v-model:date="reit.year" locale="en-US" selectionType="year" required />
-                </div>
-
-                <div v-if="reit.type === 'quarter'" class="col-md-4 mt-2">
-                  <label class="form-label">Quarter *</label>
-                  <MASelect
-                    v-model="reit.quarter"
-                    :options="['Q1', 'Q2', 'Q3', 'Q4']"
-                    required
-                    placeholder="Select..."
-                  />
+                  <CDatePicker v-model:date="reit.year" locale="en-US" selectionType="year" required />
                 </div>
 
                 <div class="col-md-4 mt-2">

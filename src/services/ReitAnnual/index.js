@@ -3,8 +3,16 @@ import httpClient from '../../plugins/axios'
 const RESOURCE_URL = '/reit-annual'
 
 export default {
-  getAllReitAnnual() {
-    return httpClient.get(RESOURCE_URL)
+  getAllReitAnnual(query, filters = {}, sorter = {}) {
+    return httpClient.get(RESOURCE_URL, {
+      params: {
+        page: query?.page || null,
+        size: query?.size || null,
+        search: query?.search || null,
+        ...filters,
+        ...sorter,
+      },
+    })
   },
   getReitAnnual(reitAnnualId) {
     return httpClient.get(`${RESOURCE_URL}/${reitAnnualId}`)
