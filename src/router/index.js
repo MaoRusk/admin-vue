@@ -91,7 +91,7 @@ const routes = [
           },
           {
             path: 'companies',
-            name: ROUTE_NAMES.COMPANIES,
+            name: ROUTE_NAMES.COMPANIES_INDEX,
             component: () => import('@/views/catalogs/companies/Companies.vue'),
           },
           {
@@ -158,8 +158,8 @@ const routes = [
           },
           {
             path: 'brokers',
-            name: ROUTE_NAMES.BROKERS,
-            component: Brokers,
+            name: ROUTE_NAMES.BROKERS_INDEX,
+            component: () => import('@/views/catalogs/brokers/Brokers.vue'),
             meta: {
               requiresAuth: true,
               label: 'Brokers',
@@ -168,7 +168,7 @@ const routes = [
           {
             path: 'broker/create',
             name: ROUTE_NAMES.BROKERS_CREATE,
-            component: BrokerDetail,
+            component: () => import('@/views/catalogs/brokers/BrokerDetail.vue'),
             meta: {
               requiresAuth: true,
               label: 'Create Broker',
@@ -177,7 +177,7 @@ const routes = [
           {
             path: 'broker/:id',
             name: ROUTE_NAMES.BROKERS_UPDATE,
-            component: BrokerDetail,
+            component: () => import('@/views/catalogs/brokers/BrokerDetail.vue'),
             props: true,
             meta: {
               requiresAuth: true,
