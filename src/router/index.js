@@ -199,6 +199,28 @@ const routes = [
             name: ROUTE_NAMES.MARKET_SIZE_PENDING_APPROVALS,
             component: () => import('@/views/operations/buildings/PendingApprovals.vue'),
           },
+          {
+            path: 'reits',
+            name: ROUTE_NAMES.REITS_INDEX,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageIndex.vue'),
+          },
+          {
+            path: 'reit-mortgage',
+            name: ROUTE_NAMES.REIT_MORTGAGE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageIndex.vue'),
+          },
+
+          {
+            path: 'reit-mortgage/create',
+            name: ROUTE_NAMES.REIT_MORTGAGE_CREATE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageDetail.vue'),
+          },
+
+          {
+            path: 'reit-mortgage/:reitMortgageId/edit',
+            name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageDetail.vue'),
+          },
         ],
       },
     ],
