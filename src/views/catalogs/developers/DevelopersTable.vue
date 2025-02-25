@@ -219,9 +219,8 @@ export default {
 <template>
   <CCard class="mb-4">
     <CRow>
-      <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
-        <CCardBody>
+        <CCardBody style="text-align: right;">
           <CButton color="success" @click="newDeveloper()">
             <CIcon icon="cilPlus" class="me-2" />New Developer
           </CButton>
@@ -232,76 +231,80 @@ export default {
 
   <CCard class="mb-4">
     <CCardBody>
-      <CSmartTable
-        v-if="developers.length > 0"
-        :active-page="1"
-        :items="developers"
-        :columns="columns"
-        :items-per-page="10"
-        :table-filter="true"
-        cleaner
-        :table-filter-label="'Search:'"
-        :table-filter-placeholder="'Type something...'"
-        :pagination="true"
-        hover
-      >
-        <template #is_developer="{ item }">
-          <td>
-            <CBadge :color="item.is_developer ? 'success' : 'danger'">
-              {{ item.is_developer ? 'Yes' : 'No' }}
-            </CBadge>
-          </td>
-        </template>
+      <div class="table-responsive">
+        <CSmartTable
+          v-if="developers.length > 0"
+          :active-page="1"
+          :items="developers"
+          :columns="columns"
+          :items-per-page="10"
+          :table-filter="true"
+          cleaner
+          :table-filter-label="'Search:'"
+          :table-filter-placeholder="'Type something...'"
+          :pagination="true"
+          hover
+          responsive
+        >
+          <template #is_developer="{ item }">
+            <td>
+              <CBadge :color="item.is_developer ? 'success' : 'danger'">
+                {{ item.is_developer ? 'Yes' : 'No' }}
+              </CBadge>
+            </td>
+          </template>
 
-        <template #is_builder="{ item }">
-          <td>
-            <CBadge :color="item.is_builder ? 'success' : 'danger'">
-              {{ item.is_builder ? 'Yes' : 'No' }}
-            </CBadge>
-          </td>
-        </template>
+          <template #is_builder="{ item }">
+            <td>
+              <CBadge :color="item.is_builder ? 'success' : 'danger'">
+                {{ item.is_builder ? 'Yes' : 'No' }}
+              </CBadge>
+            </td>
+          </template>
 
-        <template #is_owner="{ item }">
-          <td>
-            <CBadge :color="item.is_owner ? 'success' : 'danger'">
-              {{ item.is_owner ? 'Yes' : 'No' }}
-            </CBadge>
-          </td>
-        </template>
+          <template #is_owner="{ item }">
+            <td>
+              <CBadge :color="item.is_owner ? 'success' : 'danger'">
+                {{ item.is_owner ? 'Yes' : 'No' }}
+              </CBadge>
+            </td>
+          </template>
 
-        <template #market_name="{ item }">
-          <td>{{ getMarketName(item.market_id) }}</td>
-        </template>
+          <template #market_name="{ item }">
+            <td>{{ getMarketName(item.market_id) }}</td>
+          </template>
 
-        <template #sub_market_name="{ item }">
-          <td>{{ getSubmarketName(item.sub_market_id) }}</td>
-        </template>
+          <template #sub_market_name="{ item }">
+            <td>{{ getSubmarketName(item.sub_market_id) }}</td>
+          </template>
 
-        <template #actions="{ item }">
-          <td class="py-2" style="text-align: center">
-            <CButton 
-              color="primary" 
-              variant="outline" 
-              square 
-              size="sm" 
-              @click="viewDetails(item)"
-              class="mx-1"
-            >
-              <CIcon icon="cil-pencil" />
-            </CButton>
-            <CButton 
-              color="danger" 
-              variant="outline" 
-              square 
-              size="sm" 
-              class="mx-1"
-              @click="deleteDeveloper(item)"
-            >
-              <CIcon icon="cil-trash" />
-            </CButton>
-          </td>
-        </template>
-      </CSmartTable>
+          <template #actions="{ item }">
+            <td class="py-2" style="text-align: center">
+              <CButton 
+                color="primary" 
+                variant="outline" 
+                square 
+                size="sm" 
+                @click="viewDetails(item)"
+                class="mx-1"
+              >
+                <CIcon icon="cil-pencil" />
+              </CButton>
+              <CButton 
+                color="danger" 
+                variant="outline" 
+                square 
+                size="sm" 
+                class="mx-1"
+                @click="deleteDeveloper(item)"
+              >
+                <CIcon icon="cil-trash" />
+              </CButton>
+            </td>
+          </template>
+
+        </CSmartTable>
+      </div>
     </CCardBody>
   </CCard>
-</template> 
+</template>
