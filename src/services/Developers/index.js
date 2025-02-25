@@ -41,11 +41,11 @@ export default {
   createDeveloper({ name, is_developer, is_builder, is_owner, market_id, sub_market_id }) {
     return httpClient.post(`/developers`, {
       name,
-      is_developer,
-      is_builder,
-      is_owner,
-      market_id,
-      sub_market_id
+      is_developer: Boolean(is_developer),
+      is_builder: Boolean(is_builder),
+      is_owner: Boolean(is_owner),
+      market_id: market_id ? Number(market_id) : null,
+      sub_market_id: sub_market_id ? Number(sub_market_id) : null
     })
   },
   updateDeveloper(developerId, { name, is_developer, is_builder, is_owner, market_id, sub_market_id }) {

@@ -25,7 +25,7 @@ const developer = ref({
 
 // Validar si estamos en la ruta de creación
 const isCreating = computed(() => {
-  return route.path === '/operations/developer/create' || route.name === ROUTE_NAMES.DEVELOPERS_CREATE
+  return route.name === ROUTE_NAMES.DEVELOPERS_CREATE
 })
 
 const loadDeveloper = async () => {

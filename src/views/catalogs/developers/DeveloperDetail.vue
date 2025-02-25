@@ -207,8 +207,11 @@ export default {
       try {
         const developerData = {
           ...this.developer,
-          market_id: Number(this.developer.market_id),
-          sub_market_id: Number(this.developer.sub_market_id)
+          market_id: this.developer.market_id ? Number(this.developer.market_id) : null,
+          sub_market_id: this.developer.sub_market_id ? Number(this.developer.sub_market_id) : null,
+          is_developer: Boolean(this.developer.is_developer),
+          is_builder: Boolean(this.developer.is_builder),
+          is_owner: Boolean(this.developer.is_owner)
         }
 
         if (this.isNew) {
