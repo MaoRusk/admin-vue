@@ -84,6 +84,13 @@ const building = reactive({...buildingEmpty})
 const formHtmlElement = ref(null)
 const VALUE_SEPARATOR = ' x '
 
+const inputFiles = [
+  {category: 'Front Page', type: 'frontpage', label: 'Upload Front Page File', multiple: false},
+  {category: 'Aerial', type: 'aerial', label: 'Upload Aerial File', multiple: false},
+  {category: '360', type: '360', label: 'Upload 360 File', multiple: false},
+  {category: 'Layout', type: 'layout', label: 'Upload Layout File', multiple: false},
+  {category: 'Gallery', type: 'gallery1', label: 'Upload Gallery Files', multiple: true},
+]
 
 const validateRangeInputs = (model, field1, field2, fieldName) => {
   if (model && model[field1] && model[field2] && +(model[field1]) > +(model[field2])) {
@@ -119,15 +126,17 @@ async function onSubmit() {
     let data;
     const formData = new FormData();
 
-    Object.keys(building.files).forEach(filePrefix => {
-      if (Array.isArray(building.files[filePrefix])) {
-        building.files[filePrefix].forEach(file => {
-          formData.append("files[]", file);
-        });
-      } else {
-        console.warn(`Files for prefix "${filePrefix}" not found or dont have array type.`);
-      }
-    });
+    if (building.files && Object.keys(building.files).length) {
+      Object.keys(building.files).forEach(filePrefix => {
+        if (Array.isArray(building.files[filePrefix])) {
+          building.files[filePrefix].forEach(file => {
+            formData.append("files[]", file);
+          });
+        } else {
+          console.warn(`Files for prefix "${filePrefix}" not found or dont have array type.`);
+        }
+      });
+    }
 
     const body = {
       ...building,
@@ -185,9 +194,6 @@ async function onSubmit() {
   }
 }
 
-
-
-
 const fetchBuildingData = async () => {
   try {
     const buildingId = props.buildingId;
@@ -241,8 +247,8 @@ const generationsTypes = reactive({ loading: false, items: []})
 const typesLightnings = reactive({ loading: false, items: []})
 const loadingDoors = reactive({ loading: false, items: []})
 const technicalImprovements = reactive({ loading: false, items: []})
-const files = ref([])
 
+const allowedTypes = ['image/jpeg', 'image/jpeg', 'image/png', 'application/pdf', 'application/vnd.google-earth.kmz'];
 const handleFiles = (filePrefix, event) => {
   if (!event || !event.target || !event.target.files) {
     console.error("Error: Failed to get files from event.");
@@ -255,8 +261,6 @@ const handleFiles = (filePrefix, event) => {
     console.log("No files selected.");
     return;
   }
-
-  const allowedTypes = ['image/jpeg', 'image/jpeg', 'image/png', 'application/pdf', 'application/vnd.google-earth.kmz'];
 
   const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
 
@@ -1352,72 +1356,19 @@ defineExpose({
           <CCard class="card-customer-buildings">
             <CCardBody>
               <CRow>
-                <CCol md>
-                  <div class="col-md-4">
+                  <div v-for="iFile in inputFiles" :key="iFile.category" class="col-12">
                     <div class="mt-2">
-                      <label class="form-label">Upload Front Page File</label>
-                      <input type="file" name="files" @change="handleFiles('frontpage', $event)" />
-                        <div v-for="(files, type) in building.files_by_type" :key="type">
-                        <div v-if="type === 'Front Page' && files.length" class="flex gap-2">
-                          <div class="relative">
-                            <img :src="files[0].path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-
-                    <div class="mt-2">
-                      <label class="form-label">Upload Gallery Files</label>
-                      <input type="file" name="files" multiple @change="handleFiles('gallery1', $event)" />
-
-                      <div v-for="(files, type) in building.files_by_type" :key="type">
-                        <div v-if="type === 'Gallery' && files.length" class="flex gap-2">
-                          <div v-for="(file, index) in files" :key="index" class="flex">
-                            <img :src="file.path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="mt-2">
-                      <label class="form-label">Upload Aerial File</label>
-                      <input type="file" name="files" @change="handleFiles('aerial', $event)" />
-                      <div v-for="(files, type) in building.files_by_type" :key="type">
-                        <div v-if="type === 'Aerial' && files.length" class="flex gap-2">
-                          <div class="relative">
-                            <img :src="files[0].path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="mt-2">
-                      <label class="form-label">Upload 360 File</label>
-                      <input type="file" name="files" @change="handleFiles('360', $event)" />
-                      <div v-for="(files, type) in building.files_by_type" :key="type">
-                        <div v-if="type === '360' && files.length" class="flex gap-2">
-                          <div class="relative">
-                            <img :src="files[0].path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="mt-2">
-                      <label class="form-label">Upload Layout File</label>
-                      <input type="file" name="files" @change="handleFiles('layout', $event)" />
-                      <div v-for="(files, type) in building.files_by_type" :key="type">
-                        <div v-if="type === 'Layout' && files.length" class="flex gap-2">
-                          <div class="relative">
-                            <img :src="files[0].path" class="w-10 h-10 object-cover rounded border mt-2" style="max-width: 50px; max-height: 50px;" />
+                      <label class="form-label">{{ iFile.label }}</label>
+                      <input type="file" name="files" @change="handleFiles(iFile.type, $event)" :multiple="iFile.multiple" class="form-control" :accept="allowedTypes.join(',')" />
+                      <div v-if="building.files_by_type[iFile.category]?.length" class="row gap-2 my-2">
+                        <div v-for="(photo) in building.files_by_type[iFile.category]" :key="photo.path">
+                          <div class="col-sm-6 col-md-3 col-lg-2">
+                            <img :src="photo.path" class="rounded border" style="max-width: 200px; max-height: 50px;" :alt="photo.path" :title="photo.path" />
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                </CCol>
               </CRow>
             </CCardBody>
           </CCard>

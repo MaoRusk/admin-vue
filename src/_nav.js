@@ -131,6 +131,12 @@ export default [
         to: { name: ROUTE_NAMES.REIT_ANNUAL_INDEX },
         icon: 'cilGraph',
       },
+      {
+        component: 'CNavItem',
+        name: 'REITs Quarter',
+        to: { name: ROUTE_NAMES.REIT_QUARTER_INDEX },
+        icon: 'cilGraph',
+      },
     ],
   },
 ]

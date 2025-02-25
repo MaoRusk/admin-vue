@@ -1,13 +1,20 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
+import { useRoute } from 'vue-router';
 
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { REIT_ANNUAL_ITEMS_PER_PAGE } from '../../../constants';
 
+const route = useRoute()
 const storage = useLocalStorage()
+
+const isReitAnnual = computed(() => route.name === ROUTE_NAMES.REIT_ANNUAL_INDEX)
+const reitType = computed(() => isReitAnnual.value ? 'annual' : 'quarter')
+const routeCreate = computed(() => isReitAnnual.value ? ROUTE_NAMES.REIT_ANNUAL_CREATE : ROUTE_NAMES.REIT_QUARTER_CREATE)
+const routeUpdate = computed(() => isReitAnnual.value ? ROUTE_NAMES.REIT_ANNUAL_UPDATE : ROUTE_NAMES.REIT_QUARTER_UPDATE)
 
 const reits = ref([]);
 
@@ -20,15 +27,21 @@ const columnFilter = ref({})
 const columnSorter = ref({})
 const tableSearch = ref('')
 
-const columns = [
-  { key: 'reitName', label: 'REIT' },
-  { key: 'year', label: 'Year' },
-  { key: 'noi', label: 'NOI' },
-  { key: 'cap_rate', label: 'CAP Rate' },
-  { key: 'occupancy', label: 'Occupancy' },
-  { key: 'sqft', label: 'sqft' },
-  { key: 'actions', label: 'actions', sorter: false, filter: false },
-];
+const columns = computed(() => {
+  const cols = [
+    { key: 'reitName', label: 'REIT' },
+    { key: 'year', label: 'Year' },
+    { key: 'noi', label: 'NOI' },
+    { key: 'cap_rate', label: 'CAP Rate' },
+    { key: 'occupancy', label: 'Occupancy' },
+    { key: 'sqft', label: 'sqft' },
+    { key: 'actions', label: 'actions', sorter: false, filter: false },
+  ]
+  if (!isReitAnnual.value) {
+    cols.splice(2, 0, { key: 'quarter', label: 'Quarter' })
+  }
+  return cols;
+});
 
 async function removeReit(id) {
   try {
@@ -43,7 +56,8 @@ async function removeReit(id) {
     })
     if (isConfirmed) {
       const { data } = await API.ReitAnnual.deleteReitAnnual(id);
-      Swal.fire('Deleted!', data.message, 'success')
+      console.log(data)
+      Swal.fire('Deleted!', `Reit ${reitType.value} deleted successfully`, 'success')
       fetchReit()
     }
   } catch (error) {
@@ -59,7 +73,7 @@ async function fetchReit() {
       page: page.value,
       size: itemsPerPage.value,
       search: tableSearch.value,
-    }, {...columnFilter.value, type: 'annual'}, columnSorter.value);
+    }, {...columnFilter.value, type: reitType.value}, columnSorter.value);
     page.value = data.data.current_page
     totalItems.value = data.data.total
     totalPages.value = data.data.last_page
@@ -67,6 +81,7 @@ async function fetchReit() {
     reits.value = data.data.data.map((item) => ({
       ...item,
       year: item.year || '-',
+      quarter: item.quarter || '-',
       noi: item.noi || '-',
       cap_rate: item.cap_rate || '-',
       occupancy: item.occupancy || '-',
@@ -75,7 +90,7 @@ async function fetchReit() {
     }))
     loading.value = false
   } catch (error) {
-    console.error('Error fetching REITs:', error);
+    console.error('Error fetching REITs:', reitType.value, error);
     reits.value = [];
   } finally {
     loading.value = false
@@ -86,15 +101,16 @@ onMounted(() => {
   fetchReit();
 });
 
+watch(() => route.name, fetchReit)
 watch([page, itemsPerPage, tableSearch], fetchReit)
 watch([columnSorter, columnFilter], fetchReit, { deep: true })
 </script>
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.REIT_ANNUAL_CREATE })">
+    <CButton color="success" @click="$router.push({ name: routeCreate })">
       <CIcon name="cilPlus" size="sm" />
-      New Reit Annual
+      <span class="text-capitalize"></span>New Reit {{ reitType }}
     </CButton>
   </div>
   <CSmartTable
@@ -142,7 +158,7 @@ watch([columnSorter, columnFilter], fetchReit, { deep: true })
     <template #actions="{ item }">
       <td style="vertical-align: middle;">
         <div class="d-flex gap-1">
-          <CButton color="primary" variant="outline" square size="sm" @click.stop="$router.push({ name: ROUTE_NAMES.REIT_ANNUAL_UPDATE, params: { reitAnnualId: item.id } })">
+          <CButton color="primary" variant="outline" square size="sm" @click.stop="$router.push({ name: routeUpdate, params: { reitAnnualId: item.id } })">
             <CIcon name="cilPencil" size="sm" />
           </CButton>
           <CButton color="danger" variant="outline" square size="sm" @click.stop="removeReit(item.id)">
