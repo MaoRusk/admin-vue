@@ -3,11 +3,15 @@ import DevelopersService from '@/services/Developers'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
 import { API } from '@/services'
+import MarketsService from '@/services/Markets'
+import SubmarketsService from '@/services/Submarkets'
 
 export default {
   data() {
     return {
       developers: [],
+      markets: [],
+      submarkets: [],
       columns: [
         {
           key: 'id',
@@ -22,32 +26,32 @@ export default {
         {
           key: 'is_developer',
           label: 'Developer',
-          _style: { width: '20%' },
+          _style: { width: '10%' },
         },
         {
           key: 'is_builder',
           label: 'Builder',
-          _style: { width: '20%' },
+          _style: { width: '10%' },
         },
         {
           key: 'is_owner',
           label: 'Owner',
+          _style: { width: '10%' },
+        },
+        {
+          key: 'market_name',
+          label: 'Market',
           _style: { width: '20%' },
         },
         {
-          key: 'market',
-          label: 'Market',
-          _style: { width: '15%' },
-        },
-        {
-          key: 'submarket',
+          key: 'sub_market_name',
           label: 'SubMarket',
-          _style: { width: '15%' },
+          _style: { width: '20%' },
         },
         {
           key: 'actions',
           label: 'Actions',
-          _style: { width: '15%', textAlign: 'center' },
+          _style: { width: '5%', textAlign: 'center' },
           sorter: false,
           filter: false
         }
@@ -55,21 +59,56 @@ export default {
     }
   },
 
+  async created() {
+    await this.fetchMarkets()
+    await this.fetchDevelopers()
+  },
+
   methods: {
+    async fetchMarkets() {
+      try {
+        const response = await MarketsService.getMarkets()
+        this.markets = response
+      } catch (error) {
+        console.error('Error fetching markets:', error)
+      }
+    },
+
+    async fetchSubmarkets(market_id) {
+      try {
+        const response = await SubmarketsService.getSubmarkets({ market_id })
+        this.submarkets = [...this.submarkets, ...response]
+      } catch (error) {
+        console.error('Error fetching submarkets:', error)
+      }
+    },
+
     async fetchDevelopers() {
       try {
         const response = await API.developers.getDevelopers()
         this.developers = response.map(developer => ({
           ...developer,
-          market_name: developer.market?.name || '-',
-          sub_market_name: developer.sub_market?.name || '-'
+          market_name: this.getMarketName(developer.market_id),
+          sub_market_name: this.getSubmarketName(developer.sub_market_id)
         }))
-        return this.developers
+        
+        // Fetch submarkets for each unique market_id
+        const uniqueMarketIds = [...new Set(this.developers.map(d => d.market_id))]
+        await Promise.all(uniqueMarketIds.map(id => this.fetchSubmarkets(id)))
       } catch (error) {
         console.error('Error fetching developers:', error)
         this.developers = []
-        return []
       }
+    },
+
+    getMarketName(market_id) {
+      const market = this.markets.find(m => m.id === market_id)
+      return market ? market.name : '-'
+    },
+
+    getSubmarketName(submarket_id) {
+      const submarket = this.submarkets.find(s => s.id === submarket_id)
+      return submarket ? submarket.name : '-'
     },
 
     newDeveloper() {
@@ -126,8 +165,53 @@ export default {
     }
   },
 
-  mounted() {
-    return this.fetchDevelopers()
+  computed: {
+    columns() {
+      return [
+        {
+          key: 'id',
+          label: 'ID',
+          _style: { width: '5%' },
+        },
+        {
+          key: 'name',
+          label: 'Name',
+          _style: { width: '20%' },
+        },
+        {
+          key: 'is_developer',
+          label: 'Developer',
+          _style: { width: '10%' },
+        },
+        {
+          key: 'is_builder',
+          label: 'Builder',
+          _style: { width: '10%' },
+        },
+        {
+          key: 'is_owner',
+          label: 'Owner',
+          _style: { width: '10%' },
+        },
+        {
+          key: 'market_name',
+          label: 'Market',
+          _style: { width: '20%' },
+        },
+        {
+          key: 'sub_market_name',
+          label: 'Submarket',
+          _style: { width: '20%' },
+        },
+        {
+          key: 'actions',
+          label: 'Actions',
+          _style: { width: '5%', textAlign: 'center' },
+          sorter: false,
+          filter: false
+        }
+      ]
+    }
   }
 }
 </script>
@@ -185,12 +269,12 @@ export default {
           </td>
         </template>
 
-        <template #market="{ item }">
-          <td>{{ item.market_name }}</td>
+        <template #market_name="{ item }">
+          <td>{{ getMarketName(item.market_id) }}</td>
         </template>
 
-        <template #submarket="{ item }">
-          <td>{{ item.sub_market_name }}</td>
+        <template #sub_market_name="{ item }">
+          <td>{{ getSubmarketName(item.sub_market_id) }}</td>
         </template>
 
         <template #actions="{ item }">
