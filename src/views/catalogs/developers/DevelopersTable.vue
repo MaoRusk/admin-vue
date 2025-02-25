@@ -2,6 +2,7 @@
 import DevelopersService from '@/services/Developers'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { API } from '@/services'
 
 export default {
   data() {
@@ -34,6 +35,16 @@ export default {
           _style: { width: '20%' },
         },
         {
+          key: 'market',
+          label: 'Market',
+          _style: { width: '15%' },
+        },
+        {
+          key: 'submarket',
+          label: 'SubMarket',
+          _style: { width: '15%' },
+        },
+        {
           key: 'actions',
           label: 'Actions',
           _style: { width: '15%', textAlign: 'center' },
@@ -47,8 +58,12 @@ export default {
   methods: {
     async fetchDevelopers() {
       try {
-        const response = await DevelopersService.getDevelopers()
-        this.developers = response || []
+        const response = await API.developers.getDevelopers()
+        this.developers = response.map(developer => ({
+          ...developer,
+          market_name: developer.market?.name || '-',
+          sub_market_name: developer.sub_market?.name || '-'
+        }))
         return this.developers
       } catch (error) {
         console.error('Error fetching developers:', error)
@@ -62,7 +77,10 @@ export default {
     },
 
     viewDetails(item) {
-      this.$router.push({ name: ROUTE_NAMES.DEVELOPERS_UPDATE, params: { id: item.id } })
+      this.$router.push({
+        name: 'DeveloperDetail',
+        params: { id: item.id.toString() }
+      })
     },
 
     async deleteDeveloper(item) {
@@ -165,6 +183,14 @@ export default {
               {{ item.is_owner ? 'Yes' : 'No' }}
             </CBadge>
           </td>
+        </template>
+
+        <template #market="{ item }">
+          <td>{{ item.market_name }}</td>
+        </template>
+
+        <template #submarket="{ item }">
+          <td>{{ item.sub_market_name }}</td>
         </template>
 
         <template #actions="{ item }">

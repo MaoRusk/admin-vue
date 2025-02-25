@@ -6,32 +6,36 @@ export default {
     if (is_owner) params.is_owner = is_owner
     if (is_builder) params.is_builder = is_builder
     if (is_developer) params.is_developer = is_developer
-
-    // TODO: cambiar claves. una vez que pase la prueba con cliente
     if (marketId) params.market_id = marketId
-    if (submarketId) params.submarket_id = submarketId
+    if (submarketId) params.sub_market_id = submarketId
 
-    const response = await httpClient.get(`/developers`, {
+    const response = await httpClient.get(`/developers`, { 
       params,
+      params: {
+        with: ['market', 'subMarket']
+      }
     })
-    return response.data.data.map((item) => ({
-      ...item,
-      is_developer: !!item.is_developer,
-      is_builder: !!item.is_builder,
-      is_owner: !!item.is_owner,
+    
+    return response.data.data.map(developer => ({
+      ...developer,
+      market_name: developer.market?.name || '-',
+      sub_market_name: developer.sub_market?.name || '-'
     }))
   },
   async getDeveloper(developerId) {
-    const response = await httpClient.get(`/developers/${developerId}`)
-    const data = response.data
-    return {
-      ...response,
-      data: {
-        ...data,
-        is_developer: !!data.is_developer,
-        is_builder: !!data.is_builder,
-        is_owner: !!data.is_owner,
-      },
+    try {
+      console.log('Fetching developer with ID:', developerId)
+      const response = await httpClient.get(`/developers/${developerId}`, {
+        params: {
+          with: ['market', 'subMarket']
+        }
+      })
+      console.log('API Response:', response)
+      console.log('Developer data:', response.data)
+      return response.data
+    } catch (error) {
+      console.error('Error in getDeveloper service:', error)
+      throw error
     }
   },
   createDeveloper({ name, is_developer, is_builder, is_owner, market_id, sub_market_id }) {
@@ -41,20 +45,17 @@ export default {
       is_builder,
       is_owner,
       market_id,
-      sub_market_id,
+      sub_market_id
     })
   },
-  updateDeveloper(
-    developerId,
-    { name, is_developer, is_builder, is_owner, market_id, sub_market_id },
-  ) {
+  updateDeveloper(developerId, { name, is_developer, is_builder, is_owner, market_id, sub_market_id }) {
     return httpClient.put(`/developers/${developerId}`, {
       name,
       is_developer,
       is_builder,
       is_owner,
       market_id,
-      sub_market_id,
+      sub_market_id
     })
   },
   deleteDeveloper(developerId) {

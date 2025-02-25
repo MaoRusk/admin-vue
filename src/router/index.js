@@ -138,9 +138,9 @@ const routes = [
             },
           },
           {
-            path: 'developer/:id',
-            name: ROUTE_NAMES.DEVELOPERS_UPDATE,
-            component: () => import('@/views/catalogs/developers/DeveloperDetalle.vue'),
+            path: 'developers/:id',
+            name: 'DeveloperDetail',
+            component: () => import('@/views/catalogs/developers/DeveloperDetail.vue'),
             props: true,
             meta: {
               label: 'Edit Developer',
