@@ -87,10 +87,6 @@ export default defineComponent({
         alignItems: 'center',
         justifyContent: 'center'
       }
-    },
-
-    getImageUrl(logoUrl) {
-      return API.companies.getImageUrl(logoUrl);
     }
   }
 });
@@ -136,7 +132,7 @@ export default defineComponent({
         
         <template #nameCompany="{ item }">
           <td>
-            <CAvatar :src="getImageUrl(item.logoUrl)"/>
+            <CAvatar :src="item.logo"/>
             &nbsp;
             <span>{{item.nameCompany}}</span>
           </td>

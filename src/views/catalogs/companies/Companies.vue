@@ -33,9 +33,6 @@ export default {
     }
   },
   methods: {
-    getLogoUrl(logoUrl) {
-      return API.companies.getImageUrl(logoUrl);
-    },
     async fetchData() {
       try {
         const response = await API.companies.getCompanies()
@@ -150,8 +147,8 @@ export default {
             <td class="text-center py-2">
               <div class="company-logo-container">
                 <img 
-                  v-if="getLogoUrl(item.logo_url)"
-                  :src="getLogoUrl(item.logo_url)"
+                  v-if="item.logo"
+                  :src="item.logo"
                   alt="Company Logo"
                   class="company-logo"
                 />

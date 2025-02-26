@@ -30,7 +30,7 @@
           primary_color: '#4273D7',
           secondary_color: '#FCFCFC',
           image: null,
-          logoUrl: null,
+          logo: null,
           logo_id: null,
         },
         errors: {
@@ -54,12 +54,15 @@
     },
 
     computed: {
-      imageUrl() {
-        return API.companies.getImageUrl(this.company.logoUrl);
+      previewImage() {
+        if (this.company.image) {
+          return URL.createObjectURL(this.company.image);
+        }
+        return this.company.logo;
       },
       isNew() {
         return !this.id || this.id === '0' || this.id === 0;
-      }
+      },
     },
 
     created() {
@@ -76,22 +79,22 @@
             console.log('Loading company with ID:', this.id);
             const response = await API.companies.getCompany(this.id);
             
-            if (!response.data.success) {
-              throw new Error('Failed to load company data');
+            if (response.data && response.data.data) {
+              const companyData = response.data.data;
+              console.log('Loaded company data:', companyData);
+              
+              this.company = {
+                name: companyData.name || '',
+                website: companyData.website || '',
+                primary_color: (companyData.primary_color || '#4273D7').slice(0, 7),
+                secondary_color: (companyData.secondary_color || '#FCFCFC').slice(0, 7),
+                logo: companyData.logo || null,
+                logo_id: companyData.logo_id || null,
+                image: null
+              };
+            } else {
+              throw new Error('Invalid company data structure');
             }
-            
-            const companyData = response.data.data;
-            console.log('Loaded company data:', companyData);
-            
-            this.company = {
-              name: companyData.name || '',
-              website: companyData.website || '',
-              primary_color: (companyData.primary_color || '#4273D7').slice(0, 7),
-              secondary_color: (companyData.secondary_color || '#FCFCFC').slice(0, 7),
-              logo_id: companyData.logo_id,
-              logoUrl: companyData.logo_url,
-              image: null
-            };
           } catch (error) {
             console.error('Error loading company:', error);
             Swal.fire({
@@ -211,14 +214,33 @@
         }
       },
 
+      triggerFileInput() {
+        this.$refs.fileInput.click();
+      },
+
       handleImageUpload(event) {
         const file = event.target.files[0];
-        this.company.image = file;
+        if (file) {
+          // Validación básica del archivo
+          if (!file.type.startsWith('image/')) {
+            this.errors.logo = 'Please upload an image file';
+            return;
+          }
+          if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            this.errors.logo = 'Image size should be less than 5MB';
+            return;
+          }
+          this.company.image = file;
+          this.errors.logo = '';
+        }
       },
 
       addNewImage() {
         this.company.image = null;
-        this.company.logoUrl = null;
+        this.company.logo = null;
+        if (this.$refs.fileInput) {
+          this.$refs.fileInput.value = '';
+        }
       },
 
       goBack() {
@@ -468,16 +490,60 @@
                   <h6 class="mb-3">Company Logo</h6>
                   <CRow>
                     <CCol :md="12">
-                      <div class="mb-3">
+                      <!-- Preview de la imagen actual -->
+                      <div v-if="company.logo || company.image" class="mb-3">
+                        <div class="logo-preview">
+                          <CImage
+                            :src="previewImage"
+                            alt="Company Logo"
+                            rounded
+                            thumbnail
+                            width="200"
+                            height="200"
+                            class="company-logo"
+                          />
+                          <CButton
+                            color="danger"
+                            variant="outline"
+                            size="sm"
+                            class="remove-logo"
+                            @click="addNewImage"
+                          >
+                            <CIcon icon="cil-x" />
+                          </CButton>
+                        </div>
+                      </div>
+
+                      <!-- Input para nueva imagen -->
+                      <div v-if="!company.logo && !company.image" class="mb-3">
                         <CFormInput
                           type="file"
                           accept="image/*"
                           @change="handleImageUpload"
                           label="Upload Logo"
+                          :class="{ 'is-invalid': errors.logo }"
                         />
-                        <small class="text-muted" v-if="company.logo_id">
-                          Current Logo ID: {{ company.logo_id }}
-                        </small>
+                        <div v-if="errors.logo" class="invalid-feedback">
+                          {{ errors.logo }}
+                        </div>
+                      </div>
+
+                      <!-- Botón para cambiar imagen -->
+                      <div v-if="company.logo || company.image" class="mb-3">
+                        <CFormInput
+                          type="file"
+                          accept="image/*"
+                          @change="handleImageUpload"
+                          class="d-none"
+                          ref="fileInput"
+                        />
+                        <CButton
+                          color="primary"
+                          variant="outline"
+                          @click="triggerFileInput"
+                        >
+                          Change Logo
+                        </CButton>
                       </div>
                     </CCol>
                   </CRow>
@@ -527,13 +593,33 @@
 </template>
 
 <style scoped>
+.logo-preview {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.company-logo {
+  object-fit: contain;
+}
+
+.remove-logo {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  border-radius: 50%;
+  padding: 0.25rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (max-width: 768px) {
-  .mb-3 {
-    margin-bottom: 1rem !important;
-  }
-  
-  .gap-2 {
-    gap: 0.5rem !important;
+  :deep(.company-logo) {
+    width: 150px;
+    height: 150px;
   }
 }
 </style>
