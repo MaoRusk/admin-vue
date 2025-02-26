@@ -129,46 +129,29 @@
 
           const formData = new FormData();
           
-          // Asegurarse de que los valores sean strings
-          const data = {
-            name: String(this.company.name || ''),
-            website: String(this.company.website || ''),
-            primary_color: String(this.company.primary_color || '#4273D7').slice(0, 7),
-            secondary_color: String(this.company.secondary_color || '#FCFCFC').slice(0, 7),
-          };
+          // Agregar campos básicos al FormData
+          formData.append('name', String(this.company.name || ''));
+          formData.append('website', String(this.company.website || ''));
+          formData.append('primary_color', String(this.company.primary_color || '#4273D7').slice(0, 7));
+          formData.append('secondary_color', String(this.company.secondary_color || '#FCFCFC').slice(0, 7));
 
-          // Log de datos antes de enviar
-          console.log('Data to update:', data);
-
-          // Agregar campos al FormData
-          Object.entries(data).forEach(([key, value]) => {
-            formData.append(key, value);
-          });
-
-          if (!this.isNew) {
-            formData.append('_method', 'PUT');
-          }
-
+          // Manejar el archivo de imagen
           if (this.company.image instanceof File) {
-            formData.append('logo', this.company.image);
+            formData.append('logo', this.company.image); // Cambiado a 'logo'
+          } else if (this.company.logo === null) {
+            // Si se eliminó la imagen
+            formData.append('logo', ''); // Cambiado a 'logo'
           }
 
           let response;
           if (this.isNew) {
             response = await API.companies.createCompany(formData);
           } else {
-            console.log('Updating company with ID:', this.id);
+            // Ya no agregamos _method: PUT, siempre usamos POST
             response = await API.companies.updateCompany(this.id, formData);
           }
 
-          console.log('API Response:', response.data);
-
           if (response.data.success) {
-            // Recargar los datos de la compañía inmediatamente
-            if (!this.isNew) {
-              await this.loadCompany();
-            }
-
             await Swal.fire({
               icon: 'success',
               title: 'Success!',
@@ -180,7 +163,11 @@
               timerProgressBar: true,
             });
 
-            // Redirección después de la actualización exitosa
+            // Recargar los datos después de la actualización
+            if (!this.isNew) {
+              await this.loadCompany();
+            }
+
             await this.$router.push({ 
               name: ROUTE_NAMES.COMPANIES_INDEX,
               query: { 
@@ -189,20 +176,14 @@
               }
             });
           } else {
-            throw new Error(response.data.message || 'Update failed');
+            throw new Error(response.data.message || 'Operation failed');
           }
-
         } catch (error) {
-          console.error('Error details:', {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status
-          });
-          
+          console.error('Error saving company:', error);
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: error.response?.data?.message || error.message || 'An error occurred while saving the company',
+            text: error.response?.data?.message || error.message || 'An error occurred',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -214,32 +195,44 @@
         }
       },
 
-      triggerFileInput() {
-        this.$refs.fileInput.click();
-      },
-
       handleImageUpload(event) {
         const file = event.target.files[0];
         if (file) {
-          // Validación básica del archivo
+          // Validaciones de la imagen
           if (!file.type.startsWith('image/')) {
             this.errors.logo = 'Please upload an image file';
             return;
           }
+          
           if (file.size > 5 * 1024 * 1024) { // 5MB limit
             this.errors.logo = 'Image size should be less than 5MB';
             return;
           }
+
+          // Asignar la nueva imagen y limpiar la anterior
           this.company.image = file;
+          this.company.logo = null; // Limpiar la URL anterior
           this.errors.logo = '';
         }
       },
 
       addNewImage() {
+        // Limpiar la imagen actual
         this.company.image = null;
         this.company.logo = null;
+        this.company.logo_id = null;
+        
+        // Resetear el input file
         if (this.$refs.fileInput) {
           this.$refs.fileInput.value = '';
+        }
+      },
+
+      triggerFileInput() {
+        // Asegurarnos de que el elemento existe antes de llamar a click()
+        const fileInput = this.$refs.fileInput;
+        if (fileInput && typeof fileInput.click === 'function') {
+          fileInput.click();
         }
       },
 
@@ -514,7 +507,27 @@
                         </div>
                       </div>
 
-                      <!-- Input para nueva imagen -->
+                      <!-- Input oculto para cambiar imagen -->
+                      <input
+                        type="file"
+                        ref="fileInput"
+                        accept="image/*"
+                        @change="handleImageUpload"
+                        class="d-none"
+                      />
+
+                      <!-- Botón para cambiar imagen -->
+                      <div v-if="company.logo || company.image" class="mb-3">
+                        <CButton
+                          color="primary"
+                          variant="outline"
+                          @click="triggerFileInput"
+                        >
+                          Change Logo
+                        </CButton>
+                      </div>
+
+                      <!-- Input visible para nueva imagen -->
                       <div v-if="!company.logo && !company.image" class="mb-3">
                         <CFormInput
                           type="file"
@@ -526,24 +539,6 @@
                         <div v-if="errors.logo" class="invalid-feedback">
                           {{ errors.logo }}
                         </div>
-                      </div>
-
-                      <!-- Botón para cambiar imagen -->
-                      <div v-if="company.logo || company.image" class="mb-3">
-                        <CFormInput
-                          type="file"
-                          accept="image/*"
-                          @change="handleImageUpload"
-                          class="d-none"
-                          ref="fileInput"
-                        />
-                        <CButton
-                          color="primary"
-                          variant="outline"
-                          @click="triggerFileInput"
-                        >
-                          Change Logo
-                        </CButton>
                       </div>
                     </CCol>
                   </CRow>
