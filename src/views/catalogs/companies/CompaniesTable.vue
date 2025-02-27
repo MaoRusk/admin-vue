@@ -1,6 +1,6 @@
 <script>
 import { defineComponent } from 'vue'
-import axios from 'axios'
+import { API } from '@/services'
 import { ROUTE_NAMES } from '@/router/routeNames'
 
 const check = (event, id) => {
@@ -33,10 +33,11 @@ export default defineComponent({
   },
 
   methods: {
-    fetchCompanies() {
-      axios.get('https://laravel-back-production-9320.up.railway.app/api/companies').then(response => {
+    async fetchCompanies() {
+      try {
+        const response = await API.companies.getCompanies();
         this.companies = response.data;
-      }).catch(error => {
+      } catch (error) {
         Swal.fire({
           title: "Error!",
           text: "Error fetching companies.",
@@ -44,7 +45,7 @@ export default defineComponent({
           showConfirmButton: false,
           timer: 1500
         });
-      });
+      }
     },
 
     getBadge(status) {
@@ -64,13 +65,13 @@ export default defineComponent({
     newCompany() {
       this.$router.push({ 
         name: ROUTE_NAMES.COMPANY_DETAIL, 
-        params: { id: 0 } 
+        params: { id: '0' }
       })
     },
 
     goBack() {
       this.$router.push({ 
-        name: ROUTE_NAMES.COMPANIES 
+        name: ROUTE_NAMES.COMPANIES_INDEX
       })
     },
 
@@ -86,15 +87,6 @@ export default defineComponent({
         alignItems: 'center',
         justifyContent: 'center'
       }
-    },
-
-    getImageUrl(logoUrl) {
-      if (logoUrl && logoUrl.match(/^(http|https):\/\//)) {
-        return logoUrl
-      } else if (logoUrl && !logoUrl.includes('laravel-back-production-9320.up.railway.app')) {
-        return `https://laravel-back-production-9320.up.railway.app/storage/${logoUrl}`
-      }
-      return null
     }
   }
 });
@@ -140,7 +132,7 @@ export default defineComponent({
         
         <template #nameCompany="{ item }">
           <td>
-            <CAvatar :src="getImageUrl(item.logoUrl)"/>
+            <CAvatar :src="item.logo"/>
             &nbsp;
             <span>{{item.nameCompany}}</span>
           </td>

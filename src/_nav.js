@@ -53,7 +53,7 @@ export default [
       {
         component: 'CNavItem',
         name: 'Companies',
-        to: { name: ROUTE_NAMES.COMPANIES },
+        to: { name: ROUTE_NAMES.COMPANIES_INDEX },
         icon: 'cil-briefcase',
       },
       {
