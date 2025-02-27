@@ -103,10 +103,10 @@ export default {
       }
     },
     newBroker() {
-      this.$router.push('/operations/broker/create')
+      this.$router.push({ name: ROUTE_NAMES.BROKERS_CREATE })
     },
     viewDetails(item) {
-      this.$router.push(`/operations/broker/${item.id}`)
+      this.$router.push({ name: ROUTE_NAMES.BROKERS_UPDATE, params: { id: item.id } })
     },
     async deleteBroker(item) {
       const result = await Swal.fire({

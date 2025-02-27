@@ -70,6 +70,12 @@ export default [
       },
       {
         component: 'CNavItem',
+        name: 'REITs',
+        to: { name: ROUTE_NAMES.REITS },
+        icon: 'cil-building',
+      },
+      {
+        component: 'CNavItem',
         name: 'Tenants',
         to: { name: ROUTE_NAMES.TENANTS_INDEX },
         icon: 'cil-people',
@@ -77,7 +83,7 @@ export default [
       {
         component: 'CNavItem',
         name: 'Brokers',
-        to: { name: ROUTE_NAMES.TENANTS_INDEX },
+        to: { name: ROUTE_NAMES.BROKERS_INDEX },
         icon: 'cil-people',
       },
     ],
@@ -87,7 +93,6 @@ export default [
     component: 'CNavTitle',
     name: 'Operation',
   },
-
   {
     component: 'CNavGroup',
     name: 'Market Size',

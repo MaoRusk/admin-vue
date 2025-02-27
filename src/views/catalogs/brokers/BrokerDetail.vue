@@ -40,13 +40,14 @@
 <script>
 import { API } from '@/services'
 import Swal from 'sweetalert2'
+import { ROUTE_NAMES } from '@/router/routeNames'
 
 export default {
   name: 'BrokerDetail',
   props: {
     id: {
       type: [String, Number],
-      required: true
+      default: 0
     }
   },
   data() {
@@ -145,7 +146,7 @@ export default {
       }
     },
     goBack() {
-      this.$router.push('/operations/brokers')
+      this.$router.push({ name: ROUTE_NAMES.BROKERS_INDEX })
     }
   },
   mounted() {
