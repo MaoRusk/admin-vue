@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
-import { REIT_ITEMS_PER_PAGE } from '../../../constants';
+import { REIT_MORTGAGE_ITEMS_PER_PAGE } from '../../../constants';
 
 const storage = useLocalStorage()
 
@@ -15,14 +15,14 @@ const loading = ref(false)
 const totalItems = ref(0)
 const totalPages = ref(0)
 const page = ref(1)
-const itemsPerPage = ref(storage.getItem(REIT_ITEMS_PER_PAGE) ?? 10)
+const itemsPerPage = ref(storage.getItem(REIT_MORTGAGE_ITEMS_PER_PAGE) ?? 10)
 const columnFilter = ref({})
 const columnSorter = ref({})
 const tableSearch = ref('')
 
 const columns = [
   { key: 'reitName', label: 'Reit Name' },
-  { key: 'reitType', label: 'Reit Type' },
+  { key: 'reitTypeName', label: 'Reit Type' },
   { key: 'year', label: 'Year' },
   { key: 'quarter', label: 'Quarter' },
   { key: 'actions', label: 'actions', sorter: false, filter: false },
@@ -58,15 +58,16 @@ async function fetchReitMortgages() {
       size: itemsPerPage.value,
       search: tableSearch.value,
     }, columnFilter.value, columnSorter.value);
-    console.log(data.data)
     page.value = data.data.current_page
     totalItems.value = data.data.total
     totalPages.value = data.data.last_page
 
-    reitMortgages.value = data.data.map((item) => ({
+    reitMortgages.value = data.data.data.map((item) => ({
       ...item,
-      reitName: item.reit?.name || '-',
-      reitType: item.reit_type?.name || '-',
+      reitName: item.reitName || '-',
+      reitTypeName: item.reitTypeName || '-',
+      year: item.year || '-',
+      quarter: item.quarter || '-',
     }))
     loading.value = false
   } catch (error) {
@@ -82,8 +83,6 @@ onMounted(() => {
 });
 watch([page, itemsPerPage, tableSearch], fetchReitMortgages)
 watch([columnSorter, columnFilter], fetchReitMortgages, { deep: true })
-
-
 </script>
 
 <template>
@@ -121,7 +120,7 @@ watch([columnSorter, columnFilter], fetchReitMortgages, { deep: true })
     @items-per-page-change="(_itemsPerPage) => {
       activePage = 1
       itemsPerPage = _itemsPerPage
-      storage.setItem(REIT_ITEMS_PER_PAGE, _itemsPerPage)
+      storage.setItem(REIT_MORTGAGE_ITEMS_PER_PAGE, _itemsPerPage)
     }"
     @sorter-change="(sorter) => {
       columnSorter = sorter
@@ -143,7 +142,7 @@ watch([columnSorter, columnFilter], fetchReitMortgages, { deep: true })
       <td style="vertical-align: middle;">
         <div class="d-flex gap-1">
           <CButton color="primary" variant="outline" square size="sm" title="Edit" @click.stop="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE, params: { reitMortgageId: item.id } })">
-            <CIcon name="cilBuilding" size="sm" />
+            <CIcon name="cilPencil" size="sm" />
           </CButton>
           <CButton color="danger" variant="outline" square size="sm" @click.stop="removeReitMortgage(item.id)">
             <CIcon name="cilTrash" size="sm" />
