@@ -1,7 +1,6 @@
 <script setup>
-import { onMounted, computed, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import Swal from 'sweetalert2';
-
 import { API } from '../../../services';
 
 const props = defineProps({
@@ -9,160 +8,195 @@ const props = defineProps({
     type: Number,
     required: true
   },
-  contactId: {
-    type: Number,
+  contact: {
+    type: Object,
+    default: () => ({
+      contact_name: '',
+      contact_phone: '',
+      contact_email: '',
+      contact_comments: '',
+      is_buildings_contact: 1,
+    }),
   },
 });
 
-const emit = defineEmits(['return', 'submitting']);
+const emit = defineEmits(['save', 'cancel']);
+const isCollapsed = ref(true);
 
-const isNewRecord = computed(() => !props.contactId);
+const contactForm = reactive({...props.contact});
 
-const building = ref(null)
-
-const contactObj = {
-  building_id: props.buildingId,
-  name: '',
-  phone: '',
-  email: '',
-}
-
-const contact = reactive({...contactObj})
-const formHtmlElementRef = ref(null)
-
-const handleReturn = () => {
-  for (const prop in contact) {
-    contact[prop] = contactObj[prop]
-  }
-  emit('return');
-}
-
-async function saveContact() {
-  emit('submitting', true)
+const handleSubmit = async () => {
   try {
-    const body = {
-      ...contact,
-    }
-    let data;
-    if (isNewRecord.value) {
-      ({ data } = await API.BuildingsContacts.createContact(props.buildingId, body));
+    const requestData = {
+      name: contactForm.contact_name,
+      email: contactForm.contact_email,
+      phone: contactForm.contact_phone,
+      comments: contactForm.contact_comments,
+      is_buildings_contact: 1
+    };
+
+    console.log('Form data:', contactForm);
+    console.log('Request data:', requestData);
+    
+    let response;
+    if (contactForm.id) {
+      response = await API.BuildingsContacts.updateContact(props.buildingId, contactForm.id, requestData);
     } else {
-      ({ data } = await API.BuildingsContacts.updateContact(props.buildingId, props.contactId, body));
+      response = await API.BuildingsContacts.createContact(props.buildingId, requestData);
     }
-    Swal.fire({
-      icon: 'success',
-      title: 'Success',
-      text: data.message
-    });
-    handleReturn();
-  } catch (error) {
-    console.error(error)
-    Swal.fire({
-      icon: 'error',
-      title: error.response.data.message,
-      text: JSON.stringify(error.response.data.errors)
-    });
-  } finally {
-    emit('submitting', false)
-  }
-}
 
-async function fetchContact() {
-  try {
-    const { data } = await API.BuildingsContacts.getContact(props.buildingId, props.contactId);
-    const [ rawContact ] = data.data
-    contact['name'] = `${rawContact['contact_name'] ?? ''}`
-    contact['phone'] = `${rawContact['contact_phone'] ?? ''}`
-    contact['email'] = `${rawContact['contact_email'] ?? ''}`
+    if (response.data.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: response.data.message || 'Contact saved successfully'
+      });
+      
+      emit('save', response.data.data);
+      isCollapsed.value = true;
+    } else {
+      throw new Error(response.data.message || 'Failed to save contact');
+    }
   } catch (error) {
+    console.error('Error details:', error);
+    console.error('Response data:', error.response?.data);
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: 'Failed to load building contact data: ' + error.message,
+      text: error.response?.data?.message || error.message || 'An error occurred'
     });
   }
-}
+};
 
-async function fetchBuildingData() {
-  try {
-    const { data } = await API.buildings.getBuilding(props.buildingId);
-    building.value = data.data
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Failed to load building data: ' + error.message,
-    });
-  }
-}
+const handleCancel = () => {
+  emit('cancel');
+  isCollapsed.value = true;
+};
 
-onMounted(async () => {
-  Swal.fire({
-    title: "Loading!",
-    didOpen: () => {
-      Swal.showLoading();
-    },
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-  })
-  if (props.buildingId) {
-    await fetchBuildingData();
-  }
-  if (!isNewRecord.value) {
-    await fetchContact();
-  }
-  Swal.close()
-});
+const toggleForm = () => {
+  isCollapsed.value = !isCollapsed.value;
+};
 
-defineExpose({
-  submit() {
-    if (formHtmlElementRef.value?.reportValidity()) {
-      formHtmlElementRef.value?.requestSubmit()
-    }
-  }
-})
+watch(() => props.contact.id, (newVal) => {
+  isCollapsed.value = !newVal;
+}, { immediate: true });
+
 </script>
 
 <template>
-  <form @submit.prevent="saveContact" ref="formHtmlElementRef">
-    <fieldset class="row">
-      <div class="col">
-        <CCard>
-          <CCardBody>
-            <div class="row">
-              <div class="col-md-6 mt-2">
-                <CFormInput 
-                  type="text"
-                  v-model="contact.name"
-                  placeholder="John Doe"
-                  label="Name *"
-                  required
-                />
-              </div>
-
-              <div class="col-md-6 mt-2">
-                <CFormInput 
-                  type="tel"
-                  v-model="contact.phone"
-                  placeholder="5551234567"
-                  label="Phone"
-                />
-              </div>
-
-              <div class="col-md-6 mt-2">
-                <CFormInput 
-                  type="email"
-                  v-model="contact.email"
-                  placeholder="johndoe@mail.com"
-                  label="Email *"
-                  required
-                />
-              </div>
-
-            </div>
-          </CCardBody>
-        </CCard>
+  <CCard class="mb-4">
+    <CCardHeader 
+      class="d-flex justify-content-between align-items-center cursor-pointer"
+      @click="toggleForm"
+    >
+      <div class="d-flex align-items-center">
+        <CIcon 
+          :icon="isCollapsed ? 'cil-plus' : 'cil-minus'"
+          class="me-2"
+        />
+        <strong>{{ contactForm.id ? 'Edit Contact' : 'Add New Contact' }}</strong>
       </div>
-    </fieldset>
-  </form>
+      <CButton 
+        v-if="contactForm.id"
+        color="secondary"
+        size="sm"
+        variant="ghost"
+        @click.stop="handleCancel"
+      >
+        <CIcon icon="cil-x" /> Cancel
+      </CButton>
+    </CCardHeader>
+    
+    <CCollapse :visible="!isCollapsed">
+      <CCardBody>
+        <CForm @submit.prevent="handleSubmit">
+          <CRow>
+            <CCol :xs="12" class="mb-3">
+              <CFormInput
+                label="Name"
+                v-model="contactForm.contact_name"
+                required
+                placeholder="Enter contact name"
+              />
+            </CCol>
+            <CCol :xs="12" class="mb-3">
+              <CFormInput
+                label="Email"
+                type="email"
+                v-model="contactForm.contact_email"
+                required
+                placeholder="Enter email address"
+              />
+            </CCol>
+            <CCol :xs="12" class="mb-3">
+              <CFormInput
+                label="Phone"
+                v-model="contactForm.contact_phone"
+                placeholder="Enter phone number"
+                type="tel"
+              />
+            </CCol>
+            <CCol :xs="12" class="mb-3">
+              <CFormTextarea
+                label="Comments"
+                v-model="contactForm.contact_comments"
+                placeholder="Add any additional comments"
+                rows="3"
+              />
+            </CCol>
+          </CRow>
+          <div class="d-grid gap-2">
+            <CButton 
+              type="submit" 
+              color="primary"
+              size="lg"
+            >
+              <CIcon :icon="contactForm.id ? 'cil-save' : 'cil-plus'" class="me-2" />
+              {{ contactForm.id ? 'Update Contact' : 'Add Contact' }}
+            </CButton>
+          </div>
+        </CForm>
+      </CCardBody>
+    </CCollapse>
+  </CCard>
 </template>
+
+<style scoped>
+.card {
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-control {
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.card-header {
+  transition: background-color 0.2s;
+}
+
+.card-header:hover {
+  background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .btn-lg {
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+}
+</style>
