@@ -25,6 +25,11 @@ const isCollapsed = ref(true);
 
 const contactForm = reactive({...props.contact});
 
+// Add this watch to update the form when the contact prop changes
+watch(() => props.contact, (newContact) => {
+  Object.assign(contactForm, {...newContact});
+}, { deep: true });
+
 const handleSubmit = async () => {
   try {
     const requestData = {
@@ -69,6 +74,13 @@ const handleSubmit = async () => {
 };
 
 const handleCancel = () => {
+  Object.assign(contactForm, {
+    contact_name: '',
+    contact_phone: '',
+    contact_email: '',
+    contact_comments: '',
+    is_buildings_contact: 1,
+  });
   emit('cancel');
   isCollapsed.value = true;
 };
