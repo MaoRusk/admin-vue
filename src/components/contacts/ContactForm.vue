@@ -1,31 +1,36 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { ref, watch, reactive } from 'vue';
 import Swal from 'sweetalert2';
-import { API } from '../../../services';
+import { API } from '@/services';
 
 const props = defineProps({
-  buildingId: {
-    type: Number,
-    required: true
-  },
   contact: {
     type: Object,
     default: () => ({
       contact_name: '',
-      contact_phone: '',
       contact_email: '',
+      contact_phone: '',
       contact_comments: '',
-      is_buildings_contact: 1,
+      is_buildings_contact: 0,
+      is_company_contact: 0,
     }),
   },
+  type: {
+    type: String,
+    required: true,
+    validator: (value) => ['building', 'company'].includes(value)
+  },
+  parentId: {
+    type: Number,
+    required: true
+  }
 });
 
 const emit = defineEmits(['save', 'cancel']);
 const isCollapsed = ref(true);
-
 const contactForm = reactive({...props.contact});
 
-// Add this watch to update the form when the contact prop changes
+// Update form when contact prop changes
 watch(() => props.contact, (newContact) => {
   Object.assign(contactForm, {...newContact});
 }, { deep: true });
@@ -37,17 +42,17 @@ const handleSubmit = async () => {
       email: contactForm.contact_email,
       phone: contactForm.contact_phone,
       comments: contactForm.contact_comments,
-      is_buildings_contact: 1
+      is_buildings_contact: props.type === 'building' ? 1 : 0,
+      is_company_contact: props.type === 'company' ? 1 : 0
     };
 
-    console.log('Form data:', contactForm);
-    console.log('Request data:', requestData);
-    
     let response;
+    const service = props.type === 'building' ? API.BuildingsContacts : API.contacts;
+    
     if (contactForm.id) {
-      response = await API.BuildingsContacts.updateContact(props.buildingId, contactForm.id, requestData);
+      response = await service.updateContact(props.parentId, contactForm.id, requestData);
     } else {
-      response = await API.BuildingsContacts.createContact(props.buildingId, requestData);
+      response = await service.createContact(props.parentId, requestData);
     }
 
     if (response.data.success) {
@@ -63,8 +68,7 @@ const handleSubmit = async () => {
       throw new Error(response.data.message || 'Failed to save contact');
     }
   } catch (error) {
-    console.error('Error details:', error);
-    console.error('Response data:', error.response?.data);
+    console.error('Error saving contact:', error);
     Swal.fire({
       icon: 'error',
       title: 'Error',
@@ -76,10 +80,11 @@ const handleSubmit = async () => {
 const handleCancel = () => {
   Object.assign(contactForm, {
     contact_name: '',
-    contact_phone: '',
     contact_email: '',
+    contact_phone: '', 
     contact_comments: '',
-    is_buildings_contact: 1,
+    is_buildings_contact: props.type === 'building' ? 1 : 0,
+    is_company_contact: props.type === 'company' ? 1 : 0
   });
   emit('cancel');
   isCollapsed.value = true;
@@ -92,7 +97,6 @@ const toggleForm = () => {
 watch(() => props.contact.id, (newVal) => {
   isCollapsed.value = !newVal;
 }, { immediate: true });
-
 </script>
 
 <template>
@@ -211,4 +215,4 @@ watch(() => props.contact.id, (newVal) => {
     font-size: 1rem;
   }
 }
-</style>
+</style> 
