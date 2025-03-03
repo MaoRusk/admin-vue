@@ -24,7 +24,9 @@ import Lands from './Lands'
 import LandsAbsorption from './LandsAbsorption'
 import LandsAvailability from './LandsAvailable'
 import BuildingsContacts from './BuildingsContacts'
-import reitsService from './Reits'
+import ReitMortgages from './ReitMortgages'
+import Reits from './Reits'
+import ReitTypes from './ReitTypes'
 
 export const API = {
   auth: Auth,
@@ -53,5 +55,7 @@ export const API = {
   landsAbsorption: LandsAbsorption,
   landsAvailability: LandsAvailability,
   BuildingsContacts,
-  reits: reitsService,
+  reitMortgages: ReitMortgages,
+  reits: Reits,
+  reitTypes: ReitTypes,
 }

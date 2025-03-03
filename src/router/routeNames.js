@@ -47,4 +47,12 @@ export const ROUTE_NAMES = {
 
   MARKET_SIZE_PENDING_APPROVALS: 'Pending Approvals',
   CATALOGS: 'Catalogs',
+
+  REITS_INDEX: 'Reits',
+
+  REIT_MORTGAGE: 'Reit Mortgage',
+  REIT_MORTGAGE_CREATE: 'Create Reit Mortgage',
+  REIT_MORTGAGE_UPDATE: 'Edit Reit Mortgage',
+
+
 }

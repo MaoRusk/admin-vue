@@ -119,4 +119,18 @@ export default [
     to: { name: ROUTE_NAMES.LANDS_INDEX },
     icon: 'cilTerrain',
   },
+
+  {
+    component: 'CNavGroup',
+    name: 'Reits',
+    icon: 'cil-building',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Reit Mortgage',
+        to: { name: ROUTE_NAMES.REIT_MORTGAGE },
+        icon: 'cilLibraryAdd',
+      },
+    ],
+  },
 ]
