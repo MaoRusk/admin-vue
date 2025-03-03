@@ -18,7 +18,7 @@ const props = defineProps({
   type: {
     type: String,
     required: true,
-    validator: (value) => ['building', 'company'].includes(value)
+    validator: (value) => ['building', 'company', 'land'].includes(value)
   },
   parentId: {
     type: Number,
@@ -43,11 +43,16 @@ const handleSubmit = async () => {
       phone: contactForm.contact_phone,
       comments: contactForm.contact_comments,
       is_buildings_contact: props.type === 'building' ? 1 : 0,
-      is_company_contact: props.type === 'company' ? 1 : 0
+      is_company_contact: props.type === 'company' ? 1 : 0,
+      is_lands_contact: props.type === 'land' ? 1 : 0
     };
 
     let response;
-    const service = props.type === 'building' ? API.BuildingsContacts : API.contacts;
+    const service = {
+      'building': API.BuildingsContacts,
+      'company': API.contacts,
+      'land': API.landsContacts
+    }[props.type];
     
     if (contactForm.id) {
       response = await service.updateContact(props.parentId, contactForm.id, requestData);

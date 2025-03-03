@@ -23,6 +23,7 @@ import Contacts from './Contacts'
 import Lands from './Lands'
 import LandsAbsorption from './LandsAbsorption'
 import LandsAvailability from './LandsAvailable'
+import LandsContacts from './LandsContacts'
 import BuildingsContacts from './BuildingsContacts'
 import reitsService from './Reits'
 
@@ -52,6 +53,7 @@ export const API = {
   lands: Lands,
   landsAbsorption: LandsAbsorption,
   landsAvailability: LandsAvailability,
+  landsContacts: LandsContacts,
   BuildingsContacts,
   reits: reitsService,
 }

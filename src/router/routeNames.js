@@ -38,6 +38,7 @@ export const ROUTE_NAMES = {
   LANDS_INDEX: 'Lands',
   LANDS_CREATE: 'Create Lands',
   LANDS_UPDATE: 'Edit Lands',
+  LANDS_CONTACTS: 'Land Contacts',
 
   REITS: 'REITs',
   REITS_CREATE: 'Create REIT',

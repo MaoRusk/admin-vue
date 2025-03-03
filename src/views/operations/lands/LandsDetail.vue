@@ -6,6 +6,7 @@ import { ROUTE_NAMES } from '../../../router/routeNames';
 import LandsForm from './LandsForm.vue'
 import LandsAvailabilityIndex from './LandsAvailabilityIndex.vue';
 import LandsAbsorptionIndex from './LandsAbsorptionIndex.vue';
+import { ContactForm, ContactsTable } from '@/components/contacts'
 
 const route = useRoute()
 const router = useRouter()
@@ -25,7 +26,17 @@ const tabAvailabilityLoaded = ref(false);
 const tabAbsorptionLoaded = ref(false);
 
 const activeItemKey = ref(route.query.tab || 'Land')
-const tabs = ['Land', 'Availability', 'Absorption'];
+const tabs = ['Land', 'Availability', 'Absorption', 'Contacts'];
+
+const contact = ref({
+  contact_name: '',
+  contact_email: '',
+  contact_phone: '',
+  contact_comments: '',
+  is_lands_contact: 1,
+});
+
+const contacts = ref([]);
 
 function dispatchSubmitForm() {
   if (activeItemKey.value === 'Land') {
@@ -110,6 +121,21 @@ watch(activeItemKey, (newTab) => {
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
           <LandsAbsorptionIndex v-if="tabAbsorptionLoaded" :landId="landId" ref="absorptionRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" @changeShowForm="(value) => disabledSave = !value" />
+        </CTabPanel>
+        <CTabPanel class="p-3" itemKey="Contacts">
+          <ContactForm
+            :contact="contact"
+            type="land"
+            :parentId="landId"
+            @save="handleSave"
+            @cancel="handleCancel"
+          />
+          <ContactsTable
+            :contacts="contacts"
+            type="land"
+            @edit="handleEdit"
+            @delete="handleDelete"
+          />
         </CTabPanel>
       </CTabContent>
     </CTabs>

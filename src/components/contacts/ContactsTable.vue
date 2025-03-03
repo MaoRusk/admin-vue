@@ -10,7 +10,7 @@ const props = defineProps({
   type: {
     type: String,
     required: true,
-    validator: (value) => ['building', 'company'].includes(value)
+    validator: (value) => ['building', 'company', 'land'].includes(value)
   }
 });
 
@@ -18,7 +18,8 @@ const filteredContacts = computed(() => {
   return props.contacts
     .filter(contact => contact && (
       (props.type === 'building' && contact.is_buildings_contact === 1) ||
-      (props.type === 'company' && contact.is_company_contact === 1)
+      (props.type === 'company' && contact.is_company_contact === 1) ||
+      (props.type === 'land' && contact.is_lands_contact === 1)
     ))
     .sort((a, b) => a.contact_name.localeCompare(b.contact_name));
 });
