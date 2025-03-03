@@ -49,14 +49,26 @@ export default {
     })
   },
   updateDeveloper(developerId, { name, is_developer, is_builder, is_owner, market_id, sub_market_id }) {
-    return httpClient.put(`/developers/${developerId}`, {
-      name,
-      is_developer,
-      is_builder,
-      is_owner,
-      market_id,
-      sub_market_id
-    })
+    if (!name?.trim()) {
+      throw new Error('Name is required')
+    }
+    if (!market_id) {
+      throw new Error('Market is required')
+    }
+    if (!sub_market_id) {
+      throw new Error('SubMarket is required')
+    }
+
+    const payload = {
+      name: name.trim(),
+      is_developer: is_developer ? 1 : 0,
+      is_builder: is_builder ? 1 : 0,
+      is_owner: is_owner ? 1 : 0,
+      market_id: Number(market_id),     // Ya no permitimos null
+      sub_market_id: Number(sub_market_id)  // Ya no permitimos null
+    }
+
+    return httpClient.put(`/developers/${developerId}`, payload)
   },
   deleteDeveloper(developerId) {
     return httpClient.delete(`/developers/${developerId}`)

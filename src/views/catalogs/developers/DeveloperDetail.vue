@@ -38,18 +38,22 @@
         </CRow>
         <CRow class="mt-3">
           <CCol :md="6">
-            <MSelect
+            <CFormSelect
+              label="Market *"
               v-model="developer.market_id"
               :options="marketOptions"
-              label="Market"
+              :invalid="!developer.market_id"
+              required
             />
           </CCol>
           <CCol :md="6">
-            <MSelect
+            <CFormSelect
+              label="SubMarket *"
               v-model="developer.sub_market_id"
               :options="submarketOptions"
-              label="SubMarket"
+              :invalid="!developer.sub_market_id"
               :disabled="!developer.market_id"
+              required
             />
           </CCol>
         </CRow>
@@ -142,48 +146,28 @@ export default {
       }
     },
     async loadDeveloper() {
-      if (this.isNew) {
-        console.log('Creating new developer')
-        return
-      }
+      if (this.isNew) return;
 
       const id = this.$route.params.id
-      console.log('Loading developer with ID:', id)
-
       try {
         const response = await API.developers.getDeveloper(id)
-        console.log('Full response:', response)
-
-        if (response && response.data) {
-          console.log('Developer data before processing:', response.data)
-          
-          // Crear un objeto temporal con los datos procesados
-          const processedData = {
+        if (response?.data) {
+          this.developer = {
             id: response.data.id,
             name: response.data.name || '',
             is_developer: Boolean(Number(response.data.is_developer)),
             is_builder: Boolean(Number(response.data.is_builder)),
             is_owner: Boolean(Number(response.data.is_owner)),
-            market_id: Number(response.data.market_id) || null,
-            sub_market_id: Number(response.data.sub_market_id) || null
+            market_id: response.data.market_id ? Number(response.data.market_id) : null,
+            sub_market_id: response.data.sub_market_id ? Number(response.data.sub_market_id) : null
           }
-          
-          console.log('Processed developer data:', processedData)
-          
-          // Asignar los datos procesados al developer
-          Object.assign(this.developer, processedData)
-          
-          console.log('Current developer state:', this.developer)
 
           if (this.developer.market_id) {
-            console.log('Loading submarkets for market:', this.developer.market_id)
             await this.loadSubmarkets(this.developer.market_id)
           }
-        } else {
-          console.warn('No data received from API')
         }
       } catch (error) {
-        console.error('Error in loadDeveloper:', error)
+        console.error('Error loading developer:', error)
         Swal.fire({
           icon: 'error',
           title: 'Error!',
@@ -205,13 +189,24 @@ export default {
       this.clearErrors()
       
       try {
+        // Validar todos los campos requeridos
+        if (!this.developer.name?.trim()) {
+          throw new Error('Name is required')
+        }
+        if (!this.developer.market_id) {
+          throw new Error('Market is required')
+        }
+        if (!this.developer.sub_market_id) {
+          throw new Error('SubMarket is required')
+        }
+
         const developerData = {
-          ...this.developer,
-          market_id: this.developer.market_id ? Number(this.developer.market_id) : null,
-          sub_market_id: this.developer.sub_market_id ? Number(this.developer.sub_market_id) : null,
-          is_developer: Boolean(this.developer.is_developer),
-          is_builder: Boolean(this.developer.is_builder),
-          is_owner: Boolean(this.developer.is_owner)
+          name: this.developer.name.trim(),
+          is_developer: this.developer.is_developer ? 1 : 0,
+          is_builder: this.developer.is_builder ? 1 : 0,
+          is_owner: this.developer.is_owner ? 1 : 0,
+          market_id: Number(this.developer.market_id),
+          sub_market_id: Number(this.developer.sub_market_id)
         }
 
         if (this.isNew) {
@@ -227,7 +222,8 @@ export default {
             timerProgressBar: true
           })
         } else {
-          await DevelopersService.updateDeveloper(this.$route.params.id, developerData)
+          const id = this.$route.params.id
+          await DevelopersService.updateDeveloper(id, developerData)
           Swal.fire({
             icon: 'success',
             title: 'Updated successfully!',
@@ -242,13 +238,27 @@ export default {
         this.goBack()
       } catch (error) {
         console.error('Error saving developer:', error)
-        if (error.response?.data?.errors) {
-          this.errors = error.response.data.errors
+        
+        // Manejar errores de validación
+        if (error.response?.status === 422) {
+          const validationErrors = error.response.data.errors
+          const firstError = Object.values(validationErrors)[0][0]
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: firstError || 'Please check all required fields',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          })
         } else {
+          // Manejar errores de validación local
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Error saving developer',
+            text: error.message || 'Error saving developer',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
