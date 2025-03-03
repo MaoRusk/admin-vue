@@ -23,6 +23,7 @@ import Contacts from './Contacts'
 import Lands from './Lands'
 import LandsAbsorption from './LandsAbsorption'
 import LandsAvailability from './LandsAvailable'
+import ReitAnnual from './ReitAnnual'
 import BuildingsContacts from './BuildingsContacts'
 import ReitMortgages from './ReitMortgages'
 import Reits from './Reits'
@@ -49,11 +50,12 @@ export const API = {
   users: Users,
   roles: Roles,
   permissions: Permissions,
-  companies: Companies,
   contacts: Contacts,
   lands: Lands,
   landsAbsorption: LandsAbsorption,
   landsAvailability: LandsAvailability,
+  companies: Companies,
+  ReitAnnual: ReitAnnual,
   BuildingsContacts,
   reitMortgages: ReitMortgages,
   reits: Reits,
