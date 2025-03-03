@@ -53,7 +53,7 @@ export default [
       {
         component: 'CNavItem',
         name: 'Companies',
-        to: { name: ROUTE_NAMES.COMPANIES },
+        to: { name: ROUTE_NAMES.COMPANIES_INDEX },
         icon: 'cil-briefcase',
       },
       {
@@ -119,12 +119,17 @@ export default [
     to: { name: ROUTE_NAMES.LANDS_INDEX },
     icon: 'cilTerrain',
   },
-
   {
     component: 'CNavGroup',
     name: 'REITs',
     icon: 'cilInstitution',
     items: [
+      {
+        component: 'CNavItem',
+        name: 'Reit Mortgage',
+        to: { name: ROUTE_NAMES.REIT_MORTGAGE },
+        icon: 'cilLibraryAdd',
+      },
       {
         component: 'CNavItem',
         name: 'REITs Annual',

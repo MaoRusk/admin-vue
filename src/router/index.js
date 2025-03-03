@@ -91,7 +91,7 @@ const routes = [
           },
           {
             path: 'companies',
-            name: ROUTE_NAMES.COMPANIES,
+            name: ROUTE_NAMES.COMPANIES_INDEX,
             component: () => import('@/views/catalogs/companies/Companies.vue'),
           },
           {
@@ -99,7 +99,7 @@ const routes = [
             name: ROUTE_NAMES.COMPANY_DETAIL,
             component: () => import('@/views/catalogs/companies/CompanyDetail.vue'),
             props: (route) => ({
-              id: Number(route.params.id),
+              id: isNaN(Number(route.params.id)) ? '0' : Number(route.params.id)
             }),
           },
           {
@@ -255,6 +255,28 @@ const routes = [
             path: 'pending-approvals',
             name: ROUTE_NAMES.MARKET_SIZE_PENDING_APPROVALS,
             component: () => import('@/views/operations/buildings/PendingApprovals.vue'),
+          },
+          {
+            path: 'reits',
+            name: ROUTE_NAMES.REITS_INDEX,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageIndex.vue'),
+          },
+          {
+            path: 'reit-mortgage',
+            name: ROUTE_NAMES.REIT_MORTGAGE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageIndex.vue'),
+          },
+
+          {
+            path: 'reit-mortgage/create',
+            name: ROUTE_NAMES.REIT_MORTGAGE_CREATE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageDetail.vue'),
+          },
+
+          {
+            path: 'reit-mortgage/:reitMortgageId/edit',
+            name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageDetail.vue'),
           },
 
           {
