@@ -142,10 +142,10 @@ defineExpose({
           >
             <template #actions="{ item }">
               <td class="d-flex gap-1">
-                <CButton color="primary" variant="outline" square size="sm" >
+                <CButton color="primary" variant="outline" square size="sm" v-if="can('buildings.contacts.show', 'buildings.contacts.create', 'buildings.contacts.update')">
                   <CIcon name="cilPencil" size="sm" @click="handleEdit(item)" />
                 </CButton>
-                <CButton color="danger" variant="outline" square size="sm" @click="removeContact(item.id)">
+                <CButton color="danger" variant="outline" square size="sm" @click="removeContact(item.id)" v-if="can('buildings.contacts.destroy')">
                   <CIcon name="cilTrash" size="sm" />
                 </CButton>
               </td>

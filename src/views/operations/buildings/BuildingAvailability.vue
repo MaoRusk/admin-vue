@@ -7,6 +7,7 @@ import BuildingAvailabilityForm from './BuildingAvailabilityForm.vue';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { API } from '../../../services';
 import { BUILDINGS_ITEMS_PER_PAGE } from '../../../constants';
+import { useAuthStore } from '../../../stores/auth';
 
 const props = defineProps({
   buildingId: {
@@ -17,6 +18,7 @@ const props = defineProps({
 const emit = defineEmits(['submitting', 'changeShowForm'])
 
 const storage = useLocalStorage()
+const { can } = useAuthStore()
 
 const buildings = ref([]);
 
@@ -189,10 +191,10 @@ defineExpose({
           >
             <template #actions="{ item }">
               <td class="d-flex gap-1">
-                <CButton color="primary" variant="outline" square size="sm" >
+                <CButton color="primary" variant="outline" square size="sm" v-if="can('buildings.availability.show', 'buildings.availability.create', 'buildings.availability.update')">
                   <CIcon :content="cilPencil" size="sm" @click="handleEdit(item)" />
                 </CButton>
-                <CButton color="danger" variant="outline" square size="sm" @click="removeAvailability(item.id)">
+                <CButton color="danger" variant="outline" square size="sm" @click="removeAvailability(item.id)" v-if="can('buildings.availability.destroy')">
                   <CIcon :content="cilTrash" size="sm" />
                 </CButton>
               </td>

@@ -2,6 +2,7 @@ import axios from 'axios'
 import router from '../router'
 import { ROUTE_NAMES } from '../router/routeNames'
 import { useAuthStore } from '../stores/auth'
+import Swal from 'sweetalert2'
 
 const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -30,6 +31,7 @@ httpClient.interceptors.response.use(
     const store = useAuthStore()
     if (error.response && error.response.status === axios.HttpStatusCode.Unauthorized) {
       store.destroyAuth()
+      if (Swal.isVisible) Swal.close()
       router.push({ name: ROUTE_NAMES.LOGIN })
     }
     return Promise.reject(error)
