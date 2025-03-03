@@ -1,21 +1,40 @@
 import httpClient from '../../plugins/axios'
 
 export default {
-  async getCompanies() {
-    const response = await httpClient.get(`/companies`, {})
-    return response
+  getCompanies(query, filters = {}, sorter = {}) {
+    return httpClient.get(`/companies`, {
+      params: {
+        page: query?.page || null,
+        size: query?.size || null,
+        search: query?.search || null,
+        ...filters,
+        ...sorter,
+      },
+    })
   },
-  async getCompany(companyId) {
-    const response = await httpClient.get(`/companies/${companyId}`)
-    return response
+
+  getCompany(companyId) {
+    return httpClient.get(`/companies/${companyId}`)
   },
-  createCompany() {
-    return httpClient.post(`/companies`, {})
+
+  createCompany(formData) {
+    return httpClient.post('/companies', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
   },
-  updateCompany(companyId) {
-    return httpClient.put(`/companies/${companyId}`, {})
+
+  updateCompany(id, formData) {
+    return httpClient.post(`/companies/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Accept': 'application/json',
+      }
+    });
   },
+
   deleteCompany(companyId) {
     return httpClient.delete(`/companies/${companyId}`)
   },
-}
+} 

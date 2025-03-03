@@ -28,7 +28,7 @@ const emit = defineEmits(['submitting'])
 const buildingEmpty = {
   region_id: '',
   market_id: '',
-  submarket_id: '',
+  sub_market_id: '',
   industrial_park_id: '',
   builder_id: '',
   developer_id: '',
@@ -179,6 +179,7 @@ async function onSubmit() {
 
   } catch (e) {
     emit('submitting', false);
+    console.error(e);
     console.error("❌ Error sending:", e.response?.data || e);
     Swal.fire(e.response?.data?.message || "Error", JSON.stringify(e.response?.data?.errors) || "Unknown error", 'error');
   }
@@ -191,7 +192,7 @@ const fetchBuildingData = async () => {
   try {
     const buildingId = props.buildingId;
     const { data } = await API.buildings.getBuilding(buildingId);
-    ['region_id', 'market_id', 'submarket_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id']
+    ['region_id', 'market_id', 'sub_market_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id']
     .forEach(prop => building[prop] = data.data[prop] ? +(data.data[prop]) : '');
     ['building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height_ft', 'total_land_sf', 'expansion_up_to_sf', 'offices_space_sf', 'ventilation', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'deal', 'loading_door', 'status', 'floor_thickness_in', 'floor_resistance']
     .forEach(prop => building[prop] = data.data[prop] ? `${data.data[prop]}` : '');
@@ -457,7 +458,7 @@ async function saveOptionGeneral(field, values, update = false) {
         is_developer: !!values.is_developer,
         is_owner: !!values.is_owner,
         market_id: building.market_id,
-        submarket_id: building.submarket_id
+        sub_market_id: building.sub_market_id
       }
       if (update) {
         ({ data } = await API.developers.updateDeveloper(values.id, body));
@@ -470,15 +471,15 @@ async function saveOptionGeneral(field, values, update = false) {
         building[field] = data.data.id
       }
       await Promise.all([
-        fetchOwners(building.market_id, building.submarket_id),
-        fetchDevelopers(building.market_id, building.submarket_id),
-        fetchBuilders(building.market_id, building.submarket_id),
+        fetchOwners(building.market_id, building.sub_market_id),
+        fetchDevelopers(building.market_id, building.sub_market_id),
+        fetchBuilders(building.market_id, building.sub_market_id),
       ])
     } else if (field === 'industrial_park_id') {
       const body = {
         name: values.name,
         market_id: building.market_id,
-        submarket_id: building.submarket_id
+        sub_market_id: building.sub_market_id
       }
       if (update) {
         ({ data } = await API.industrialparks.updateIndustrialPark(values.id, body))
@@ -486,7 +487,7 @@ async function saveOptionGeneral(field, values, update = false) {
         ({ data } = await API.industrialparks.createIndustrialPark(body))
         building[field] = data.data.id
       }
-      await fetchIndustrialParks(building.market_id, building.submarket_id)
+      await fetchIndustrialParks(building.market_id, building.sub_market_id)
     }
   } catch (error) {
     console.error('Error:', error);
@@ -540,7 +541,7 @@ async function deleteOptionGeneral(field, optionReactive) {
       await fetchDevelopers();
     } else if (field === 'industrial_park_id') {
       ({ data } = await API.industrialparks.deleteIndustrialPark(option.id))
-      await fetchIndustrialParks(building.market_id, building.submarket_id)
+      await fetchIndustrialParks(building.market_id, building.sub_market_id)
     }
     console.info(data)
     if (building[field] === option.id) {
@@ -591,22 +592,21 @@ watch(() => building.region_id, async () => {
 watch(() => building.market_id, async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
-    // building.submarket_id = props.buildingId ? building.submarket_id : ''
-    if (!submarkets.items.find(item => item.value === building.submarket_id)) {
-      building.submarket_id = ''
+    if (!submarkets.items.find(item => item.value === building.sub_market_id)) {
+      building.su_bmarket_id = ''
     }
   } else {
-    building.submarket_id = ''
+    building.sub_market_id = ''
   }
 })
 
-watch(() => building.submarket_id, async () => {
-  if (building.submarket_id) {
+watch(() => building.sub_market_id, async () => {
+  if (building.sub_market_id) {
     await Promise.all([
-      fetchIndustrialParks(building.market_id, building.submarket_id),
-      fetchOwners(building.market_id, building.submarket_id),
-      fetchBuilders(building.market_id, building.submarket_id),
-      fetchDevelopers(building.market_id, building.submarket_id),
+      fetchIndustrialParks(building.market_id, building.sub_market_id),
+      fetchOwners(building.market_id, building.sub_market_id),
+      fetchBuilders(building.market_id, building.sub_market_id),
+      fetchDevelopers(building.market_id, building.sub_market_id),
     ])
     if (!industrialParks.items.find(item => item.id === building.industrial_park_id)) building.industrial_park_id = ''
     if (!owners.items.find(item => item.id === building.owner_id)) building.owner_id = ''
@@ -780,7 +780,7 @@ defineExpose({
             <div class="mt-2">
               <label class="form-label">Submarket *</label>
               <MASelect
-                v-model="building.submarket_id"
+                v-model="building.sub_market_id"
                 :options="submarkets.items"
                 :reduce="option => option.value"
                 label="label"
@@ -802,7 +802,7 @@ defineExpose({
                 label="name"
                 placeholder="Select..."
                 :loading="industrialParks.loading"
-                :disabled="!building.submarket_id"
+                :disabled="!building.sub_market_id"
                 required
                 edit-options
                 @submitOption="(option, update) => { saveOptionGeneral('industrial_park_id', option, update) }"
@@ -853,7 +853,7 @@ defineExpose({
                       label="name"
                       placeholder="Select..."
                       :loading="owners.loading"
-                      :disabled="!building.submarket_id"
+                      :disabled="!building.sub_market_id"
                       required
                       edit-options
                       @submitOption="(option, update) => { saveOptionGeneral('owner_id', option, update) }"
@@ -907,7 +907,7 @@ defineExpose({
                       label="name"
                       placeholder="Select..."
                       :loading="developers.loading"
-                      :disabled="!building.submarket_id"
+                      :disabled="!building.sub_market_id"
                       required
                       edit-options
                       @submitOption="(option, update) => { saveOptionGeneral('developer_id', option, update) }"
@@ -961,7 +961,7 @@ defineExpose({
                       label="name"
                       placeholder="Select..."
                       :loading="builders.loading"
-                      :disabled="!building.submarket_id"
+                      :disabled="!building.sub_market_id"
                       required
                       edit-options
                       @submitOption="(option, update) => { saveOptionGeneral('builder_id', option, update) }"

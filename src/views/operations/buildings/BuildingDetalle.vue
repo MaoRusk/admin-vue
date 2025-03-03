@@ -4,10 +4,10 @@ import { useRoute, useRouter } from 'vue-router'
 
 import BuildingData from './BuildingData.vue'
 import BuildingAvailability from './BuildingAvailability.vue'
-import BuildingContact from './BuildingContact.vue';
 import BuildingImages from './BuildingsImages.vue';
 import BuildingAbsorption from './BuildingAbsorption.vue'
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import BuildingContactsIndex from './BuildingContactsIndex.vue';
 
 const router = useRouter()
 const route = useRoute()
@@ -29,6 +29,7 @@ const tabDataLoaded = ref(false);
 const tabAvailabilityLoaded = ref(false);
 const tabContactLoaded = ref(false);
 const tabAbsorptionLoaded = ref(false);
+const tabImagesLoaded = ref(false);
 
 function dispatchSubmitForm() {
   if (activeTab.value === 'DataBuilding') {
@@ -38,6 +39,8 @@ function dispatchSubmitForm() {
   } else if (activeTab.value === 'Absorption') {
     buildingAbsorptionRef.value?.submit?.()
   } else if (activeTab.value === 'ContactBuilding') {
+    buildingContactRef.value?.submit?.()
+  } else if (activeTab.value === 'Files') {
     buildingImagesRef.value?.submit?.()
   }
 }
@@ -53,8 +56,9 @@ watch(activeTab, () => {
     disabledSave.value = !(buildingAbsorptionRef.value?.showForm ?? false)
   } else if (activeTab.value === 'ContactBuilding') {
     tabContactLoaded.value = true
+    disabledSave.value = !(buildingContactRef.value?.showForm ?? false)
   }
-  if (['DataBuilding', 'ContactBuilding'].includes(activeTab.value)) {
+  if (['DataBuilding', 'Files'].includes(activeTab.value)) {
     disabledSave.value = false
   }
 }, { immediate: true })
@@ -77,12 +81,14 @@ function changeTab(tab) {
 }
 
 function showList() {
-  if (['DataBuilding', 'ContactBuilding'].includes(activeTab.value)) {
+  if (['DataBuilding', 'Files'].includes(activeTab.value)) {
     router.push({ name: ROUTE_NAMES.BUILDINGS })
   } else if (activeTab.value === 'Availability') {
     buildingAvailabilityRef.value?.handleReturn?.()
   } else if (activeTab.value === 'Absorption') {
     buildingAbsorptionRef.value?.handleReturn?.()
+  } else if (activeTab.value === 'ContactBuilding') {
+    buildingContactRef.value?.handleReturn?.()
   }
 }
 </script>
@@ -123,7 +129,10 @@ function showList() {
           <BuildingAbsorption v-if="tabAbsorptionLoaded" :buildingId="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="ContactBuilding">
-          <BuildingContact v-if="tabContactLoaded" :buildingId="buildingId" ref="buildingContactRef" />
+          <BuildingContactsIndex v-if="tabContactLoaded" :buildingId="buildingId" ref="buildingContactRef" @changeShowForm="(value) => disabledSave = !value" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
+        </CTabPanel>
+        <CTabPanel class="p-3" itemKey="Files">
+          <BuildingImages v-if="tabImagesLoaded" :buildingId="buildingId" ref="buildingImagesRef" />
         </CTabPanel>
       </CTabContent>
     </CTabs>

@@ -1,15 +1,24 @@
 <script>
-  import axios from 'axios';
-  import Swal from 'sweetalert2';
   import { defineComponent } from 'vue';
+  import Swal from 'sweetalert2';
   import { ROUTE_NAMES } from '@/router/routeNames';
+  import { API } from '@/services';
+  import ContactForm from './components/ContactForm.vue';
+  import ContactsTable from './components/ContactsTable.vue';
 
   export default defineComponent({
     name: 'CompanyDetail',
+    components: {
+      ContactForm,
+      ContactsTable,
+    },
     props: {
       id: {
-        type: Number,
-        required: true
+        type: [String, Number],
+        required: true,
+        validator: (value) => {
+          return !isNaN(Number(value)) || value === '0' || value === 0;
+        }
       }
     },
 
@@ -18,358 +27,594 @@
         company: {
           name: '',
           website: '',
-          address: '',
-          city: '',
-          state: '',
-          postalCode: '',
-          country: '',
-          primaryColor: '#4273D7',
-          secondaryColor: '#FCFCFC',
-          image: {},
+          primary_color: '#4273D7',
+          secondary_color: '#FCFCFC',
+          image: null,
+          logo: null,
+          logo_id: null,
         },
-        validatedCustom01: null,
+        errors: {
+          name: '',
+          website: '',
+          primary_color: '',
+          secondary_color: '',
+          logo: '',
+        },
+        isSubmitting: false,
+        activeTab: '1',
+        contacts: [],
+        newContact: {
+          contact_name: '',
+          contact_email: '',
+          contact_phone: '',
+          contact_comments: '',
+          is_company_contact: 1,
+        },
       };
     },
 
-    created() {
-      this.fetchCompanyDetails();
+    computed: {
+      previewImage() {
+        if (this.company.image) {
+          return URL.createObjectURL(this.company.image);
+        }
+        return this.company.logo;
+      },
+      isNew() {
+        return !this.id || this.id === '0' || this.id === 0;
+      },
     },
 
-    computed: {
-      imageUrl() {
-        const logoUrl = this.company.logoUrl
-        // Si la URL ya es una URL completa, retornarla directamente
-        if (logoUrl && logoUrl.match(/^(http|https):\/\//)) {
-          return logoUrl
-        }
-        // Si es una ruta relativa y no contiene ya la URL base
-        else if (logoUrl && !logoUrl.includes('laravel-back-production-9320.up.railway.app')) {
-          return `https://laravel-back-production-9320.up.railway.app/storage/${logoUrl}`
-        }
-        // Si no hay URL, retornar null o una imagen por defecto
-        return null
+    created() {
+      this.loadCompany();
+      if (!this.isNew) {
+        this.loadContacts();
       }
     },
 
     methods: {
-      fetchCompanyDetails() {
-        if (this.id !== 0) {
-          axios.get(`https://laravel-back-production-9320.up.railway.app/api/companies/${this.id}`).then(response => {
-            this.company = response.data;
-          }).catch(error => {
+      async loadCompany() {
+        if (!this.isNew) {
+          try {
+            console.log('Loading company with ID:', this.id);
+            const response = await API.companies.getCompany(this.id);
+            
+            if (response.data && response.data.data) {
+              const companyData = response.data.data;
+              console.log('Loaded company data:', companyData);
+              
+              this.company = {
+                name: companyData.name || '',
+                website: companyData.website || '',
+                primary_color: (companyData.primary_color || '#4273D7').slice(0, 7),
+                secondary_color: (companyData.secondary_color || '#FCFCFC').slice(0, 7),
+                logo: companyData.logo || null,
+                logo_id: companyData.logo_id || null,
+                image: null
+              };
+            } else {
+              throw new Error('Invalid company data structure');
+            }
+          } catch (error) {
+            console.error('Error loading company:', error);
             Swal.fire({
-              title: "Error!",
-              text: "Error getting company details.",
-              icon: "error",
+              icon: 'error',
+              title: 'Error!',
+              text: error.message || 'Error loading company',
+              toast: true,
+              position: 'bottom',
               showConfirmButton: false,
-              timer: 1500
+              timer: 3000,
+              timerProgressBar: true
             });
+            this.goBack();
+          }
+        }
+      },
+
+      clearErrors() {
+        this.errors = {
+          name: '',
+          website: '',
+          primary_color: '',
+          secondary_color: '',
+          logo: '',
+        }
+      },
+
+      async saveCompany() {
+        try {
+          this.clearErrors();
+          this.isSubmitting = true;
+
+          const formData = new FormData();
+          
+          // Agregar campos básicos al FormData
+          formData.append('name', String(this.company.name || ''));
+          formData.append('website', String(this.company.website || ''));
+          formData.append('primary_color', String(this.company.primary_color || '#4273D7').slice(0, 7));
+          formData.append('secondary_color', String(this.company.secondary_color || '#FCFCFC').slice(0, 7));
+
+          // Manejar el archivo de imagen
+          if (this.company.image instanceof File) {
+            formData.append('logo', this.company.image); // Cambiado a 'logo'
+          } else if (this.company.logo === null) {
+            // Si se eliminó la imagen
+            formData.append('logo', ''); // Cambiado a 'logo'
+          }
+
+          let response;
+          if (this.isNew) {
+            response = await API.companies.createCompany(formData);
+          } else {
+            // Ya no agregamos _method: PUT, siempre usamos POST
+            response = await API.companies.updateCompany(this.id, formData);
+          }
+
+          if (response.data.success) {
+            await Swal.fire({
+              icon: 'success',
+              title: 'Success!',
+              text: `Company ${this.isNew ? 'created' : 'updated'} successfully`,
+              toast: true,
+              position: 'bottom',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+            });
+
+            // Recargar los datos después de la actualización
+            if (!this.isNew) {
+              await this.loadCompany();
+            }
+
+            await this.$router.push({ 
+              name: ROUTE_NAMES.COMPANIES_INDEX,
+              query: { 
+                refresh: Date.now(),
+                updated: this.id
+              }
+            });
+          } else {
+            throw new Error(response.data.message || 'Operation failed');
+          }
+        } catch (error) {
+          console.error('Error saving company:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data?.message || error.message || 'An error occurred',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
           });
+        } finally {
+          this.isSubmitting = false;
         }
       },
 
       handleImageUpload(event) {
         const file = event.target.files[0];
-        this.company.image = file;
-      },
-
-      handleSubmitCustom01(event) {
-        const form = event.currentTarget;
-        if (form.checkValidity() === false) {
-          event.preventDefault();
-          event.stopPropagation();
-        } else {
-          if (this.id === 0) {
-            this.addCompany();
-          } else {
-            this.updateCompanyDetails();
+        if (file) {
+          // Validaciones de la imagen
+          if (!file.type.startsWith('image/')) {
+            this.errors.logo = 'Please upload an image file';
+            return;
           }
-        }
-        this.validatedCustom01 = true;
-      },
-
-      addCompany() {
-        const formData = new FormData();
-        formData.append('nameCompany', this.company.nameCompany);
-        formData.append('website', this.company.website);
-        formData.append('primaryColor', this.company.primaryColor);
-        formData.append('secondaryColor', this.company.secondaryColor);
-        formData.append('status', 'Active');
-        formData.append('address', this.company.address);
-        formData.append('postalCode', this.company.postalCode);
-        formData.append('logoUrl', this.company.image);
-        formData.append('city', this.company.city);
-        formData.append('state', this.company.state);
-        formData.append('country', this.company.country);
-
-        axios.post('https://laravel-back-production-9320.up.railway.app/api/companies', formData).then(response => {
-          Swal.fire({
-            title: "Added!",
-            text: "Company added successfully.",
-            icon: "success",
-            showConfirmButton: false,
-            timer: 1500
-          }).then(() => {
-            this.$router.push({ name: ROUTE_NAMES.COMPANIES });
-          });
-        }).catch(error => {
-          Swal.fire({
-            title: "Error!",
-            text: "Error adding company.",
-            icon: "error",
-            showConfirmButton: false,
-            timer: 1500
-          });
-        });
-      },
-
-      updateCompanyDetails() {
-        const formData = new FormData();
-        formData.append('nameCompany', this.company.nameCompany);
-        formData.append('website', this.company.website);
-        formData.append('primaryColor', this.company.primaryColor);
-        formData.append('secondaryColor', this.company.secondaryColor);
-        formData.append('status', 'Active');
-        formData.append('address', this.company.address);
-        formData.append('postalCode', this.company.postalCode);
-        formData.append('city', this.company.city);
-        formData.append('state', this.company.state);
-        formData.append('country', this.company.country);
-        formData.append('_method', "put");
-
-        if (this.company.image instanceof File) {
-          formData.append('logoUrl', this.company.image);
-        }
-
-        axios.post(`https://laravel-back-production-9320.up.railway.app/api/companies/${this.id}`, formData).then(response => {
-          Swal.fire({
-            title: "Updated!",
-            text: "Company updated successfully.",
-            icon: "success",
-            showConfirmButton: false,
-            timer: 1500
-          }).then(() => {
-            this.$router.push({ name: ROUTE_NAMES.COMPANIES });
-          });
-        }).catch(error => {
-          Swal.fire({
-            title: "Error!",
-            text: "Error updating company.",
-            icon: "error",
-            showConfirmButton: false,
-            timer: 1500
-          });
-        });
-      },
-
-      deleteCompany() {
-        Swal.fire({
-          title: "Are you sure?",
-          text: "You won't be able to revert this!",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Yes, delete it!"
-        }).then((result) => {
-          if (result.isConfirmed) {
-            axios.put(`https://laravel-back-production-9320.up.railway.app/api/companies/${this.id}/delete`).then(response => {
-              Swal.fire({
-                title: "Deleted!",
-                text: "Company deleted successfully.",
-                icon: "success",
-                showConfirmButton: false,
-                timer: 1500
-              }).then(() => {
-                this.$router.push({ name: ROUTE_NAMES.COMPANIES });
-              });
-            }).catch(error => {
-              Swal.fire({
-                title: "Error!",
-                text: "Error deleting company.",
-                icon: "error"
-              });
-            });
+          
+          if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            this.errors.logo = 'Image size should be less than 5MB';
+            return;
           }
-        });
+
+          // Asignar la nueva imagen y limpiar la anterior
+          this.company.image = file;
+          this.company.logo = null; // Limpiar la URL anterior
+          this.errors.logo = '';
+        }
       },
 
       addNewImage() {
+        // Limpiar la imagen actual
         this.company.image = null;
-        this.company.logoUrl = null;
+        this.company.logo = null;
+        this.company.logo_id = null;
+        
+        // Resetear el input file
+        if (this.$refs.fileInput) {
+          this.$refs.fileInput.value = '';
+        }
       },
 
-      cancel() {
-        this.$router.push({ name: ROUTE_NAMES.COMPANIES });
+      triggerFileInput() {
+        // Asegurarnos de que el elemento existe antes de llamar a click()
+        const fileInput = this.$refs.fileInput;
+        if (fileInput && typeof fileInput.click === 'function') {
+          fileInput.click();
+        }
       },
 
       goBack() {
-        this.$router.push({ name: ROUTE_NAMES.COMPANIES });
+        this.$router.push({ 
+          name: ROUTE_NAMES.COMPANIES_INDEX,
+          query: { 
+            refresh: Date.now() 
+          }
+        });
       },
-    }
+
+      async loadContacts() {
+        try {
+          const response = await API.contacts.getCompanyContacts(this.id);
+          console.log('Contacts response:', response);
+          if (response.data.success) {
+            this.contacts = response.data.data.filter(contact => contact !== null);
+          }
+        } catch (error) {
+          console.error('Error loading contacts:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Error loading contacts',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
+      },
+
+      async handleSaveContact(contactData) {
+        try {
+          if (contactData.id) {
+            // Actualizar contacto existente
+            await API.contacts.updateContact(this.id, contactData.id, {
+              ...contactData,
+              company_id: this.id
+            });
+          } else {
+            // Crear nuevo contacto
+            contactData.is_company_contact = 1;
+            await API.contacts.createContact(this.id, {
+              ...contactData,
+              company_id: this.id
+            });
+          }
+          
+          // Recargar la lista de contactos
+          await this.loadContacts();
+          
+          // Resetear el formulario
+          this.resetContactForm();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: `Contact ${contactData.id ? 'updated' : 'created'} successfully`,
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        } catch (error) {
+          console.error('Error saving contact:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data?.message || 'Error saving contact',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
+      },
+
+      editContact(contact) {
+        this.newContact = { ...contact };
+      },
+
+      resetContactForm() {
+        this.newContact = {
+          contact_name: '',
+          contact_email: '',
+          contact_phone: '',
+          contact_comments: '',
+          is_company_contact: 1,
+        };
+      },
+
+      goToCompanies() {
+        this.$router.push({ name: ROUTE_NAMES.COMPANIES_INDEX });
+      },
+
+      async deleteContact(contact) {
+        try {
+          const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          });
+
+          if (result.isConfirmed) {
+            await API.contacts.deleteContact(this.id, contact.id);
+            await this.loadContacts();
+            
+            Swal.fire({
+              icon: 'success',
+              title: 'Deleted!',
+              text: 'Contact has been deleted.',
+              toast: true,
+              position: 'bottom',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting contact:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.response?.data?.message || 'Error deleting contact',
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
+      },
+    },
   });
 </script>
 
 <template>
-  <CCard class="mb-4">
-    <CRow>
-      <CCol :xs="12" :xl="10"></CCol>
-      <CCol :xs="12" :xl="2">
-        <CCardBody>
-          <CButton color="primary" type="submit" variant="outline" @click="goBack">
-            <CIcon icon="cil-arrow-left" class="me-2" />Go Back
-          </CButton>
-        </CCardBody>
-      </CCol>
-    </CRow>
-  </CCard>
-
-  <CCard class="mb-4">
-    <CCardBody>
-      <CForm 
-        class="row g-3 needs-validation" 
-        novalidate 
-        :validated="validatedCustom01" 
-        @submit.prevent="handleSubmitCustom01"
-        enctype="multipart/form-data"
+  <div>
+    <!-- Botón de retorno -->
+    <div class="mb-3" style="text-align: -webkit-right;">
+      <CButton 
+        color="primary" 
+        variant="outline"
+        @click="goToCompanies"
+        class="d-flex align-items-center gap-2"
       >
-        <CCol md="6">
-          <CFormLabel for="validationCustomNameCompany">Company Name</CFormLabel>
-          <CInputGroup class="has-validation">
-            <CFormInput 
-              v-model="company.nameCompany"
-              id="validationCustomNameCompany"
-              aria-describedby="inputGroupPrepend"
-              placeholder="Market Analysis"
-              required
-            />
-          </CInputGroup>
-        </CCol>
-        <CCol md="6">
-          <CFormInput 
-            v-model="company.website"
-            id="validationCustomWebSite"
-            label="Website"
-            placeholder="www.marketanalysis.mx"
-            required
-          />
-        </CCol>
+        <CIcon icon="cil-arrow-left" />
+        Return
+      </CButton>
+    </div>
 
-        <CCol md="6" class="mb-3" v-if="!company.logoUrl">
-          <CFormLabel for="validationCustomLogo">Image:</CFormLabel>
-          <CFormInput
-            type="file"
-            id="validationCustomLogo"
-            aria-label="file example"
-            @change="handleImageUpload"
-            required
-          />
-        </CCol>
+    <CCard class="mb-4">
+      <CCardHeader>
+        <strong>{{ isNew ? 'New Company' : 'Edit Company' }}</strong>
+      </CCardHeader>
+      <CCardBody>
+        <CTabs v-model="activeTab">
+          <CNav variant="tabs">
+            <CNavItem>
+              <CNavLink :active="activeTab === '1'" @click="activeTab = '1'">
+                Company Information
+              </CNavLink>
+            </CNavItem>
+            <CNavItem v-if="!isNew">
+              <CNavLink :active="activeTab === '2'" @click="activeTab = '2'">
+                Contacts
+              </CNavLink>
+            </CNavItem>
+          </CNav>
+          
+          <CTabContent>
+            <!-- Company Information Tab -->
+            <CTabPane :visible="activeTab === '1'">
+              <CForm @submit.prevent="saveCompany">
+                <!-- Basic Information -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Basic Information</h6>
+                  <CRow>
+                    <CCol :md="6">
+                      <CFormInput
+                        label="Name"
+                        v-model="company.name"
+                        :feedback="errors.name"
+                        :invalid="!!errors.name"
+                        required
+                        class="mb-3"
+                      />
+                    </CCol>
+                    <CCol :md="6">
+                      <CFormInput
+                        label="Website"
+                        v-model="company.website"
+                        placeholder="www.example.com"
+                        class="mb-3"
+                      />
+                    </CCol>
+                  </CRow>
+                </div>
 
-        <CCol md="6" class="mb-3" v-else>
-          <CFormLabel></CFormLabel><br>
-          <CAvatar 
-            color="secondary" 
-            size="xl" 
-            :src="imageUrl"
-          ></CAvatar>
-          &nbsp;
-          <CButton color="primary" @click="addNewImage">
-            <CIcon icon="cil-image-plus" class="me-2" />
-            Change Image
-          </CButton>          
-        </CCol>
+                <!-- Brand Colors -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Brand Colors</h6>
+                  <CRow>
+                    <CCol :md="6">
+                      <div class="mb-3">
+                        <CFormLabel>Primary Color</CFormLabel>
+                        <div class="d-flex align-items-center gap-2">
+                          <CFormInput
+                            type="color"
+                            v-model="company.primary_color"
+                            id="primaryColor"
+                            title="Choose primary color"
+                            style="width: 100px"
+                          />
+                          <span>{{ company.primary_color }}</span>
+                        </div>
+                      </div>
+                    </CCol>
+                    <CCol :md="6">
+                      <div class="mb-3">
+                        <CFormLabel>Secondary Color</CFormLabel>
+                        <div class="d-flex align-items-center gap-2">
+                          <CFormInput
+                            type="color"
+                            v-model="company.secondary_color"
+                            id="secondaryColor"
+                            title="Choose secondary color"
+                            style="width: 100px"
+                          />
+                          <span>{{ company.secondary_color }}</span>
+                        </div>
+                      </div>
+                    </CCol>
+                  </CRow>
+                </div>
 
-        <CCol md="3">
-          <CFormLabel for="validationCustomPColor">Primary Color:</CFormLabel>
-          <CFormInput 
-            type="color"
-            v-model="company.primaryColor"
-            id="validationCustomPColor"
-            title="Choose your color"
-            style="width: 100%;"
-          />
-        </CCol>
+                <!-- Logo Section -->
+                <div class="mb-4">
+                  <h6 class="mb-3">Company Logo</h6>
+                  <CRow>
+                    <CCol :md="12">
+                      <!-- Preview de la imagen actual -->
+                      <div v-if="company.logo || company.image" class="mb-3">
+                        <div class="logo-preview">
+                          <CImage
+                            :src="previewImage"
+                            alt="Company Logo"
+                            rounded
+                            thumbnail
+                            width="200"
+                            height="200"
+                            class="company-logo"
+                          />
+                          <CButton
+                            color="danger"
+                            variant="outline"
+                            size="sm"
+                            class="remove-logo"
+                            @click="addNewImage"
+                          >
+                            <CIcon icon="cil-x" />
+                          </CButton>
+                        </div>
+                      </div>
 
-        <CCol md="3">
-          <CFormLabel for="validationCustomSColor">Secondary Color:</CFormLabel>
-          <CFormInput 
-            type="color"
-            v-model="company.secondaryColor"
-            id="validationCustomSColor"
-            title="Choose your color"
-            style="width: 100%;" 
-          />
-        </CCol>
-        
-        <CCol md="8">
-          <CFormInput 
-            v-model="company.address"
-            id="address"
-            label="Address"
-            ref="autocomplete"
-            placeholder="Enter address"
-            required
-          />
-        </CCol>
+                      <!-- Input oculto para cambiar imagen -->
+                      <input
+                        type="file"
+                        ref="fileInput"
+                        accept="image/*"
+                        @change="handleImageUpload"
+                        class="d-none"
+                      />
 
-        <CCol md="4">
-          <CFormInput 
-            v-model="company.postalCode"
-            id="postalCode"
-            label="Postal Code"
-            ref="autocomplete"
-            placeholder=""
-            required
-          />
-        </CCol>
+                      <!-- Botón para cambiar imagen -->
+                      <div v-if="company.logo || company.image" class="mb-3">
+                        <CButton
+                          color="primary"
+                          variant="outline"
+                          @click="triggerFileInput"
+                        >
+                          Change Logo
+                        </CButton>
+                      </div>
 
-        <CCol md="4">
-          <CFormInput 
-            v-model="company.city"
-            id="city"
-            label="City"
-            ref="autocomplete"
-            placeholder=""
-            required
-          />
-        </CCol>
+                      <!-- Input visible para nueva imagen -->
+                      <div v-if="!company.logo && !company.image" class="mb-3">
+                        <CFormInput
+                          type="file"
+                          accept="image/*"
+                          @change="handleImageUpload"
+                          label="Upload Logo"
+                          :class="{ 'is-invalid': errors.logo }"
+                        />
+                        <div v-if="errors.logo" class="invalid-feedback">
+                          {{ errors.logo }}
+                        </div>
+                      </div>
+                    </CCol>
+                  </CRow>
+                </div>
 
-        <CCol md="4">
-          <CFormInput 
-            v-model="company.state"
-            id="state"
-            label="State"
-            ref="autocomplete"
-            placeholder=""
-            required
-          />
-        </CCol>
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 justify-content-end">
+                  <CButton 
+                    color="secondary" 
+                    variant="outline" 
+                    @click="goBack"
+                  >
+                    Cancel
+                  </CButton>
+                  <CButton 
+                    color="primary" 
+                    type="submit"
+                  >
+                    Save
+                  </CButton>
+                </div>
+              </CForm>
+            </CTabPane>
 
-        <CCol md="4">
-          <CFormInput 
-            v-model="company.country"
-            id="country"
-            label="Country"
-            ref="autocomplete"
-            placeholder=""
-            required
-          />
-        </CCol>
-
-        <CCol :xs="6">
-          <CButton color="success" type="submit" variant="outline" v-if="id === 0">
-            <CIcon icon="cil-plus" class="me-2" />Add Company
-          </CButton>
-          <CButton color="success" type="submit" variant="outline" v-else>
-            <CIcon icon="cil-pencil" class="me-2" />Update Company
-          </CButton>          
-          &nbsp;
-          <CButton color="danger" @click="deleteCompany()" variant="outline" v-if="id !== 0">
-            <CIcon icon="cil-trash" class="me-2" />Delete Company
-          </CButton>
-        </CCol>
-      </CForm>
-    </CCardBody>
-  </CCard>
+            <!-- Contacts Tab -->
+            <CTabPane :visible="activeTab === '2'" v-if="!isNew">
+              <div class="mt-4">
+                <ContactForm
+                  :contact="newContact"
+                  @save="handleSaveContact"
+                  @cancel="resetContactForm"
+                />
+                <div class="mt-4">
+                  <ContactsTable
+                    :contacts="contacts"
+                    @edit="editContact"
+                    @delete="deleteContact"
+                  />
+                </div>
+              </div>
+            </CTabPane>
+          </CTabContent>
+        </CTabs>
+      </CCardBody>
+    </CCard>
+  </div>
 </template>
+
+<style scoped>
+.logo-preview {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.company-logo {
+  object-fit: contain;
+}
+
+.remove-logo {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  border-radius: 50%;
+  padding: 0.25rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  :deep(.company-logo) {
+    width: 150px;
+    height: 150px;
+  }
+}
+</style>

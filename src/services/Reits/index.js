@@ -1,8 +1,7 @@
 import httpClient from '../../plugins/axios'
 
 export default {
-
-  getReits(query, filters = {}, sorter = {}) {
+  async getReits (query, filters = {}, sorter = {}) {
     return httpClient.get(`/reits`, {
       params: {
         page: query?.page || null,
@@ -12,5 +11,26 @@ export default {
         ...sorter,
       },
     })
+  },
+
+  async getReit (reitId) {
+    const response = await httpClient.get(`/reits/${reitId}`)
+    return response
+  },
+
+  createReit ({ name }) {
+    return httpClient.post(`/reits`, {
+      name,
+    })
+  },
+
+  updateReit (reitId, { name }) {
+    return httpClient.put(`/reits/${reitId}`, {
+      name,
+    })
+  },
+
+  deleteReit (reitId) {
+    return httpClient.delete(`/reits/${reitId}`)
   },
 }

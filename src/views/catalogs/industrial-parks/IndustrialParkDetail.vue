@@ -30,10 +30,10 @@
           <CCol :md="6">
             <CFormSelect
               label="Submarket"
-              v-model="industrialPark.submarket_id"
+              v-model="industrialPark.sub_market_id"
               :options="submarketOptions"
-              :feedback="errors.submarket_id"
-              :invalid="!!errors.submarket_id"
+              :feedback="errors.sub_market_id"
+              :invalid="!!errors.sub_market_id"
               :disabled="!industrialPark.market_id"
               required
             />
@@ -75,12 +75,12 @@ export default {
       industrialPark: {
         name: '',
         market_id: '',
-        submarket_id: ''
+        sub_market_id: ''
       },
       errors: {
         name: '',
         market_id: '',
-        submarket_id: ''
+        sub_market_id: ''
       },
       markets: [],
       submarkets: []
@@ -140,7 +140,7 @@ export default {
             this.industrialPark = {
               name: response.data.data.name,
               market_id: response.data.data.market_id,
-              submarket_id: response.data.data.submarket_id
+              sub_market_id: response.data.data.sub_market_id
             }
             this.previousMarketId = response.data.data.market_id
           }
@@ -167,7 +167,7 @@ export default {
       this.errors = {
         name: '',
         market_id: '',
-        submarket_id: ''
+        sub_market_id: ''
       }
     },
     async saveIndustrialPark() {
@@ -225,7 +225,7 @@ export default {
   watch: {
     'industrialPark.market_id'(newValue) {
       if (!this.isLoading && this.previousMarketId !== null && newValue !== this.previousMarketId) {
-        this.industrialPark.submarket_id = ''
+        this.industrialPark.sub_market_id = ''
       }
       this.previousMarketId = newValue
     }

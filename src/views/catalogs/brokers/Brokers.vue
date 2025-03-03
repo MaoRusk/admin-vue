@@ -4,8 +4,8 @@
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <CButton color="success" @click="newIndustrialPark()">
-            <CIcon icon="cilPlus" class="me-2" />New Industrial Park
+          <CButton color="success" @click="newBroker()">
+            <CIcon icon="cilPlus" class="me-2" />New Broker
           </CButton>
         </CCardBody>
       </CCol>
@@ -16,9 +16,9 @@
     <CCardBody>
       <div class="table-responsive">
         <CSmartTable
-          v-if="industrialParks.length > 0"
+          v-if="brokers.length > 0"
           :active-page="1"
-          :items="tableItems"
+          :items="brokers"
           :columns="columns"
           :items-per-page="10"
           :table-filter="true"
@@ -47,7 +47,7 @@
                 square 
                 size="sm" 
                 class="mx-1 my-1"
-                @click="deleteIndustrialPark(item)"
+                @click="deleteBroker(item)"
               >
                 <CIcon icon="cil-trash" />
               </CButton>
@@ -60,79 +60,40 @@
 </template>
 
 <script>
-import IndustrialParksService from '@/services/IndustrialParks'
-import MarketsService from '@/services/Markets'
-import SubmarketsService from '@/services/Submarkets'
+import { API } from '@/services'
 import Swal from 'sweetalert2'
-import { ROUTE_NAMES } from '../../../router/routeNames';
+import { ROUTE_NAMES } from '@/router/routeNames'
 
 export default {
-  name: 'IndustrialParksTable',
+  name: 'Brokers',
   data() {
     return {
-      industrialParks: [],
-      markets: {},
-      submarkets: {},
+      brokers: [],
       columns: [
         {
           key: 'name',
           label: 'Name',
-          _style: { minWidth: '200px' }
-        },
-        {
-          key: 'market_name',
-          label: 'Market',
-          _style: { minWidth: '150px' }
-        },
-        {
-          key: 'submarket_name',
-          label: 'Submarket',
-          _style: { minWidth: '150px' }
+          _style: { width: '40%' }
         },
         {
           key: 'actions',
           label: 'Actions',
-          _style: { width: '120px', textAlign: 'center' }
+          _style: { width: '20%', textAlign: 'center' }
         },
       ],
-    }
-  },
-  computed: {
-    tableItems() {
-      return this.industrialParks.map(park => ({
-        ...park,
-        market_name: this.markets[park.market_id]?.name || '-',
-        submarket_name: this.submarkets[park.sub_market_id]?.name || '-'
-      }))
     }
   },
   methods: {
     async fetchData() {
       try {
-        const [parksResponse, marketsResponse, submarketResponse] = await Promise.all([
-          IndustrialParksService.getIndustrialParks(),
-          MarketsService.getMarkets(),
-          SubmarketsService.getSubmarkets()
-        ])
-
-        this.industrialParks = parksResponse.data.data
-
-        // Convert arrays to lookup objects for better performance
-        this.markets = marketsResponse.data.data.reduce((acc, market) => {
-          acc[market.id] = market
-          return acc
-        }, {})
-
-        this.submarkets = submarketResponse.data.data.reduce((acc, submarket) => {
-          acc[submarket.id] = submarket
-          return acc
-        }, {})
+        const response = await API.brokers.getBrokers()
+        this.brokers = response.data.data
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching brokers:', error)
         Swal.fire({
           icon: 'error',
           title: 'Error!',
-          text: 'Error loading data',
+          text: 'Error loading brokers',
           toast: true,
           position: 'bottom',
           showConfirmButton: false,
@@ -141,13 +102,13 @@ export default {
         })
       }
     },
-    newIndustrialPark() {
-      this.$router.push({ name: ROUTE_NAMES.INDUSTRIAL_PARKS_DETAIL, params: { id: 0 } })
+    newBroker() {
+      this.$router.push({ name: ROUTE_NAMES.BROKERS_CREATE })
     },
     viewDetails(item) {
-      this.$router.push({ name: ROUTE_NAMES.INDUSTRIAL_PARKS_DETAIL, params: { id: item.id } })
+      this.$router.push({ name: ROUTE_NAMES.BROKERS_UPDATE, params: { id: item.id } })
     },
-    async deleteIndustrialPark(item) {
+    async deleteBroker(item) {
       const result = await Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -160,7 +121,7 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          await IndustrialParksService.deleteIndustrialPark(item.id)
+          await API.brokers.deleteBroker(item.id)
           await this.fetchData()
           
           Swal.fire({
@@ -174,11 +135,11 @@ export default {
             timerProgressBar: true
           })
         } catch (error) {
-          console.error('Error deleting industrial park:', error)
+          console.error('Error deleting broker:', error)
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Error deleting industrial park',
+            text: 'Error deleting broker',
             toast: true,
             position: 'bottom',
             showConfirmButton: false,
@@ -193,5 +154,4 @@ export default {
     this.fetchData()
   }
 }
-</script>
-
+</script> 
