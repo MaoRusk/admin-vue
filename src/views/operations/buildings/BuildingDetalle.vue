@@ -44,9 +44,9 @@ function dispatchSubmitForm() {
 }
 
 watch(activeTab, () => {
-  if (activeTab.value === 'DataBuilding' && can('buildings.create', 'buildings.update')) {
+  if (activeTab.value === 'DataBuilding') {
     tabDataLoaded.value = true
-    showSave.value = true
+    showSave.value = can('buildings.create', 'buildings.update')
   } else if (activeTab.value === 'Availability') {
     tabAvailabilityLoaded.value = true
     showSave.value = (buildingAvailabilityRef.value?.showForm ?? false) && can('buildings.availability.create', 'buildings.availability.update')

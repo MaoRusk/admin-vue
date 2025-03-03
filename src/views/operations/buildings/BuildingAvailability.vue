@@ -138,7 +138,7 @@ defineExpose({
       <!-- Header with Add button -->
       <div class="mb-4 d-flex justify-content-between align-items-center">
         <h2>Building Availability</h2>
-        <CButton color="primary" @click="handleAddAvailability">
+        <CButton color="primary" @click="handleAddAvailability" v-if="can('buildings.availability.create')">
           <CIcon :icon="cilPlus" class="me-2" />
           Add Availability
         </CButton>
@@ -191,7 +191,7 @@ defineExpose({
           >
             <template #actions="{ item }">
               <td class="d-flex gap-1">
-                <CButton color="primary" variant="outline" square size="sm" v-if="can('buildings.availability.show', 'buildings.availability.create', 'buildings.availability.update')">
+                <CButton color="primary" variant="outline" square size="sm" v-if="can('buildings.availability.show', 'buildings.availability.update')">
                   <CIcon :content="cilPencil" size="sm" @click="handleEdit(item)" />
                 </CButton>
                 <CButton color="danger" variant="outline" square size="sm" @click="removeAvailability(item.id)" v-if="can('buildings.availability.destroy')">
