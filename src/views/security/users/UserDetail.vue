@@ -2,12 +2,13 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
-import { cilArrowCircleLeft, cilTrash, cilPencil, cilPlus } from '@coreui/icons';
 import { API } from '../../../services';
 import MSelect from '../../../components/MSelect.vue';
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { useAuthStore } from '../../../stores/auth';
 
 const router = useRouter();
+const { can } = useAuthStore()
 
 const props = defineProps({
   id: {
@@ -20,9 +21,6 @@ const userRoles = ref([]);
 const selectedRole = ref(null);  // Mantener como null inicialmente
 const loading = ref(false);
 const marketsCbo = ref([]);
-// const modulesCbo = ref([
-//   { value: '1', label: 'Buildings' },
-// ]);
 
 // Form data
 const formData = ref({
@@ -35,16 +33,11 @@ const formData = ref({
   email: '',     
   status: 'Activo', // Por defecto Activo
   userTypeId: '',
-  // modules: [],
   markets: [],
 });
 
-
-const selectedValues = ref(null);
 const selectedUserType = ref('');
 const selectedMarket = ref(null);
-
-const submitUserTypeInput = ref('');
 
 // Computed properties
 const isNewRecord = computed(() => props.id === 0);
@@ -92,43 +85,6 @@ async function fetchMarkets() {
     console.error('Error fetching markets:', error);
   }
 }
-async function fetchUserRole(roleId) {
-  try {
-    const { data: response } = await API.roles.getRoleById(roleId);
-    
-    if (response.success) {
-      // Encontrar si el rol ya existe en la lista
-      const existingRoleIndex = userRoles.value.findIndex(
-        r => r.value === roleId.toString()
-      );
-
-      const roleData = {
-        value: response.data.id.toString(),
-        label: response.data.name,
-        guardName: response.data.guard_name,
-        permissions: response.data.permissions // Guardamos los permisos si los necesitamos después
-      };
-
-      // Si el rol ya existe, actualizarlo
-      if (existingRoleIndex >= 0) {
-        userRoles.value[existingRoleIndex] = roleData;
-      } else {
-        // Si no existe, agregarlo a la lista
-        userRoles.value.push(roleData);
-      }
-
-      // Establecer como seleccionado
-      selectedRole.value = [roleData];
-    }
-  } catch (error) {
-    console.error('Error fetching user role:', error);
-    Swal.fire({
-      title: 'Error',
-      text: 'Failed to load user role',
-      icon: 'error'
-    });
-  }
-}
 
 async function fetchUserData() {
     loading.value = true;
@@ -143,7 +99,6 @@ async function fetchUserData() {
         email: '',
         status: 'Activo',
         roleId: '',
-        // modules: [],
         markets: []
       };
     
@@ -168,11 +123,9 @@ async function fetchUserData() {
           email: userData.email || '',
           status: userData.status === 'Active' ? 'Activo' : 'Inactivo',
           roleId: userData.role_id || '',
-          // modules: [],
           markets: []
         };
 
-    
         if (userData.role_id) {
           selectedRole.value = userData.role_id.toString();
         }
@@ -364,61 +317,6 @@ const goBack = () => {
   });
 };
 
-async function handleDelete() {
-  try {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!'
-    });
-
-    if (result.isConfirmed) {
-      loading.value = true;
-      const response = await API.users.deleteUser(props.id);
-
-      if (response.data.success) {
-        await Swal.fire({
-          title: 'Deleted!',
-          text: 'User has been deleted successfully.',
-          icon: 'success',
-          timer: 1500
-        });
-        
-        router.push({ name: 'Users' });
-      } else {
-        throw new Error(response.data.message || 'Failed to delete user');
-      }
-    }
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    Swal.fire({
-      title: 'Error',
-      text: error.response?.data?.message || 'Failed to delete user',
-      icon: 'error'
-    });
-  } finally {
-    loading.value = false;
-  }
-}
-
-// Event handlers
-// const handleModulesCbo = (newValue) => {
-//   selectedValues.value = newValue;
-//   formData.value.modules = Array.isArray(newValue) ? newValue : [newValue];
-// };
-const handleModulesCbo = (newValue) => {
-  selectedValues.value = newValue;
-  formData.value.modules = newValue ? [newValue] : [];
-};
-// const handleUserTypeChange = (value) => {
-//   selectedUserType.value = value[0]?.value;
-//   fetchMarkets();
-// };
-
 const handleMarketsChange = (value) => {
   selectedMarket.value = value;
 };
@@ -442,7 +340,7 @@ async function createOptionGeneral(field, value) {
   <CCard>
     <CCardHeader style="text-align: right;">
       <CButton color="primary" variant="outline" @click="goBack">
-        <CIcon :content="cilArrowCircleLeft" size="sm" />
+        <CIcon name="cilArrowCircleLeft" size="sm" />
         Return
       </CButton>
     </CCardHeader>
@@ -609,28 +507,21 @@ async function createOptionGeneral(field, value) {
           <CRow>
             <CCol class="text-center">
               <template v-if="props.id != 0 && props.id !== ''">
-                <!-- <CButton 
-                  color="danger" 
-                  variant="outline" 
-                  @click="handleDelete()" 
-                  class="mx-2"
-                >
-                  <CIcon :content="cilTrash" size="sm" />
-                  Delete
-                </CButton> -->
                 <CButton 
+                  v-if="can('users.update')"
                   color="primary" 
                   variant="outline" 
                   @click="handleSubmit"
                   :disabled="!isFormValid"
                   class="mx-2"
                 >
-                  <CIcon :content="cilPencil" size="sm" />
+                  <CIcon name="cilPencil" size="sm" />
                   Save
                 </CButton>
               </template>
               <template v-else>
-                <CButton 
+                <CButton
+                  v-if="can('users.create')"
                   color="success" 
                   variant="outline" 
                   type="submit"
@@ -638,7 +529,7 @@ async function createOptionGeneral(field, value) {
                   :disabled="!isFormValid"
                   class="mx-2"
                 >
-                  <CIcon :content="cilPlus" size="sm" />
+                  <CIcon name="cilPlus" size="sm" />
                   Save
                 </CButton>
               </template>

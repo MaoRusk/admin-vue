@@ -93,7 +93,7 @@
 
         <CRow class="mt-4">
           <CCol :xs="12">
-            <CButton color="primary" type="submit">
+            <CButton v-if="can('roles.create', 'roles.update')" color="primary" type="submit">
               Save
             </CButton>
             <CButton 
@@ -116,6 +116,8 @@ import RolesService from '@/services/Roles'
 import PermissionsService from '@/services/Permissions'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { useAuthStore } from '../../../stores/auth';
+import { mapActions } from 'pinia';
 
 export default {
   name: 'RoleDetail',
@@ -168,6 +170,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     formatResourceName(resource) {
       return resource.charAt(0).toUpperCase() + resource.slice(1)
     },

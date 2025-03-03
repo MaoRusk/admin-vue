@@ -1,6 +1,6 @@
 <template>
   <CCard class="mb-4">
-    <CRow>
+    <CRow v-if="can('roles.create')">
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
@@ -32,6 +32,7 @@
           <template #actions="{ item }">
             <td class="py-2 text-center">
               <CButton 
+                v-if="can('roles.update', 'roles.show')"
                 color="primary" 
                 variant="outline" 
                 square 
@@ -42,6 +43,7 @@
                 <CIcon icon="cil-pencil" />
               </CButton>
               <CButton 
+                v-if="can('roles.destroy')"
                 color="danger" 
                 variant="outline" 
                 square 
@@ -63,6 +65,8 @@
 import RolesService from '@/services/Roles'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth';
 
 export default {
   name: 'Roles',
@@ -89,6 +93,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async fetchData() {
       try {
         const response = await RolesService.getRoles()

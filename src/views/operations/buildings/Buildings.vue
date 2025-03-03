@@ -6,8 +6,10 @@ import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { BUILDINGS_ITEMS_PER_PAGE } from '../../../constants';
+import { useAuthStore } from '../../../stores/auth';
 
 const storage = useLocalStorage()
+const { can } = useAuthStore()
 
 const buildings = ref([]);
 
@@ -87,7 +89,7 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.BUILDINGS_CREATE })">
+    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.BUILDINGS_CREATE })" v-if="can('buildings.create')">
       <CIcon name="cilPlus" size="sm" />
       New Building
     </CButton>
@@ -135,21 +137,23 @@ watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
     }"
     clickable-rows
     @row-click="item => {
-      $router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'DataBuilding' } })
+      if (can('buildings.update', 'buildings.show')) {
+        $router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'DataBuilding' } })
+      }
     }"
   >
     <template #actions="{ item }">
       <td class="d-flex gap-1">
-        <CButton color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Availability' } })">
+        <CButton v-if="can('buildings.availability.index')" color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Availability' } })">
           <CIcon name="cilBuilding" size="sm" />
         </CButton>
-        <CButton color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Absorption' } })">
+        <CButton v-if="can('buildings.absorption.index')" color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Absorption' } })">
           <CIcon name="cilIndustrySlash" size="sm" />
         </CButton>
-        <CButton color="primary" variant="outline" square size="sm" title="Go to contacts" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'ContactBuilding' } })">
+        <CButton v-if="can('buildings.contacts.index')" color="primary" variant="outline" square size="sm" title="Go to contacts" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'ContactBuilding' } })">
           <CIcon name="cilContact" size="sm" />
         </CButton>
-        <CButton color="danger" variant="outline" square size="sm" title="remove" @click.stop="removeBuilding(item.id)">
+        <CButton v-if="can('buildings.destroy')" color="danger" variant="outline" square size="sm" title="remove" @click.stop="removeBuilding(item.id)">
           <CIcon icon="cilTrash" size="sm" />
         </CButton>
       </td>

@@ -58,17 +58,15 @@
 </template>
 
 <script setup>
-
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '../../router/routeNames';
-import { AUTH_TOKEN, AUTH_USER } from '../../constants';
-import { useLocalStorage } from '../../composables/useLocalStorage';
 import { API } from '../../services';
 import logo from '@/assets/images/market-logo.jpg';
+import { useAuthStore } from '../../stores/auth';
 
 const router = useRouter()
-const { setItem } = useLocalStorage()
+const authStore = useAuthStore()
 
 const userName = ref('')
 const password = ref('')
@@ -80,10 +78,14 @@ async function login() {
     errorMessage.value = ''
     submitting.value = true
     const response = await API.auth.login({ username: userName.value, password: password.value })
-    submitting.value = false
+    authStore.setToken(response.data.access_token)
 
-    setItem(AUTH_TOKEN, response.data.access_token)
-    setItem(AUTH_USER, response.data.user)
+    const { data: me } = await API.auth.me()
+    const authUser = me.data.user
+    authUser.permissions = me.data.permissions
+    authStore.setUser(authUser)
+    
+    submitting.value = false
 
     router.push({ name: ROUTE_NAMES.HOME })
   } catch (err) {

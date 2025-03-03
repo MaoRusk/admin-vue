@@ -2,6 +2,8 @@
 import IndustriesService from '@/services/Industries'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth';
 
 export default {
   data() {
@@ -30,6 +32,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async fetchIndustries() {
       try {
         const response = await IndustriesService.getIndustries()
@@ -101,7 +104,7 @@ export default {
 </script>
 
 <template>
-  <CCard class="mb-4">
+  <CCard class="mb-4" v-if="can('industries.create')">
     <CRow>
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
@@ -132,6 +135,7 @@ export default {
         <template #actions="{ item }">
           <td class="py-2" style="text-align: center">
             <CButton 
+              v-if="can('industries.update', 'industries.show')"
               color="primary" 
               variant="outline" 
               square 
@@ -142,6 +146,7 @@ export default {
               <CIcon icon="cil-pencil" />
             </CButton>
             <CButton 
+              v-if="can('industries.destroy')"
               color="danger" 
               variant="outline" 
               square 

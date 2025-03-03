@@ -2,6 +2,8 @@
 import DevelopersService from '@/services/Developers'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth';
 
 export default {
   data() {
@@ -45,6 +47,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async fetchDevelopers() {
       try {
         const response = await DevelopersService.getDevelopers()
@@ -115,7 +118,7 @@ export default {
 </script>
 
 <template>
-  <CCard class="mb-4">
+  <CCard v-if="can('developers.create')" class="mb-4">
     <CRow>
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
@@ -170,6 +173,7 @@ export default {
         <template #actions="{ item }">
           <td class="py-2" style="text-align: center">
             <CButton 
+              v-if="can('developers.update', 'developers.show')"
               color="primary" 
               variant="outline" 
               square 
@@ -180,6 +184,7 @@ export default {
               <CIcon icon="cil-pencil" />
             </CButton>
             <CButton 
+              v-if="can('developers.destroy')"
               color="danger" 
               variant="outline" 
               square 

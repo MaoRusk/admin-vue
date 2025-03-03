@@ -41,7 +41,7 @@
         </CRow>
         <CRow class="mt-3">
           <CCol :xs="12">
-            <CButton color="primary" type="submit">
+            <CButton v-if="can('industrial-parks.create', 'industrial-parks.update')" color="primary" type="submit">
               Save
             </CButton>
             <CButton 
@@ -65,6 +65,8 @@ import MarketsService from '@/services/Markets'
 import SubmarketsService from '@/services/Submarkets'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth'
 
 export default {
   name: 'IndustrialParkDetail',
@@ -113,6 +115,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async loadMarkets() {
       try {
         const response = await MarketsService.getMarkets()

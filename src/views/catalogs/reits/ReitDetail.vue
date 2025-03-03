@@ -3,9 +3,11 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ReitsService from '@/services/Reits'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { useAuthStore } from '../../../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const { can } = useAuthStore()
 
 const isCreating = computed(() => {
   return route.path === '/operations/reits/create' || route.name === ROUTE_NAMES.REITS_CREATE
@@ -130,7 +132,7 @@ const saveReit = async () => {
             </CRow>
             <CRow>
               <CCol xs="12" class="d-flex gap-2 justify-content-end">
-                <CButton type="submit" color="primary">Save</CButton>
+                <CButton type="submit" color="primary" v-if="can('reits.create', 'reits.update')">Save</CButton>
                 <CButton
                   type="button"
                   color="secondary"

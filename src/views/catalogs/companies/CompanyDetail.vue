@@ -5,6 +5,8 @@
   import { API } from '@/services';
   import ContactForm from './components/ContactForm.vue';
   import ContactsTable from './components/ContactsTable.vue';
+import { useAuthStore } from '../../../stores/auth';
+import { mapActions } from 'pinia';
 
   export default defineComponent({
     name: 'CompanyDetail',
@@ -73,6 +75,7 @@
     },
 
     methods: {
+      ...mapActions(useAuthStore, ['can']),
       async loadCompany() {
         if (!this.isNew) {
           try {
@@ -554,6 +557,7 @@
                     Cancel
                   </CButton>
                   <CButton 
+                    v-if="can('companies.create', 'companies.update')"
                     color="primary" 
                     type="submit"
                   >

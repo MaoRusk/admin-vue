@@ -3,9 +3,11 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { API } from '@/services'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { useAuthStore } from '../../../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const { can } = useAuthStore()
 
 // Validar si estamos en la ruta de creación
 const isCreating = computed(() => {
@@ -161,7 +163,7 @@ const saveDeveloper = async () => {
             </CRow>
             <CRow>
               <CCol xs="12" class="d-flex gap-2 justify-content-end">
-                <CButton type="submit" color="primary">Guardar</CButton>
+                <CButton v-if="can('developers.update', 'developers.create')" type="submit" color="primary">Guardar</CButton>
                 <CButton
                   type="button"
                   color="secondary"

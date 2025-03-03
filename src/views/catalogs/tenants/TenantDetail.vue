@@ -18,7 +18,7 @@
         </CRow>
         <CRow class="mt-3">
           <CCol :xs="12">
-            <CButton color="primary" type="submit">
+            <CButton color="primary" type="submit" v-if="can('tenants.create', 'tenants.update')">
               Save
             </CButton>
             <CButton 
@@ -38,7 +38,9 @@
 
 <script>
 import TenantsService from '@/services/Tenants'
+import { mapActions } from 'pinia';
 import Swal from 'sweetalert2'
+import { useAuthStore } from '../../../stores/auth';
 
 export default {
   name: 'TenantDetail',
@@ -58,6 +60,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async loadTenant() {
       if (!this.isNew) {
         try {
