@@ -290,6 +290,60 @@ const routes = [
             name: ROUTE_NAMES.MARKET_SIZE_PENDING_APPROVALS,
             component: () => import('@/views/operations/buildings/PendingApprovals.vue'),
           },
+          {
+            path: 'reits',
+            name: ROUTE_NAMES.REITS_INDEX,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageIndex.vue'),
+          },
+          {
+            path: 'reit-mortgage',
+            name: ROUTE_NAMES.REIT_MORTGAGE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageIndex.vue'),
+          },
+
+          {
+            path: 'reit-mortgage/create',
+            name: ROUTE_NAMES.REIT_MORTGAGE_CREATE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageDetail.vue'),
+          },
+
+          {
+            path: 'reit-mortgage/:reitMortgageId/edit',
+            name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE,
+            component: () => import('@/views/operations/reits-mortgage/ReitMortgageDetail.vue'),
+          },
+
+          {
+            path: 'reit-annual',
+            name: ROUTE_NAMES.REIT_ANNUAL_INDEX,
+            component: () => import('@/views/operations/reitAnnual/ReitAnnualIndex.vue'),
+          },
+          {
+            path: 'reit-annual/create',
+            name: ROUTE_NAMES.REIT_ANNUAL_CREATE,
+            component: () => import('@/views/operations/reitAnnual/ReitAnnualForm.vue'),
+          },
+          {
+            path: 'reit-annual/:reitAnnualId/edit',
+            name: ROUTE_NAMES.REIT_ANNUAL_UPDATE,
+            component: () => import('@/views/operations/reitAnnual/ReitAnnualForm.vue'),
+          },
+
+          {
+            path: 'reit-quarter',
+            name: ROUTE_NAMES.REIT_QUARTER_INDEX,
+            component: () => import('@/views/operations/reitAnnual/ReitAnnualIndex.vue'),
+          },
+          {
+            path: 'reit-quarter/create',
+            name: ROUTE_NAMES.REIT_QUARTER_CREATE,
+            component: () => import('@/views/operations/reitAnnual/ReitAnnualForm.vue'),
+          },
+          {
+            path: 'reit-quarter/:reitAnnualId/edit',
+            name: ROUTE_NAMES.REIT_QUARTER_UPDATE,
+            component: () => import('@/views/operations/reitAnnual/ReitAnnualForm.vue'),
+          },
         ],
       },
     ],

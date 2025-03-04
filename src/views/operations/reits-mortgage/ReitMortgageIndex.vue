@@ -5,33 +5,30 @@ import Swal from 'sweetalert2';
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
-import { LANDS_ITEMS_PER_PAGE } from '../../../constants';
-import { useAuthStore } from '../../../stores/auth';
+import { REIT_MORTGAGE_ITEMS_PER_PAGE } from '../../../constants';
 
 const storage = useLocalStorage()
-const { can } = useAuthStore()
 
-const lands = ref([]);
+const reitMortgages = ref([]);
 
 const loading = ref(false)
 const totalItems = ref(0)
 const totalPages = ref(0)
 const page = ref(1)
-const itemsPerPage = ref(storage.getItem(LANDS_ITEMS_PER_PAGE) ?? 10)
+const itemsPerPage = ref(storage.getItem(REIT_MORTGAGE_ITEMS_PER_PAGE) ?? 10)
 const columnFilter = ref({})
 const columnSorter = ref({})
 const tableSearch = ref('')
 
 const columns = [
-  { key: 'status', label: 'Status' },
-  { key: 'land_name', label: 'Land Name' },
-  { key: 'marketName', label: 'Market' },
-  { key: 'submarketName', label: 'Submarket' },
-  { key: 'industrialParkName', label: 'Industrial Park' },
+  { key: 'reitName', label: 'Reit Name' },
+  { key: 'reitTypeName', label: 'Reit Type' },
+  { key: 'year', label: 'Year' },
+  { key: 'quarter', label: 'Quarter' },
   { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
 
-async function removeLand(id) {
+async function removeReitMortgage(id) {
   try {
     const { isConfirmed } = await Swal.fire({
       title: "Are you sure?",
@@ -43,19 +40,20 @@ async function removeLand(id) {
       confirmButtonText: "Yes, delete it!"
     })
     if (isConfirmed) {
-      const { data } = await API.lands.deleteLand(id);
+      const { data } = await API.reitMortgages.deleteReitMortgage(id);
       Swal.fire('Deleted!', data.message, 'success')
-      fetchLands()
+      fetchReitMortgages()
     }
   } catch (error) {
-    console.error('Error fetching land:', error);
+    console.error('Error fetching reit mortgage:', error);
   }
 }
-async function fetchLands() {
+
+async function fetchReitMortgages() {
   loading.value = true
 
   try {
-    const { data } = await API.lands.getLands({
+    const { data } = await API.reitMortgages.getReitMortgages({
       page: page.value,
       size: itemsPerPage.value,
       search: tableSearch.value,
@@ -64,34 +62,34 @@ async function fetchLands() {
     totalItems.value = data.data.total
     totalPages.value = data.data.last_page
 
-    lands.value = data.data.data.map((item) => ({
+    reitMortgages.value = data.data.data.map((item) => ({
       ...item,
-      marketName: item.market?.name || '-',
-      submarketName: item.sub_market?.name || '-',
-      industrialParkName: item.industrial_park?.name || '-',
+      reitName: item.reitName || '-',
+      reitTypeName: item.reitTypeName || '-',
+      year: item.year || '-',
+      quarter: item.quarter || '-',
     }))
     loading.value = false
   } catch (error) {
-    console.error('Error fetching lands:', error);
-    lands.value = [];
+    console.error('Error fetching reits mortgages:', error);
+    reitMortgages.value = [];
   } finally {
     loading.value = false
   }
 }
 
 onMounted(() => {
-  fetchLands();
+  fetchReitMortgages();
 });
-
-watch([page, itemsPerPage, tableSearch], fetchLands)
-watch([columnSorter, columnFilter], fetchLands, { deep: true })
+watch([page, itemsPerPage, tableSearch], fetchReitMortgages)
+watch([columnSorter, columnFilter], fetchReitMortgages, { deep: true })
 </script>
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.LANDS_CREATE })" v-if="can('lands.create')">
+    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_CREATE })">
       <CIcon name="cilPlus" size="sm" />
-      New Land
+      New Reit Mortgage
     </CButton>
   </div>
   <CSmartTable
@@ -100,7 +98,7 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
     :column-sorter="{ external: true }"
     :table-filter="{ external: true }"
     :loading="loading"
-    :items="lands"
+    :items="reitMortgages"
     :paginationProps="{
       activePage: page,
       pages: totalPages
@@ -122,7 +120,7 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
     @items-per-page-change="(_itemsPerPage) => {
       activePage = 1
       itemsPerPage = _itemsPerPage
-      storage.setItem(LANDS_ITEMS_PER_PAGE, _itemsPerPage)
+      storage.setItem(REIT_MORTGAGE_ITEMS_PER_PAGE, _itemsPerPage)
     }"
     @sorter-change="(sorter) => {
       columnSorter = sorter
@@ -137,21 +135,16 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
     }"
     clickable-rows
     @row-click="item => {
-      if (can('lands.update', 'lands.show')) {
-        $router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id } })
-      }
+      $router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE, params: { reitMortgageId: item.id } })
     }"
   >
     <template #actions="{ item }">
       <td style="vertical-align: middle;">
         <div class="d-flex gap-1">
-          <CButton v-if="can('lands.available.index')" color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Availability' } })">
-            <CIcon name="cilBuilding" size="sm" />
+          <CButton color="primary" variant="outline" square size="sm" title="Edit" @click.stop="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE, params: { reitMortgageId: item.id } })">
+            <CIcon name="cilPencil" size="sm" />
           </CButton>
-          <CButton v-if="can('lands.absorption.index')" color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Absorption' } })">
-            <CIcon name="cilIndustrySlash" size="sm" />
-          </CButton>
-          <CButton v-if="can('lands.destroy')" color="danger" variant="outline" square size="sm" @click.stop="removeLand(item.id)">
+          <CButton color="danger" variant="outline" square size="sm" @click.stop="removeReitMortgage(item.id)">
             <CIcon name="cilTrash" size="sm" />
           </CButton>
         </div>
@@ -162,3 +155,7 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
     Total records {{ totalItems }}
   </div>
 </template>
+
+<style scoped>
+
+</style>
