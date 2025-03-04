@@ -6,9 +6,11 @@ import Swal from 'sweetalert2';
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import MASelect from '../../../components/MASelect.vue';
+import { useAuthStore } from '../../../stores/auth';
 
 const router = useRouter()
 const route = useRoute()
+const { can } = useAuthStore()
 
 watch(
   () => route.params.reitAnnualId,
@@ -286,7 +288,7 @@ onMounted(async () => {
 
               <CRow class="mt-3">
                   <CCol>
-                    <CButton color="primary" type="submit">
+                    <CButton color="primary" type="submit" v-if="can('reit-annual.update', 'reit-annual.create')">
                       Save
                     </CButton>
                     <CButton 

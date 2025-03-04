@@ -141,11 +141,13 @@ const AppSidebarNav = defineComponent({
     function checkPermissions(items) {
       return items
         .filter((item) =>
-          typeof item.visible === 'boolean'
-            ? item.visible
-            : typeof item.visible === 'string'
-            ? authStore.can(item.visible)
-            : authStore.can(...item.visible),
+          item.visible
+            ? typeof item.visible === 'boolean'
+              ? item.visible
+              : typeof item.visible === 'string'
+              ? authStore.can(item.visible)
+              : authStore.can(...item.visible)
+            : true,
         )
         .map((item) => ({
           ...item,

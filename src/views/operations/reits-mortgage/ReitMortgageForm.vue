@@ -6,9 +6,11 @@ import Swal from 'sweetalert2';
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import MASelect from '../../../components/MASelect.vue';
+import { useAuthStore } from '../../../stores/auth';
 
 const router = useRouter()
 const route = useRoute()
+const { can } = useAuthStore()
 
 watch(
   () => route.params.reitMortgageId,
@@ -290,7 +292,7 @@ watch(() => reitMortgage.reit_id, async (newReit) => {
 
               <div class="row mt-4">
                 <div class="col">
-                  <CLoadingButton color="primary" type="submit" :loading="submitting" :disabled="submitting" class="me-3">
+                  <CLoadingButton color="primary" type="submit" :loading="submitting" :disabled="submitting" class="me-3" v-if="can('reit-mortgage.create', 'reit-mortgage.update')">
                     <CIcon name="cilSave" size="sm" /> Save
                   </CLoadingButton>
                   <CButton type="button" color="secondary" variant="outline" @click="router.push({ name: ROUTE_NAMES.REIT_MORTGAGE })">
