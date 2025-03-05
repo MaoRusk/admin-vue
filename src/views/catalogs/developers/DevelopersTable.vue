@@ -2,11 +2,16 @@
 import DevelopersService from '@/services/Developers'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { API } from '@/services'
+import MarketsService from '@/services/Markets'
+import SubmarketsService from '@/services/Submarkets'
 
 export default {
   data() {
     return {
       developers: [],
+      markets: [],
+      submarkets: [],
       columns: [
         {
           key: 'id',
@@ -21,22 +26,32 @@ export default {
         {
           key: 'is_developer',
           label: 'Developer',
-          _style: { width: '20%' },
+          _style: { width: '10%' },
         },
         {
           key: 'is_builder',
           label: 'Builder',
-          _style: { width: '20%' },
+          _style: { width: '10%' },
         },
         {
           key: 'is_owner',
           label: 'Owner',
+          _style: { width: '10%' },
+        },
+        {
+          key: 'market_name',
+          label: 'Market',
+          _style: { width: '20%' },
+        },
+        {
+          key: 'sub_market_name',
+          label: 'SubMarket',
           _style: { width: '20%' },
         },
         {
           key: 'actions',
           label: 'Actions',
-          _style: { width: '15%', textAlign: 'center' },
+          _style: { width: '5%', textAlign: 'center' },
           sorter: false,
           filter: false
         }
@@ -44,17 +59,56 @@ export default {
     }
   },
 
+  async created() {
+    await this.fetchMarkets()
+    await this.fetchDevelopers()
+  },
+
   methods: {
+    async fetchMarkets() {
+      try {
+        const response = await MarketsService.getMarkets()
+        this.markets = response
+      } catch (error) {
+        console.error('Error fetching markets:', error)
+      }
+    },
+
+    async fetchSubmarkets(market_id) {
+      try {
+        const response = await SubmarketsService.getSubmarkets({ market_id })
+        this.submarkets = [...this.submarkets, ...response]
+      } catch (error) {
+        console.error('Error fetching submarkets:', error)
+      }
+    },
+
     async fetchDevelopers() {
       try {
-        const response = await DevelopersService.getDevelopers()
-        this.developers = response || []
-        return this.developers
+        const response = await API.developers.getDevelopers()
+        this.developers = response.map(developer => ({
+          ...developer,
+          market_name: this.getMarketName(developer.market_id),
+          sub_market_name: this.getSubmarketName(developer.sub_market_id)
+        }))
+        
+        // Fetch submarkets for each unique market_id
+        const uniqueMarketIds = [...new Set(this.developers.map(d => d.market_id))]
+        await Promise.all(uniqueMarketIds.map(id => this.fetchSubmarkets(id)))
       } catch (error) {
         console.error('Error fetching developers:', error)
         this.developers = []
-        return []
       }
+    },
+
+    getMarketName(market_id) {
+      const market = this.markets.find(m => m.id === market_id)
+      return market ? market.name : '-'
+    },
+
+    getSubmarketName(submarket_id) {
+      const submarket = this.submarkets.find(s => s.id === submarket_id)
+      return submarket ? submarket.name : '-'
     },
 
     newDeveloper() {
@@ -62,7 +116,10 @@ export default {
     },
 
     viewDetails(item) {
-      this.$router.push({ name: ROUTE_NAMES.DEVELOPERS_UPDATE, params: { id: item.id } })
+      this.$router.push({
+        name: 'DeveloperDetail',
+        params: { id: item.id.toString() }
+      })
     },
 
     async deleteDeveloper(item) {
@@ -108,8 +165,53 @@ export default {
     }
   },
 
-  mounted() {
-    return this.fetchDevelopers()
+  computed: {
+    columns() {
+      return [
+        {
+          key: 'id',
+          label: 'ID',
+          _style: { width: '5%' },
+        },
+        {
+          key: 'name',
+          label: 'Name',
+          _style: { width: '20%' },
+        },
+        {
+          key: 'is_developer',
+          label: 'Developer',
+          _style: { width: '10%' },
+        },
+        {
+          key: 'is_builder',
+          label: 'Builder',
+          _style: { width: '10%' },
+        },
+        {
+          key: 'is_owner',
+          label: 'Owner',
+          _style: { width: '10%' },
+        },
+        {
+          key: 'market_name',
+          label: 'Market',
+          _style: { width: '20%' },
+        },
+        {
+          key: 'sub_market_name',
+          label: 'Submarket',
+          _style: { width: '20%' },
+        },
+        {
+          key: 'actions',
+          label: 'Actions',
+          _style: { width: '5%', textAlign: 'center' },
+          sorter: false,
+          filter: false
+        }
+      ]
+    }
   }
 }
 </script>
@@ -117,9 +219,8 @@ export default {
 <template>
   <CCard class="mb-4">
     <CRow>
-      <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
-        <CCardBody>
+        <CCardBody style="text-align: right;">
           <CButton color="success" @click="newDeveloper()">
             <CIcon icon="cilPlus" class="me-2" />New Developer
           </CButton>
@@ -130,68 +231,80 @@ export default {
 
   <CCard class="mb-4">
     <CCardBody>
-      <CSmartTable
-        v-if="developers.length > 0"
-        :active-page="1"
-        :items="developers"
-        :columns="columns"
-        :items-per-page="10"
-        :table-filter="true"
-        cleaner
-        :table-filter-label="'Search:'"
-        :table-filter-placeholder="'Type something...'"
-        :pagination="true"
-        hover
-      >
-        <template #is_developer="{ item }">
-          <td>
-            <CBadge :color="item.is_developer ? 'success' : 'danger'">
-              {{ item.is_developer ? 'Yes' : 'No' }}
-            </CBadge>
-          </td>
-        </template>
+      <div class="table-responsive">
+        <CSmartTable
+          v-if="developers.length > 0"
+          :active-page="1"
+          :items="developers"
+          :columns="columns"
+          :items-per-page="10"
+          :table-filter="true"
+          cleaner
+          :table-filter-label="'Search:'"
+          :table-filter-placeholder="'Type something...'"
+          :pagination="true"
+          hover
+          responsive
+        >
+          <template #is_developer="{ item }">
+            <td>
+              <CBadge :color="item.is_developer ? 'success' : 'danger'">
+                {{ item.is_developer ? 'Yes' : 'No' }}
+              </CBadge>
+            </td>
+          </template>
 
-        <template #is_builder="{ item }">
-          <td>
-            <CBadge :color="item.is_builder ? 'success' : 'danger'">
-              {{ item.is_builder ? 'Yes' : 'No' }}
-            </CBadge>
-          </td>
-        </template>
+          <template #is_builder="{ item }">
+            <td>
+              <CBadge :color="item.is_builder ? 'success' : 'danger'">
+                {{ item.is_builder ? 'Yes' : 'No' }}
+              </CBadge>
+            </td>
+          </template>
 
-        <template #is_owner="{ item }">
-          <td>
-            <CBadge :color="item.is_owner ? 'success' : 'danger'">
-              {{ item.is_owner ? 'Yes' : 'No' }}
-            </CBadge>
-          </td>
-        </template>
+          <template #is_owner="{ item }">
+            <td>
+              <CBadge :color="item.is_owner ? 'success' : 'danger'">
+                {{ item.is_owner ? 'Yes' : 'No' }}
+              </CBadge>
+            </td>
+          </template>
 
-        <template #actions="{ item }">
-          <td class="py-2" style="text-align: center">
-            <CButton 
-              color="primary" 
-              variant="outline" 
-              square 
-              size="sm" 
-              @click="viewDetails(item)"
-              class="mx-1"
-            >
-              <CIcon icon="cil-pencil" />
-            </CButton>
-            <CButton 
-              color="danger" 
-              variant="outline" 
-              square 
-              size="sm" 
-              class="mx-1"
-              @click="deleteDeveloper(item)"
-            >
-              <CIcon icon="cil-trash" />
-            </CButton>
-          </td>
-        </template>
-      </CSmartTable>
+          <template #market_name="{ item }">
+            <td>{{ getMarketName(item.market_id) }}</td>
+          </template>
+
+          <template #sub_market_name="{ item }">
+            <td>{{ getSubmarketName(item.sub_market_id) }}</td>
+          </template>
+
+          <template #actions="{ item }">
+            <td class="py-2" style="text-align: center">
+              <CButton 
+                color="primary" 
+                variant="outline" 
+                square 
+                size="sm" 
+                @click="viewDetails(item)"
+                class="mx-1"
+              >
+                <CIcon icon="cil-pencil" />
+              </CButton>
+              <CButton 
+                color="danger" 
+                variant="outline" 
+                square 
+                size="sm" 
+                class="mx-1"
+                @click="deleteDeveloper(item)"
+              >
+                <CIcon icon="cil-trash" />
+              </CButton>
+            </td>
+          </template>
+
+        </CSmartTable>
+      </div>
     </CCardBody>
   </CCard>
-</template> 
+</template>
