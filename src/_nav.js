@@ -119,4 +119,29 @@ export default [
     to: { name: ROUTE_NAMES.LANDS_INDEX },
     icon: 'cilTerrain',
   },
+  {
+    component: 'CNavGroup',
+    name: 'REITs',
+    icon: 'cilInstitution',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Reit Mortgage',
+        to: { name: ROUTE_NAMES.REIT_MORTGAGE },
+        icon: 'cilLibraryAdd',
+      },
+      {
+        component: 'CNavItem',
+        name: 'REITs Annual',
+        to: { name: ROUTE_NAMES.REIT_ANNUAL_INDEX },
+        icon: 'cilGraph',
+      },
+      {
+        component: 'CNavItem',
+        name: 'REITs Quarter',
+        to: { name: ROUTE_NAMES.REIT_QUARTER_INDEX },
+        icon: 'cilGraph',
+      },
+    ],
+  },
 ]

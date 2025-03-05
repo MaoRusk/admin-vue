@@ -39,12 +39,25 @@ export const ROUTE_NAMES = {
   LANDS_CREATE: 'Create Lands',
   LANDS_UPDATE: 'Edit Lands',
 
-  REITS: 'REITs',
-  REITS_CREATE: 'Create REIT',
-  REITS_UPDATE: 'Edit REIT',
   TENANTS_INDEX: 'Tenants',
   TENANTS_DETAIL: 'Tenant Detail',
 
   MARKET_SIZE_PENDING_APPROVALS: 'Pending Approvals',
   CATALOGS: 'Catalogs',
+
+  REITS_INDEX: 'Reits',
+
+  REIT_MORTGAGE: 'Reit Mortgage',
+  REIT_MORTGAGE_CREATE: 'Create Reit Mortgage',
+  REIT_MORTGAGE_UPDATE: 'Edit Reit Mortgage',
+
+
+
+  REIT_ANNUAL_INDEX: 'REIT Annual',
+  REIT_ANNUAL_CREATE: 'Create REIT Annual',
+  REIT_ANNUAL_UPDATE: 'Update REIT Annual',
+
+  REIT_QUARTER_INDEX: 'REIT Quarter',
+  REIT_QUARTER_CREATE: 'Create REIT Quarter',
+  REIT_QUARTER_UPDATE: 'Update REIT Quarter',
 }
