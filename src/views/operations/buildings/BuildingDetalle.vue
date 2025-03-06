@@ -215,7 +215,7 @@ function showList() {
     {{ activeTab }}
     <CTabs :activeItemKey="activeTab">
       <CTabList variant="tabs" class="mt-4">
-        <CTab itemKey="DataBuilding" @click="changeTab('DataBuilding')">Data Building</CTab>
+        <CTab itemKey="DataBuilding" @click="changeTab('DataBuilding')">Building Data</CTab>
         <CTab itemKey="Availability" @click="changeTab('Availability')" :disabled="disabledTab">Availability</CTab>
         <CTab itemKey="Absorption" @click="changeTab('Absorption')" :disabled="disabledTab">Absorption</CTab>
         <CTab itemKey="ContactBuilding" @click="changeTab('ContactBuilding')" :disabled="disabledTab">Building Contact</CTab>
