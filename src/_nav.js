@@ -184,4 +184,11 @@ export default [
       },
     ],
   },
+
+  {
+    component: 'CNavItem',
+    name: 'CAMs',
+    to: { name: ROUTE_NAMES.CAMS_INDEX },
+    icon: 'cilMoney',
+  },
 ]

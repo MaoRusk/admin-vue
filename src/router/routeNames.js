@@ -58,4 +58,7 @@ export const ROUTE_NAMES = {
   REIT_QUARTER_INDEX: 'REIT Quarter',
   REIT_QUARTER_CREATE: 'Create REIT Quarter',
   REIT_QUARTER_UPDATE: 'Update REIT Quarter',
+  CAMS_INDEX: 'Cams',
+  CAMS_CREATE: 'Create Cam',
+  CAMS_UPDATE: 'Edit Cam',
 }

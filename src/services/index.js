@@ -29,6 +29,8 @@ import BuildingsContacts from './BuildingsContacts'
 import ReitMortgages from './ReitMortgages'
 import Reits from './Reits'
 import ReitTypes from './ReitTypes'
+import reitsService from './Reits'
+import camsService from './Cams'
 
 export const API = {
   auth: Auth,
@@ -62,4 +64,6 @@ export const API = {
   reitMortgages: ReitMortgages,
   reits: Reits,
   reitTypes: ReitTypes,
+  reits: reitsService,
+  cams: camsService,
 }
