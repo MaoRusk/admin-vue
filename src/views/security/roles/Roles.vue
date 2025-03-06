@@ -62,9 +62,9 @@
 <script>
 import RolesService from '@/services/Roles'
 import Swal from 'sweetalert2'
-import { ROUTE_NAMES } from '../../../router/routeNames';
+import { ROUTE_NAMES } from '../../../router/routeNames'
 
-export default {
+const RolesComponent = {
   name: 'Roles',
   data() {
     return {
@@ -74,11 +74,6 @@ export default {
           key: 'name',
           label: 'Name',
           _style: { minWidth: '200px' }
-        },
-        {
-          key: 'guard_name',
-          label: 'Guard Name',
-          _style: { minWidth: '150px' }
         },
         {
           key: 'actions',
@@ -159,4 +154,6 @@ export default {
     this.fetchData()
   }
 }
+
+export default RolesComponent
 </script> 
