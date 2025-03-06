@@ -35,10 +35,10 @@ const tabImagesLoaded = ref(false);
 
 // Add contact state
 const contact = ref({
-  contact_name: '',
-  contact_email: '',
-  contact_phone: '',
-  contact_comments: '',
+  name: '',
+  email: '',
+  phone: '',
+  comments: '',
   is_buildings_contact: 1,
 });
 
@@ -48,20 +48,20 @@ const contacts = ref([]);
 const handleSave = async (savedContact) => {
   await fetchContacts();
   contact.value = {
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    contact_comments: '',
+    name: '',
+    email: '',
+    phone: '',
+    comments: '',
     is_buildings_contact: 1,
   };
 };
 
 const handleCancel = () => {
   contact.value = {
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    contact_comments: '',
+    name: '',
+    email: '',
+    phone: '',
+    comments: '',
     is_buildings_contact: 1,
   };
 };
@@ -114,14 +114,21 @@ const handleDelete = async (contactToDelete) => {
 
 const fetchContacts = async () => {
   try {
-    const { data } = await API.BuildingsContacts.getContacts(buildingId.value);
-    contacts.value = data.data;
+    const response = await API.BuildingsContacts.getContacts(buildingId.value);
+    if (response.data.success) {
+      contacts.value = response.data.data;
+    }
   } catch (error) {
-    console.error('Error fetching contacts:', error);
+    console.error('Error loading contacts:', error);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'Failed to load contacts: ' + error.message,
+      title: 'Error!',
+      text: error.response?.data?.message || 'Error loading contacts',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
     });
   }
 };
@@ -140,23 +147,30 @@ function dispatchSubmitForm() {
   }
 }
 
-watch(activeTab, () => {
-  if (activeTab.value === 'DataBuilding') {
+watch(buildingId, async (newId) => {
+  if (newId && activeTab.value === 'ContactBuilding') {
+    await fetchContacts();
+  }
+}, { immediate: true });
+
+watch(activeTab, async (newTab) => {
+  if (newTab === 'DataBuilding') {
     tabDataLoaded.value = true
-  } else if (activeTab.value === 'Availability') {
+  } else if (newTab === 'Availability') {
     tabAvailabilityLoaded.value = true
     disabledSave.value = !(buildingAvailabilityRef.value?.showForm ?? false)
-  } else if (activeTab.value === 'Absorption') {
+  } else if (newTab === 'Absorption') {
     tabAbsorptionLoaded.value = true
     disabledSave.value = !(buildingAbsorptionRef.value?.showForm ?? false)
-  } else if (activeTab.value === 'ContactBuilding') {
-    tabContactLoaded.value = true
-    disabledSave.value = !(buildingContactRef.value?.showForm ?? false)
+  } else if (newTab === 'ContactBuilding' && buildingId.value) {
+    await fetchContacts();
+  } else if (newTab === 'Files') {
+    tabImagesLoaded.value = true
   }
-  if (['DataBuilding', 'Files'].includes(activeTab.value)) {
+  if (['DataBuilding', 'Files'].includes(newTab)) {
     disabledSave.value = false
   }
-}, { immediate: true })
+}, { immediate: true });
 
 watch(() => route.query.tab, (newTab) => {
   if (['DataBuilding', 'Availability', 'Absorption', 'ContactBuilding'].includes(newTab)) {
@@ -165,13 +179,6 @@ watch(() => route.query.tab, (newTab) => {
     activeTab.value = 'DataBuilding'
   }
 }, { immediate: true })
-
-// Load contacts when tab becomes active
-watch(activeTab, async (newTab) => {
-  if (newTab === 'ContactBuilding') {
-    await fetchContacts();
-  }
-});
 
 function changeTab(tab) {
   activeTab.value = tab
@@ -219,6 +226,7 @@ function showList() {
         <CTab itemKey="Availability" @click="changeTab('Availability')" :disabled="disabledTab">Availability</CTab>
         <CTab itemKey="Absorption" @click="changeTab('Absorption')" :disabled="disabledTab">Absorption</CTab>
         <CTab itemKey="ContactBuilding" @click="changeTab('ContactBuilding')" :disabled="disabledTab">Building Contact</CTab>
+        <CTab itemKey="Files" @click="changeTab('Files')" :disabled="disabledTab">Files</CTab>
       </CTabList>
       <CTabContent>
         <CTabPanel class="p-3" itemKey="DataBuilding">

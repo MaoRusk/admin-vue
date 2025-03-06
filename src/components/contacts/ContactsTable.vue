@@ -19,9 +19,17 @@ const filteredContacts = computed(() => {
     .filter(contact => contact && (
       (props.type === 'building' && contact.is_buildings_contact === 1) ||
       (props.type === 'company' && contact.is_company_contact === 1) ||
-      (props.type === 'land' && contact.is_lands_contact === 1)
+      (props.type === 'land' && contact.is_land_contact === 1)
     ))
-    .sort((a, b) => a.contact_name.localeCompare(b.contact_name));
+    .map(contact => ({
+      ...contact,
+      // Convert old format to new format if needed
+      name: contact.name || contact.contact_name,
+      email: contact.email || contact.contact_email,
+      phone: contact.phone || contact.contact_phone,
+      comments: contact.comments || contact.contact_comments,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 });
 
 const emit = defineEmits(['edit', 'delete']);
@@ -35,45 +43,34 @@ const emit = defineEmits(['edit', 'delete']);
     <CCardBody class="p-0">
       <!-- Mobile view: Cards -->
       <div class="d-md-none">
-        <div 
-          v-for="contact in filteredContacts" 
-          :key="contact.id"
-          class="contact-card p-3 border-bottom"
-        >
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="mb-0">{{ contact.contact_name }}</h6>
-            <div class="d-flex gap-2">
-              <CButton
-                color="primary"
-                size="sm"
-                variant="ghost"
-                @click="$emit('edit', contact)"
-              >
-                <CIcon icon="cil-pencil" />
-              </CButton>
-              <CButton
-                color="danger"
-                size="sm"
-                variant="ghost"
-                @click="$emit('delete', contact)"
-              >
-                <CIcon icon="cil-trash" />
-              </CButton>
-            </div>
-          </div>
-          <div class="contact-info">
-            <p class="mb-1" v-if="contact.contact_email">
-              <CIcon icon="cil-envelope-closed" class="me-2 text-muted" />
-              {{ contact.contact_email }}
-            </p>
-            <p class="mb-1" v-if="contact.contact_phone">
-              <CIcon icon="cil-phone" class="me-2 text-muted" />
-              {{ contact.contact_phone }}
-            </p>
-            <p class="mb-1" v-if="contact.contact_comments">
-              <CIcon icon="cil-comment-square" class="me-2 text-muted" />
-              {{ contact.contact_comments }}
-            </p>
+        <div v-for="contact in filteredContacts" :key="contact.id">
+          <h6>{{ contact.name }}</h6>
+          <p v-if="contact.email">
+            <CIcon icon="cil-envelope-closed" /> {{ contact.email }}
+          </p>
+          <p v-if="contact.phone">
+            <CIcon icon="cil-phone" /> {{ contact.phone }}
+          </p>
+          <p v-if="contact.comments">
+            <CIcon icon="cil-comment-square" /> {{ contact.comments }}
+          </p>
+          <div class="d-flex gap-2">
+            <CButton
+              color="primary"
+              size="sm"
+              variant="ghost"
+              @click="$emit('edit', contact)"
+            >
+              <CIcon icon="cil-pencil" />
+            </CButton>
+            <CButton
+              color="danger"
+              size="sm"
+              variant="ghost"
+              @click="$emit('delete', contact)"
+            >
+              <CIcon icon="cil-trash" />
+            </CButton>
           </div>
         </div>
       </div>
@@ -93,10 +90,10 @@ const emit = defineEmits(['edit', 'delete']);
             </CTableHead>
             <CTableBody>
               <CTableRow v-for="contact in filteredContacts" :key="contact.id">
-                <CTableDataCell>{{ contact.contact_name }}</CTableDataCell>
-                <CTableDataCell>{{ contact.contact_email }}</CTableDataCell>
-                <CTableDataCell>{{ contact.contact_phone }}</CTableDataCell>
-                <CTableDataCell>{{ contact.contact_comments }}</CTableDataCell>
+                <CTableDataCell>{{ contact.name }}</CTableDataCell>
+                <CTableDataCell>{{ contact.email }}</CTableDataCell>
+                <CTableDataCell>{{ contact.phone }}</CTableDataCell>
+                <CTableDataCell>{{ contact.comments }}</CTableDataCell>
                 <CTableDataCell class="text-center">
                   <div class="d-flex justify-content-center gap-2">
                     <CButton

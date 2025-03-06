@@ -17,8 +17,8 @@ export default {
     return httpClient.post(`/companies/${companyId}/contact`, contactData)
   },
 
-  updateContact(companyId, contactId, data) {
-    return httpClient.put(`/companies/${companyId}/contact/${contactId}`, data)
+  updateContact(companyId, contactId, contactData) {
+    return httpClient.put(`/companies/${companyId}/contact/${contactId}`, contactData)
   },
 
   deleteContact(companyId, contactId) {

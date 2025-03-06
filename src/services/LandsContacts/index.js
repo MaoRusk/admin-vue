@@ -2,22 +2,22 @@ import httpClient from '../../plugins/axios'
 
 export default {
   getContacts(landId) {
-    return httpClient.get(`lands/${landId}/contacts`)
+    return httpClient.get(`lands/${landId}/contact`)
   },
 
   getContact(landId, contactId) {
-    return httpClient.get(`lands/${landId}/contacts/${contactId}`)
+    return httpClient.get(`lands/${landId}/contact/${contactId}`)
   },
 
-  createContact(landId, data) {
-    return httpClient.post(`lands/${landId}/contacts`, data)
+  createContact(landId, contactData) {
+    return httpClient.post(`lands/${landId}/contact`, contactData)
   },
 
-  updateContact(landId, contactId, data) {
-    return httpClient.put(`lands/${landId}/contacts/${contactId}`, data)
+  updateContact(landId, contactId, contactData) {
+    return httpClient.put(`lands/${landId}/contact/${contactId}`, contactData)
   },
 
   deleteContact(landId, contactId) {
-    return httpClient.delete(`lands/${landId}/contacts/${contactId}`)
+    return httpClient.delete(`lands/${landId}/contact/${contactId}`)
   }
 } 

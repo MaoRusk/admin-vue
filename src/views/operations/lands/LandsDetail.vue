@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
+import Swal from 'sweetalert2';
+import { API } from '@/services';
 
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import LandsForm from './LandsForm.vue'
@@ -29,14 +31,102 @@ const activeItemKey = ref(route.query.tab || 'Land')
 const tabs = ['Land', 'Availability', 'Absorption', 'Contacts'];
 
 const contact = ref({
-  contact_name: '',
-  contact_email: '',
-  contact_phone: '',
-  contact_comments: '',
-  is_lands_contact: 1,
+  name: '',
+  email: '',
+  phone: '',
+  comments: '',
+  is_land_contact: 1,
 });
 
 const contacts = ref([]);
+
+const fetchContacts = async () => {
+  try {
+    const response = await API.landsContacts.getContacts(landId.value);
+    if (response.data.success) {
+      contacts.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Error loading contacts:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.response?.data?.message || 'Error loading contacts',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  }
+};
+
+const handleSave = async (savedContact) => {
+  await fetchContacts();
+  contact.value = {
+    name: '',
+    email: '',
+    phone: '',
+    comments: '',
+    is_land_contact: 1,
+  };
+};
+
+const handleCancel = () => {
+  contact.value = {
+    name: '',
+    email: '',
+    phone: '',
+    comments: '',
+    is_land_contact: 1,
+  };
+};
+
+const handleEdit = (contactToEdit) => {
+  contact.value = { ...contactToEdit };
+};
+
+const handleDelete = async (contactToDelete) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      await API.landsContacts.deleteContact(landId.value, contactToDelete.id);
+      await fetchContacts();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Contact has been deleted.',
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
+    }
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.response?.data?.message || 'Error deleting contact',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  }
+};
 
 function dispatchSubmitForm() {
   if (activeItemKey.value === 'Land') {
@@ -75,7 +165,13 @@ function changeTab(tab) {
   })
 }
 
-watch(activeItemKey, (newTab) => {
+watch(landId, async (newId) => {
+  if (newId && activeItemKey.value === 'Contacts') {
+    await fetchContacts();
+  }
+}, { immediate: true });
+
+watch(activeItemKey, async (newTab) => {
   if (newTab === 'Land') {
     tabLandLoaded.value = true
   } else if (newTab === 'Availability') {
@@ -84,6 +180,8 @@ watch(activeItemKey, (newTab) => {
   } else if (newTab === 'Absorption') {
     tabAbsorptionLoaded.value = true
     disabledSave.value = !(absorptionRef.value?.showForm ?? false)
+  } else if (newTab === 'Contacts' && landId.value) {
+    await fetchContacts();
   }
   if (['Land'].includes(newTab)) {
     disabledSave.value = false
