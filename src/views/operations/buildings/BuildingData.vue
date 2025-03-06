@@ -390,16 +390,16 @@ async function fetchIndustrialParks(marketId, submarketId) {
 
 async function fetchSubmarkets(marketId) {
   submarkets.loading = true
-  const { data } = await API.submarkets.getSubmarkets({ marketId });
+  const data = await API.submarkets.getSubmarkets({ market_id: marketId });
   submarkets.loading = false
-  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+  submarkets.items = data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchMarkets(regionId) {
   markets.loading = true
-  const { data } = await API.markets.getMarkets({ regionId });
+  const data = await API.markets.getMarkets({ regionId });
   markets.loading = false
-  markets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+  markets.items = data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchClasses() {
@@ -597,7 +597,7 @@ watch(() => building.market_id, async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
     if (!submarkets.items.find(item => item.value === building.sub_market_id)) {
-      building.su_bmarket_id = ''
+      building.sub_market_id = ''
     }
   } else {
     building.sub_market_id = ''

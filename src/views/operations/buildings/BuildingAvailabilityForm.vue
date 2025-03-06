@@ -479,7 +479,7 @@ defineExpose({
                 </div>
                 
                 <div class="col-md-6 mb-3">
-                  <label class="form-label">Above Market TIS</label>
+                  <label class="form-label">Above Market TI's</label>
                   <MASelect
                     v-model="availability.above_market_tis"
                     :options="technicalImprovements.items"
