@@ -119,4 +119,11 @@ export default [
     to: { name: ROUTE_NAMES.LANDS_INDEX },
     icon: 'cilTerrain',
   },
+
+  {
+    component: 'CNavItem',
+    name: 'CAMs',
+    to: { name: ROUTE_NAMES.CAMS_INDEX },
+    icon: 'cilMoney',
+  },
 ]

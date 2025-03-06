@@ -48,4 +48,8 @@ export const ROUTE_NAMES = {
 
   MARKET_SIZE_PENDING_APPROVALS: 'Pending Approvals',
   CATALOGS: 'Catalogs',
+
+  CAMS_INDEX: 'Cams',
+  CAMS_CREATE: 'Create Cam',
+  CAMS_UPDATE: 'Edit Cam',
 }

@@ -256,6 +256,21 @@ const routes = [
             name: ROUTE_NAMES.MARKET_SIZE_PENDING_APPROVALS,
             component: () => import('@/views/operations/buildings/PendingApprovals.vue'),
           },
+          {
+            path: 'cams',
+            name: ROUTE_NAMES.CAMS_INDEX,
+            component: () => import('@/views/operations/cams/CamsIndex.vue'),
+          },
+          {
+            path: 'cams/create',
+            name: ROUTE_NAMES.CAMS_CREATE,
+            component: () => import('@/views/operations/cams/CamsDetail.vue'),
+          },
+          {
+            path: 'cams/:camId/edit',
+            name: ROUTE_NAMES.CAMS_UPDATE,
+            component: () => import('@/views/operations/cams/CamsDetail.vue'),
+          },
         ],
       },
     ],

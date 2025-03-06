@@ -26,6 +26,7 @@ import LandsAvailability from './LandsAvailable'
 import LandsContacts from './LandsContacts'
 import BuildingsContacts from './BuildingsContacts'
 import reitsService from './Reits'
+import camsService from './Cams'
 
 export const API = {
   auth: Auth,
@@ -56,4 +57,5 @@ export const API = {
   landsContacts: LandsContacts,
   BuildingsContacts,
   reits: reitsService,
+  cams: camsService,
 }
