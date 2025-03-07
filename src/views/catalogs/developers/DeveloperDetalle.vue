@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import Swal from 'sweetalert2'
 import { useRoute, useRouter } from 'vue-router'
 import { API } from '@/services'
 import { ROUTE_NAMES } from '@/router/routeNames'
@@ -9,155 +10,219 @@ const route = useRoute()
 const router = useRouter()
 const { can } = useAuthStore()
 
-// Validar si estamos en la ruta de creación
-const isCreating = computed(() => {
-  return route.path === '/operations/developer/create' || route.name === ROUTE_NAMES.DEVELOPERS_CREATE
-})
+const markets = ref([])
+const submarkets = ref([])
+const loading = ref(false)
+const error = ref(null)
 
+// Inicializar developer con valores por defecto
 const developer = ref({
   name: '',
   is_developer: false,
   is_builder: false,
   is_owner: false,
+  market_id: null,
+  sub_market_id: null
 })
 
-const loading = ref(false)
-const error = ref(null)
+// Validar si estamos en la ruta de creación
+const isCreating = computed(() => {
+  return route.name === ROUTE_NAMES.DEVELOPERS_CREATE
+})
 
-const loadDeveloper = async (id) => {
-  if (!id || isCreating.value) return
+const loadDeveloper = async () => {
+  if (isCreating.value) return
+
+  const id = route.params.id
+  if (!id) return
 
   loading.value = true
   error.value = null
+
   try {
     const response = await API.developers.getDeveloper(id)
-    if (response.data && response.data.data) {
+    if (response?.data) {
       developer.value = {
-        name: response.data.data.name,
-        is_developer: Boolean(response.data.data.is_developer),
-        is_builder: Boolean(response.data.data.is_builder),
-        is_owner: Boolean(response.data.data.is_owner),
+        id: response.data.id,
+        name: response.data.name || '',
+        is_developer: Boolean(response.data.is_developer),
+        is_builder: Boolean(response.data.is_builder),
+        is_owner: Boolean(response.data.is_owner),
+        market_id: response.data.market_id || null,
+        sub_market_id: response.data.sub_market_id || null
+      }
+
+      // Si hay un market_id, cargar los submarkets correspondientes
+      if (developer.value.market_id) {
+        await loadSubmarkets(developer.value.market_id)
       }
     }
-  } catch (error) {
-    console.error('Error fetching developer:', error)
+  } catch (err) {
+    console.error('Error loading developer:', err)
     error.value = 'Error al cargar los datos del developer'
-    router.push('/operations/developers')
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'Error al cargar los datos del developer',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    })
   } finally {
     loading.value = false
   }
 }
 
-// Solo cargar datos si estamos editando y tenemos un ID válido
-if (!isCreating.value && route.params.id) {
-  loadDeveloper(route.params.id)
+const loadMarkets = async () => {
+  try {
+    const response = await API.markets.getMarkets()
+    markets.value = Array.isArray(response) ? response : []
+  } catch (err) {
+    console.error('Error loading markets:', err)
+    markets.value = []
+  }
 }
 
-const saveDeveloper = async () => {
-  if (!developer.value.name.trim()) {
-    error.value = 'El nombre es requerido'
+const loadSubmarkets = async (marketId) => {
+  if (!marketId) {
+    submarkets.value = []
+    developer.value.sub_market_id = null
     return
   }
-
-  loading.value = true
-  error.value = null
-  
   try {
-    const developerData = {
-      name: developer.value.name.trim(),
-      is_developer: Number(developer.value.is_developer),
-      is_builder: Number(developer.value.is_builder),
-      is_owner: Number(developer.value.is_owner),
-    }
-
-    if (isCreating.value) {
-      await API.developers.createDeveloper(developerData)
-    } else if (route.params.id) {
-      await API.developers.updateDeveloper(route.params.id, developerData)
-    } else {
-      throw new Error('Operación no válida')
-    }
-    
-    router.push({ name: ROUTE_NAMES.DEVELOPERS })
-  } catch (error) {
-    console.error('Error saving developer:', error)
-    if (error.response?.status === 422) {
-      const validationErrors = error.response.data.errors
-      if (validationErrors) {
-        error.value = Object.values(validationErrors).flat().join('\n')
-      } else {
-        error.value = error.response.data.message || 'Error de validación'
-      }
-    } else {
-      error.value = isCreating.value 
-        ? 'Error al crear el developer'
-        : 'Error al actualizar el developer'
-    }
-  } finally {
-    loading.value = false
+    const response = await API.submarkets.getSubmarkets({ market_id: marketId })
+    submarkets.value = Array.isArray(response) ? response : []
+  } catch (err) {
+    console.error('Error loading submarkets:', err)
+    submarkets.value = []
   }
 }
+
+// Watch para market_id
+watch(() => developer.value.market_id, async (newMarketId) => {
+  if (newMarketId) {
+    await loadSubmarkets(newMarketId)
+  } else {
+    submarkets.value = []
+    developer.value.sub_market_id = null
+  }
+})
+
+const handleSubmit = async () => {
+  try {
+    if (isCreating.value) {
+      await API.developers.createDeveloper(developer.value)
+      Swal.fire({
+        icon: 'success',
+        title: 'Created successfully!',
+        text: 'New developer has been created.',
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      })
+    } else {
+      await API.developers.updateDeveloper(developer.value.id, developer.value)
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated successfully!',
+        text: 'Developer has been updated.',
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      })
+    }
+    router.push({ name: ROUTE_NAMES.DEVELOPERS })
+  } catch (err) {
+    console.error('Error saving developer:', err)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'Error al guardar los datos',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    })
+  }
+}
+
+onMounted(async () => {
+  await loadMarkets()
+  await loadDeveloper()
+})
 </script>
 
 <template>
   <CRow>
-    <CCol xs="12">
-        <CCard>
+    <CCol :xs="12">
+      <CCard>
         <CCardHeader>
-          <CRow class="align-items-center">
-            <CCol>
-              <div class="d-flex align-items-center justify-content-between">
-                <h5 class="mb-0">
-                  {{ isCreating ? 'Nuevo Developer' : 'Editar Developer' }}
-                </h5>
-                <router-link :to="{ name: ROUTE_NAMES.DEVELOPERS }">
-                  <CButton color="primary" variant="outline">
-                    <CIcon icon="cil-arrow-circle-left" class="me-2" />
-                    return
-                  </CButton>
-                </router-link>
-              </div>
-            </CCol>
-          </CRow>
+          <strong>{{ isCreating ? 'Nuevo Developer' : 'Editar Developer' }}</strong>
         </CCardHeader>
-
         <CCardBody>
-          <div v-if="loading" class="text-center">
-            <CSpinner />
-            <p>{{ isCreating ? 'Creando...' : 'Cargando datos...' }}</p>
-          </div>
-          
-          <CAlert v-if="error" color="danger">{{ error }}</CAlert>
-
-          <CForm v-if="!loading" @submit.prevent="saveDeveloper">
+          <CForm @submit.prevent="handleSubmit">
             <CRow class="mb-3">
-              <CCol xs="12">
+              <CCol xs="12" md="6">
                 <CFormInput
-                  label="Nombre"
-                  v-model.trim="developer.name"
+                  label="Name"
+                  v-model="developer.name"
                   required
-                  :state="developer.name.trim() ? true : null"
-                  invalid-feedback="El nombre es requerido"
                 />
               </CCol>
             </CRow>
             <CRow class="mb-3">
-              <CCol xs="12" sm="6" md="4">
+              <CCol xs="12" md="4">
                 <CFormSwitch
-                  label="Developer"
+                  label="Is Developer"
                   v-model="developer.is_developer"
                 />
               </CCol>
-              <CCol xs="12" sm="6" md="4">
+              <CCol xs="12" md="4">
                 <CFormSwitch
-                  label="Builder"
+                  label="Is Builder"
                   v-model="developer.is_builder"
                 />
               </CCol>
-              <CCol xs="12" sm="6" md="4">
+              <CCol xs="12" md="4">
                 <CFormSwitch
-                  label="Owner"
+                  label="Is Owner"
                   v-model="developer.is_owner"
+                />
+              </CCol>
+            </CRow>
+            <CRow class="mb-3">
+              <CCol xs="12" md="6">
+                <CFormSelect
+                  label="Market"
+                  v-model="developer.market_id"
+                  :options="[
+                    { value: null, label: 'Seleccione un Market' },
+                    ...markets.map(market => ({
+                      value: market.id,
+                      label: market.name
+                    }))
+                  ]"
+                />
+              </CCol>
+              <CCol xs="12" md="6">
+                <CFormSelect
+                  label="SubMarket"
+                  v-model="developer.sub_market_id"
+                  :options="[
+                    { value: null, label: 'Seleccione un SubMarket' },
+                    ...submarkets.map(submarket => ({
+                      value: submarket.id,
+                      label: submarket.name
+                    }))
+                  ]"
+                  :disabled="!developer.market_id"
                 />
               </CCol>
             </CRow>

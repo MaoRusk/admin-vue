@@ -476,7 +476,7 @@ defineExpose({
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Absorption Broker</CFormLabel>
+                  <CFormLabel>Absorption Broker *</CFormLabel>
                   <MASelect
                     v-model="absorption.abs_broker_id"
                     :options="brokers.items"
@@ -547,7 +547,7 @@ defineExpose({
                 </div>
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Size (SF) * </CFormLabel>
-                  <CFormInput type="number" v-model="absorption.size_sf" required />
+                  <CFormInput type="number" v-model="absorption.size_sf" required :max="building?.building_size_sf" />
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Fire Protection System (FPS) *</label>
@@ -564,7 +564,7 @@ defineExpose({
                 </div>
                 
                 <div class="col-md-6 mb-3">
-                  <label class="form-label">Above Market TIS</label>
+                  <label class="form-label">Above Market TI's</label>
                   <MASelect
                     v-model="absorption.above_market_tis"
                     :options="technicalImprovements.items"

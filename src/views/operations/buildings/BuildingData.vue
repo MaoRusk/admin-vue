@@ -86,10 +86,10 @@ const VALUE_SEPARATOR = ' x '
 
 const inputFiles = [
   {category: 'Front Page', type: 'frontpage', label: 'Upload Front Page File', multiple: false},
-  {category: 'Aerial', type: 'aerial', label: 'Upload Aerial File', multiple: false},
-  {category: '360', type: '360', label: 'Upload 360 File', multiple: false},
+  {category: 'Aerial', type: 'aerial', label: 'Upload Drone photo', multiple: false},
+  {category: '360', type: '360', label: 'Upload 360 Photo', multiple: false},
   {category: 'Layout', type: 'layout', label: 'Upload Layout File', multiple: false},
-  {category: 'Gallery', type: 'gallery1', label: 'Upload Gallery Files', multiple: true},
+  {category: 'Gallery', type: 'gallery1', label: 'Upload Photo Files', multiple: true},
 ]
 
 const validateRangeInputs = (model, field1, field2, fieldName) => {
@@ -390,16 +390,16 @@ async function fetchIndustrialParks(marketId, submarketId) {
 
 async function fetchSubmarkets(marketId) {
   submarkets.loading = true
-  const { data } = await API.submarkets.getSubmarkets({ marketId });
+  const data = await API.submarkets.getSubmarkets({ market_id: marketId });
   submarkets.loading = false
-  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+  submarkets.items = data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchMarkets(regionId) {
   markets.loading = true
-  const { data } = await API.markets.getMarkets({ regionId });
+  const data = await API.markets.getMarkets({ regionId });
   markets.loading = false
-  markets.items = data.data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
+  markets.items = data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchClasses() {
@@ -597,7 +597,7 @@ watch(() => building.market_id, async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
     if (!submarkets.items.find(item => item.value === building.sub_market_id)) {
-      building.su_bmarket_id = ''
+      building.sub_market_id = ''
     }
   } else {
     building.sub_market_id = ''
@@ -705,7 +705,7 @@ defineExpose({
                     <CFormInput
                       type="number"
                       v-model="building.expansion_up_to_sf"
-                      label="Expansion up to SF *"
+                      label="Expansion up to (SF) *"
                       required
                     />
                   </div>
@@ -1110,7 +1110,7 @@ defineExpose({
                     <CFormInput
                       type="number"
                       v-model="building.offices_space_sf"
-                      label="Offices Space SF"
+                      label="Offices Space (SF)"
                     />
                   </div>
                   <div class="mt-2">
@@ -1174,7 +1174,7 @@ defineExpose({
                     />
                   </div>
                   <div class="mt-2">
-                    <label class="form-label">Skylights SF</label>
+                    <label class="form-label">Skylights (SF)</label>
                     <CInputGroup>
                       <CFormInput
                         type="number"
@@ -1184,7 +1184,7 @@ defineExpose({
                     </CInputGroup>
                   </div>
                   <div class="mt-2">
-                    <label class="form-label">Above Market TIS</label>
+                    <label class="form-label">Above Market TI's</label>
                     <MASelect
                       v-model="building.above_market_tis"
                       :options="technicalImprovements.items"

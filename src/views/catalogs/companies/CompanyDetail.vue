@@ -3,10 +3,9 @@
   import Swal from 'sweetalert2';
   import { ROUTE_NAMES } from '@/router/routeNames';
   import { API } from '@/services';
-  import ContactForm from './components/ContactForm.vue';
-  import ContactsTable from './components/ContactsTable.vue';
-import { useAuthStore } from '../../../stores/auth';
-import { mapActions } from 'pinia';
+  import { useAuthStore } from '../../../stores/auth';
+  import { mapActions } from 'pinia';
+  import { ContactForm, ContactsTable } from '@/components/contacts'
 
   export default defineComponent({
     name: 'CompanyDetail',
@@ -572,12 +571,15 @@ import { mapActions } from 'pinia';
               <div class="mt-4">
                 <ContactForm
                   :contact="newContact"
+                  type="company" 
+                  :parentId="id"
                   @save="handleSaveContact"
                   @cancel="resetContactForm"
                 />
                 <div class="mt-4">
                   <ContactsTable
                     :contacts="contacts"
+                    type="company"
                     @edit="editContact"
                     @delete="deleteContact"
                   />

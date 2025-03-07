@@ -6,56 +6,62 @@ export default {
     if (is_owner) params.is_owner = is_owner
     if (is_builder) params.is_builder = is_builder
     if (is_developer) params.is_developer = is_developer
-
-    // TODO: cambiar claves. una vez que pase la prueba con cliente
-    if (marketId) params.market_id = marketId
-    if (submarketId) params.submarket_id = submarketId
+    if (marketId) params.market = marketId
+    if (submarketId) params.submarket = submarketId
 
     const response = await httpClient.get(`/developers`, {
       params,
     })
-    return response.data.data.map((item) => ({
-      ...item,
-      is_developer: !!item.is_developer,
-      is_builder: !!item.is_builder,
-      is_owner: !!item.is_owner,
+
+    return response.data.data.map((developer) => ({
+      ...developer,
+      market_name: developer.market?.name || '-',
+      sub_market_name: developer.sub_market?.name || '-',
     }))
   },
   async getDeveloper(developerId) {
-    const response = await httpClient.get(`/developers/${developerId}`)
-    const data = response.data
-    return {
-      ...response,
-      data: {
-        ...data,
-        is_developer: !!data.is_developer,
-        is_builder: !!data.is_builder,
-        is_owner: !!data.is_owner,
-      },
+    try {
+      const response = await httpClient.get(`/developers/${developerId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error in getDeveloper service:', error)
+      throw error
     }
   },
   createDeveloper({ name, is_developer, is_builder, is_owner, market_id, sub_market_id }) {
     return httpClient.post(`/developers`, {
       name,
-      is_developer,
-      is_builder,
-      is_owner,
-      market_id,
-      sub_market_id,
+      is_developer: Boolean(is_developer),
+      is_builder: Boolean(is_builder),
+      is_owner: Boolean(is_owner),
+      market_id: market_id ? Number(market_id) : null,
+      sub_market_id: sub_market_id ? Number(sub_market_id) : null,
     })
   },
   updateDeveloper(
     developerId,
     { name, is_developer, is_builder, is_owner, market_id, sub_market_id },
   ) {
-    return httpClient.put(`/developers/${developerId}`, {
-      name,
-      is_developer,
-      is_builder,
-      is_owner,
-      market_id,
-      sub_market_id,
-    })
+    if (!name?.trim()) {
+      throw new Error('Name is required')
+    }
+    if (!market_id) {
+      throw new Error('Market is required')
+    }
+    if (!sub_market_id) {
+      throw new Error('SubMarket is required')
+    }
+
+    const payload = {
+      name: name.trim(),
+      is_developer: is_developer ? 1 : 0,
+      is_builder: is_builder ? 1 : 0,
+      is_owner: is_owner ? 1 : 0,
+      market_id: Number(market_id), // Ya no permitimos null
+      sub_market_id: Number(sub_market_id), // Ya no permitimos null
+    }
+
+    return httpClient.put(`/developers/${developerId}`, payload)
   },
   deleteDeveloper(developerId) {
     return httpClient.delete(`/developers/${developerId}`)

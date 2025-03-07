@@ -1,13 +1,15 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
+import Swal from 'sweetalert2';
+import { API } from '@/services';
 
 import BuildingData from './BuildingData.vue'
 import BuildingAvailability from './BuildingAvailability.vue'
 import BuildingAbsorption from './BuildingAbsorption.vue'
-import BuildingContactsIndex from './BuildingContactsIndex.vue';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useAuthStore } from '../../../stores/auth';
+import { ContactForm, ContactsTable } from '@/components/contacts'
 
 const router = useRouter()
 const route = useRoute()
@@ -30,6 +32,99 @@ const tabDataLoaded = ref(false);
 const tabAvailabilityLoaded = ref(false);
 const tabContactLoaded = ref(false);
 const tabAbsorptionLoaded = ref(false);
+
+// Add contact state
+const contact = ref({
+  contact_name: '',
+  contact_email: '',
+  contact_phone: '',
+  contact_comments: '',
+  is_buildings_contact: 1,
+});
+
+const contacts = ref([]);
+
+// Add contact handlers
+const handleSave = async (savedContact) => {
+  await fetchContacts();
+  contact.value = {
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
+    contact_comments: '',
+    is_buildings_contact: 1,
+  };
+};
+
+const handleCancel = () => {
+  contact.value = {
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
+    contact_comments: '',
+    is_buildings_contact: 1,
+  };
+};
+
+const handleEdit = (contactToEdit) => {
+  contact.value = { ...contactToEdit };
+};
+
+const handleDelete = async (contactToDelete) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      await API.BuildingsContacts.deleteContact(buildingId.value, contactToDelete.id);
+      await fetchContacts();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Contact has been deleted.',
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
+    }
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.response?.data?.message || 'Error deleting contact',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  }
+};
+
+const fetchContacts = async () => {
+  try {
+    const { data } = await API.BuildingsContacts.getContacts(buildingId.value);
+    contacts.value = data.data;
+  } catch (error) {
+    console.error('Error fetching contacts:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to load contacts: ' + error.message,
+    });
+  }
+};
 
 function dispatchSubmitForm() {
   if (activeTab.value === 'DataBuilding') {
@@ -66,6 +161,13 @@ watch(() => route.query.tab, (newTab) => {
     activeTab.value = 'DataBuilding'
   }
 }, { immediate: true })
+
+// Load contacts when tab becomes active
+watch(activeTab, async (newTab) => {
+  if (newTab === 'ContactBuilding') {
+    await fetchContacts();
+  }
+});
 
 function changeTab(tab) {
   activeTab.value = tab
@@ -124,8 +226,20 @@ function showList() {
         <CTabPanel class="p-3" itemKey="Absorption" v-if="can('buildings.absorption.show', 'buildings.absorption.create', 'buildings.absorption.update')">
           <BuildingAbsorption v-if="tabAbsorptionLoaded" :buildingId="buildingId" ref="buildingAbsorptionRef" @changeShowForm="(value) => showSave = value" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
         </CTabPanel>
-        <CTabPanel class="p-3" itemKey="ContactBuilding" v-if="can('buildings.contacts.show', 'buildings.contacts.create', 'buildings.contacts.update')">
-          <BuildingContactsIndex v-if="tabContactLoaded" :buildingId="buildingId" ref="buildingContactRef" @changeShowForm="(value) => showSave = value" @submitting="(value) => { submittingForm = value; disabledSave = value }" />
+        <CTabPanel class="p-3" itemKey="ContactBuilding">
+          <ContactForm
+            :contact="contact"
+            type="building"
+            :parentId="buildingId"
+            @save="handleSave"
+            @cancel="handleCancel"
+          />
+          <ContactsTable
+            :contacts="contacts"
+            type="building"
+            @edit="handleEdit"
+            @delete="handleDelete"
+          />
         </CTabPanel>
       </CTabContent>
     </CTabs>

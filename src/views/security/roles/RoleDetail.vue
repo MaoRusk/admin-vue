@@ -16,19 +16,6 @@
             />
           </CCol>
         </CRow>
-        <CRow class="mt-3">
-          <CCol :md="6">
-            <CFormInput
-              label="Guard Name"
-              v-model="role.guard_name"
-              :feedback="errors.guard_name"
-              :invalid="!!errors.guard_name"
-              required
-              :disabled="!isNew"
-              :value="isNew ? 'web' : role.guard_name"
-            />
-          </CCol>
-        </CRow>
 
         <!-- Permissions Table -->
         <CRow class="mt-4">
@@ -40,7 +27,7 @@
               <table class="table permissions-table">
                 <thead>
                   <tr>
-                    <th class="resource-column">Resource</th>
+                    <th class="resource-column">Modules</th>
                     <th class="select-all-column text-center">
                       <div class="d-flex flex-column align-items-center gap-2">
                         <span>All</span>
@@ -118,6 +105,7 @@ import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useAuthStore } from '../../../stores/auth';
 import { mapActions } from 'pinia';
+import { API } from '../../../services';
 
 export default {
   name: 'RoleDetail',
@@ -139,7 +127,6 @@ export default {
       actions: ['index', 'show', 'create', 'update', 'destroy'],
       errors: {
         name: '',
-        guard_name: '',
         permissions: ''
       }
     }
@@ -170,12 +157,13 @@ export default {
     }
   },
   methods: {
-    ...mapActions(useAuthStore, ['can']),
+    ...mapActions(useAuthStore, ['can', 'setUser']),
     formatResourceName(resource) {
       return resource.charAt(0).toUpperCase() + resource.slice(1)
     },
     formatActionName(action) {
-      if (action === 'index') return 'Listar'
+      if (action === 'index') return 'List'
+      if (action === 'destroy') return 'Delete'
       return action.charAt(0).toUpperCase() + action.slice(1)
     },
     hasPermission(resource, action) {
@@ -200,10 +188,9 @@ export default {
         try {
           const response = await RolesService.getRole(this.id)
           if (response.data.data) {
-            const { name, guard_name, permissions } = response.data.data
+            const { name, permissions } = response.data.data
             this.role = {
               name,
-              guard_name,
               permissions: permissions || []
             }
             this.availablePermissions = permissions
@@ -227,7 +214,6 @@ export default {
     clearErrors() {
       this.errors = {
         name: '',
-        guard_name: '',
         permissions: ''
       }
     },
@@ -236,7 +222,6 @@ export default {
       try {
         const roleData = {
           name: this.role.name,
-          guard_name: this.role.guard_name,
           permissions: this.selectedPermissions.map(p => p.id)
         }
 
@@ -265,6 +250,11 @@ export default {
             timerProgressBar: true
           })
         }
+        const { data: me } = await API.auth.me()
+        const authUser = me.data.user
+        authUser.permissions = me.data.permissions
+        this.setUser(authUser)
+
         this.goBack()
       } catch (error) {
         console.error('Error saving role:', error)
@@ -401,10 +391,9 @@ export default {
       if (!this.isNew) {
         const roleResponse = await RolesService.getRole(this.id)
         if (roleResponse.data.data) {
-          const { name, guard_name, permissions } = roleResponse.data.data
+          const { name, permissions } = roleResponse.data.data
           this.role = {
             name,
-            guard_name,
             permissions: permissions || []
           }
           // Inicializar los permisos seleccionados

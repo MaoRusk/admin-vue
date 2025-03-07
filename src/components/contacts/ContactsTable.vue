@@ -1,25 +1,29 @@
-<script>
-import { defineComponent } from 'vue';
+<script setup>
+import { computed } from 'vue';
 
-export default defineComponent({
-  name: 'ContactsTable',
-  props: {
-    contacts: {
-      type: Array,
-      required: true,
-      default: () => []
-    }
+const props = defineProps({
+  contacts: {
+    type: Array,
+    required: true,
+    default: () => []
   },
-  computed: {
-    filteredContacts() {
-      // Filtrar los contactos nulos y asegurarse de que son contactos de compañía
-      return this.contacts
-        .filter(contact => contact && contact.is_company_contact === 1)
-        .sort((a, b) => a.contact_name.localeCompare(b.contact_name));
-    }
-  },
-  emits: ['edit', 'delete'],
+  type: {
+    type: String,
+    required: true,
+    validator: (value) => ['building', 'company'].includes(value)
+  }
 });
+
+const filteredContacts = computed(() => {
+  return props.contacts
+    .filter(contact => contact && (
+      (props.type === 'building' && contact.is_buildings_contact === 1) ||
+      (props.type === 'company' && contact.is_company_contact === 1)
+    ))
+    .sort((a, b) => a.contact_name.localeCompare(b.contact_name));
+});
+
+const emit = defineEmits(['edit', 'delete']);
 </script>
 
 <template>
@@ -28,10 +32,10 @@ export default defineComponent({
       <strong>Contacts List</strong>
     </CCardHeader>
     <CCardBody class="p-0">
-      <!-- Vista móvil: Cards -->
+      <!-- Mobile view: Cards -->
       <div class="d-md-none">
         <div 
-          v-for="contact in contacts" 
+          v-for="contact in filteredContacts" 
           :key="contact.id"
           class="contact-card p-3 border-bottom"
         >
@@ -57,23 +61,23 @@ export default defineComponent({
             </div>
           </div>
           <div class="contact-info">
-            <p class="mb-1">
+            <p class="mb-1" v-if="contact.contact_email">
               <CIcon icon="cil-envelope-closed" class="me-2 text-muted" />
               {{ contact.contact_email }}
             </p>
-            <p class="mb-1">
+            <p class="mb-1" v-if="contact.contact_phone">
               <CIcon icon="cil-phone" class="me-2 text-muted" />
               {{ contact.contact_phone }}
             </p>
-            <p class="mb-0 text-muted" v-if="contact.contact_comments">
-              <CIcon icon="cil-comment-square" class="me-2" />
+            <p class="mb-1" v-if="contact.contact_comments">
+              <CIcon icon="cil-comment-square" class="me-2 text-muted" />
               {{ contact.contact_comments }}
             </p>
           </div>
         </div>
       </div>
 
-      <!-- Vista desktop: Tabla -->
+      <!-- Desktop view: Table -->
       <div class="d-none d-md-block">
         <div class="table-responsive">
           <CTable hover responsive>

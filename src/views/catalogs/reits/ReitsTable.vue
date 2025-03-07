@@ -1,9 +1,9 @@
 <script>
-import ReitsService from '@/services/Reits'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
 import { mapActions } from 'pinia';
 import { useAuthStore } from '../../../stores/auth';
+import { API } from '../../../services';
 
 export default {
   data() {
@@ -35,8 +35,8 @@ export default {
     ...mapActions(useAuthStore, ['can']),
     async fetchReits() {
       try {
-        const response = await ReitsService.getReits()
-        this.reits = response || []
+        const response = await API.reits.getReits()
+        this.reits = response.data.data || []
         return this.reits
       } catch (error) {
         console.error('Error fetching REITs:', error)

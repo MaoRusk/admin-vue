@@ -123,12 +123,12 @@ export default {
         this.industrialParks = parksResponse.data.data
 
         // Convert arrays to lookup objects for better performance
-        this.markets = marketsResponse.data.data.reduce((acc, market) => {
+        this.markets = marketsResponse.reduce((acc, market) => {
           acc[market.id] = market
           return acc
         }, {})
 
-        this.submarkets = submarketResponse.data.data.reduce((acc, submarket) => {
+        this.submarkets = submarketResponse.reduce((acc, submarket) => {
           acc[submarket.id] = submarket
           return acc
         }, {})
