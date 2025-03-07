@@ -80,7 +80,7 @@
 
         <CRow class="mt-4">
           <CCol :xs="12">
-            <CButton color="primary" type="submit">
+            <CButton v-if="can('roles.create', 'roles.update')" color="primary" type="submit">
               Save
             </CButton>
             <CButton 
@@ -103,6 +103,9 @@ import RolesService from '@/services/Roles'
 import PermissionsService from '@/services/Permissions'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { useAuthStore } from '../../../stores/auth';
+import { mapActions } from 'pinia';
+import { API } from '../../../services';
 
 export default {
   name: 'RoleDetail',
@@ -154,6 +157,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, ['can', 'setUser']),
     formatResourceName(resource) {
       return resource.charAt(0).toUpperCase() + resource.slice(1)
     },
@@ -246,6 +250,11 @@ export default {
             timerProgressBar: true
           })
         }
+        const { data: me } = await API.auth.me()
+        const authUser = me.data.user
+        authUser.permissions = me.data.permissions
+        this.setUser(authUser)
+
         this.goBack()
       } catch (error) {
         console.error('Error saving role:', error)

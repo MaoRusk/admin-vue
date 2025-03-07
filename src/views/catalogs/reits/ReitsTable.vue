@@ -1,7 +1,9 @@
 <script>
-import ReitsService from '@/services/Reits'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth';
+import { API } from '../../../services';
 
 export default {
   data() {
@@ -30,10 +32,11 @@ export default {
   },
 
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async fetchReits() {
       try {
-        const response = await ReitsService.getReits()
-        this.reits = response || []
+        const response = await API.reits.getReits()
+        this.reits = response.data.data || []
         return this.reits
       } catch (error) {
         console.error('Error fetching REITs:', error)
@@ -63,7 +66,7 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          await ReitsService.deleteReit(item.id)
+          await API.reits.deleteReit(item.id)
           await this.fetchReits()
           
           Swal.fire({
@@ -100,7 +103,7 @@ export default {
 </script>
 
 <template>
-  <CCard class="mb-4">
+  <CCard v-if="can('reits.create')" class="mb-4">
     <CRow>
       <CCol :xs="12" :xl="2">
         <CCardBody style="text-align: end;">
@@ -130,6 +133,7 @@ export default {
         <template #actions="{ item }">
           <td class="py-2" style="text-align: center">
             <CButton 
+              v-if="can('reits.show', 'reits.update')"
               color="primary" 
               variant="outline" 
               square 
@@ -140,6 +144,7 @@ export default {
               <CIcon icon="cil-pencil" />
             </CButton>
             <CButton 
+              v-if="can('reits.destroy')"
               color="danger" 
               variant="outline" 
               square 

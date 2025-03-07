@@ -1,10 +1,9 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-import { ROUTE_NAMES } from './routeNames'
-import { AUTH_TOKEN } from '../constants'
-
 import DefaultLayout from '@/layouts/DefaultLayout'
 import Login from '@/views/pages/Login.vue'
+import { useAuthStore } from '../stores/auth'
+import { ROUTE_NAMES } from './routeNames'
 
 const routes = [
   {
@@ -18,6 +17,7 @@ const routes = [
         path: 'dashboard',
         name: ROUTE_NAMES.DASHBOARD,
         component: () => import('@/views/dashboard/Dashboard.vue'),
+        meta: {},
       },
 
       {
@@ -29,35 +29,41 @@ const routes = [
             path: 'users',
             name: ROUTE_NAMES.USERS,
             component: () => import('@/views/security/users/Users.vue'),
+            meta: { requiredPermission: 'users.index' },
           },
           {
             path: 'users/create',
             name: ROUTE_NAMES.USERS_CREATE,
             component: () => import('@/views/security/users/UserDetail.vue'),
             props: { id: 0 },
+            meta: { requiredPermission: 'users.create' },
           },
           {
             path: 'users/:id/edit',
             name: ROUTE_NAMES.USERS_UPDATE,
             component: () => import('@/views/security/users/UserDetail.vue'),
             props: true,
+            meta: { requiredPermission: ['users.update', 'users.show'] },
           },
           {
             path: 'roles',
             name: ROUTE_NAMES.ROLES,
             component: () => import('@/views/security/roles/Roles.vue'),
+            meta: { requiredPermission: 'roles.index' },
           },
           {
             path: 'roles/create',
             name: ROUTE_NAMES.ROLES_CREATE,
             component: () => import('@/views/security/roles/RoleDetail.vue'),
             props: { id: 0 },
+            meta: { requiredPermission: 'roles.create' },
           },
           {
             path: 'roles/:id',
             name: ROUTE_NAMES.ROLES_UPDATE,
             component: () => import('@/views/security/roles/RoleDetail.vue'),
             props: true,
+            meta: { requiredPermission: ['roles.update', 'roles.show'] },
           },
           {
             path: 'policies',
@@ -82,30 +88,43 @@ const routes = [
             path: 'industrial-parks',
             name: ROUTE_NAMES.INDUSTRIAL_PARKS,
             component: () => import('@/views/catalogs/industrial-parks/IndustrialParks.vue'),
+            meta: { requiredPermission: 'industrial-parks.index' },
           },
           {
             path: 'industrial-parks/:id',
             name: ROUTE_NAMES.INDUSTRIAL_PARKS_DETAIL,
             component: () => import('@/views/catalogs/industrial-parks/IndustrialParkDetail.vue'),
             props: true,
+            meta: {
+              requiredPermission: [
+                'industrial-parks.create',
+                'industrial-parks.update',
+                'industrial-parks.show',
+              ],
+            },
           },
           {
             path: 'companies',
             name: ROUTE_NAMES.COMPANIES_INDEX,
             component: () => import('@/views/catalogs/companies/Companies.vue'),
+            meta: { requiredPermission: 'companies.index' },
           },
           {
             path: 'company/:id',
             name: ROUTE_NAMES.COMPANY_DETAIL,
             component: () => import('@/views/catalogs/companies/CompanyDetail.vue'),
             props: (route) => ({
-              id: isNaN(Number(route.params.id)) ? '0' : Number(route.params.id)
+              id: isNaN(Number(route.params.id)) ? '0' : Number(route.params.id),
             }),
+            meta: {
+              requiredPermission: ['companies.create', 'companies.update', 'companies.show'],
+            },
           },
           {
             path: 'industries',
             name: ROUTE_NAMES.INDUSTRIES,
             component: () => import('@/views/catalogs/industries/Industries.vue'),
+            meta: { requiredPermission: 'industries.index' },
           },
           {
             path: 'industry/create',
@@ -113,6 +132,7 @@ const routes = [
             component: () => import('@/views/catalogs/industries/IndustryDetail.vue'),
             meta: {
               label: 'Create Industry',
+              requiredPermission: 'industries.create',
             },
           },
           {
@@ -122,12 +142,14 @@ const routes = [
             props: true,
             meta: {
               label: 'Edit Industry',
+              requiredPermission: ['industries.update', 'industries.show'],
             },
           },
           {
             path: 'developers',
             name: ROUTE_NAMES.DEVELOPERS,
             component: () => import('@/views/catalogs/developers/Developers.vue'),
+            meta: { requiredPermission: 'developers.index' },
           },
           {
             path: 'developer/create',
@@ -135,6 +157,7 @@ const routes = [
             component: () => import('@/views/catalogs/developers/DeveloperDetalle.vue'),
             meta: {
               label: 'Create Developer',
+              requiredPermission: 'developers.create',
             },
           },
           {
@@ -144,24 +167,29 @@ const routes = [
             props: true,
             meta: {
               label: 'Edit Developer',
+              requiredPermission: ['developers.update', 'developers.show'],
             },
           },
           {
             path: 'tenants',
             name: ROUTE_NAMES.TENANTS_INDEX,
             component: () => import('@/views/catalogs/tenants/Tenants.vue'),
+            meta: { requiredPermission: 'tenants.index' },
           },
           {
             path: 'tenants/:id',
             name: ROUTE_NAMES.TENANTS_DETAIL,
             component: () => import('@/views/catalogs/tenants/TenantDetail.vue'),
+            meta: {
+              requiredPermission: ['tenants.create', 'tenants.update', 'tenants.show'],
+            },
           },
           {
             path: 'brokers',
             name: ROUTE_NAMES.BROKERS_INDEX,
             component: () => import('@/views/catalogs/brokers/Brokers.vue'),
             meta: {
-              requiresAuth: true,
+              requiredPermission: 'tenants.index',
               label: 'Brokers',
             },
           },
@@ -171,7 +199,7 @@ const routes = [
             component: () => import('@/views/catalogs/brokers/BrokerDetail.vue'),
             props: { id: 0 },
             meta: {
-              requiresAuth: true,
+              requiredPermission: 'tenants.create',
               label: 'Create Broker',
             },
           },
@@ -181,7 +209,7 @@ const routes = [
             component: () => import('@/views/catalogs/brokers/BrokerDetail.vue'),
             props: true,
             meta: {
-              requiresAuth: true,
+              requiredPermission: ['tenants.update', 'tenants.show'],
               label: 'Edit Broker',
             },
           },
@@ -190,7 +218,7 @@ const routes = [
             name: ROUTE_NAMES.REITS,
             component: () => import('@/views/catalogs/reits/Reits.vue'),
             meta: {
-              requiresAuth: true,
+              requiredPermission: 'reits.index',
               label: 'REITs',
             },
           },
@@ -199,7 +227,7 @@ const routes = [
             name: ROUTE_NAMES.REITS_CREATE,
             component: () => import('@/views/catalogs/reits/ReitDetail.vue'),
             meta: {
-              requiresAuth: true,
+              requiredPermission: 'reits.create',
               label: 'Create REIT',
             },
           },
@@ -209,7 +237,7 @@ const routes = [
             component: () => import('@/views/catalogs/reits/ReitDetail.vue'),
             props: true,
             meta: {
-              requiresAuth: true,
+              requiredPermission: ['reits.update', 'tenants.show'],
               label: 'Edit REIT',
             },
           },
@@ -225,31 +253,37 @@ const routes = [
             path: 'market-size',
             name: ROUTE_NAMES.BUILDINGS,
             component: () => import('@/views/operations/buildings/Buildings.vue'),
+            meta: { requiredPermission: 'buildings.index' },
           },
           {
             path: 'market-size/create',
             name: ROUTE_NAMES.BUILDINGS_CREATE,
             component: () => import('@/views/operations/buildings/BuildingDetalle.vue'),
+            meta: { requiredPermission: 'buildings.create' },
           },
           {
             path: 'market-size/:buildingId/edit',
             name: ROUTE_NAMES.BUILDINGS_UPDATE,
             component: () => import('@/views/operations/buildings/BuildingDetalle.vue'),
+            meta: { requiredPermission: ['buildings.update', 'buildings.show'] },
           },
           {
             path: 'lands',
             name: ROUTE_NAMES.LANDS_INDEX,
             component: () => import('@/views/operations/lands/LandsIndex.vue'),
+            meta: { requiredPermission: 'lands.create' },
           },
           {
             path: 'lands/create',
             name: ROUTE_NAMES.LANDS_CREATE,
             component: () => import('@/views/operations/lands/LandsDetail.vue'),
+            meta: { requiredPermission: 'lands.create' },
           },
           {
             path: 'lands/:landId/edit',
             name: ROUTE_NAMES.LANDS_UPDATE,
             component: () => import('@/views/operations/lands/LandsDetail.vue'),
+            meta: { requiredPermission: ['lands.update', 'lands.show'] },
           },
           {
             path: 'pending-approvals',
@@ -257,58 +291,62 @@ const routes = [
             component: () => import('@/views/operations/buildings/PendingApprovals.vue'),
           },
           {
-            path: 'reits',
-            name: ROUTE_NAMES.REITS_INDEX,
-            component: () => import('@/views/operations/reits-mortgage/ReitMortgageIndex.vue'),
-          },
-          {
             path: 'reit-mortgage',
             name: ROUTE_NAMES.REIT_MORTGAGE,
             component: () => import('@/views/operations/reits-mortgage/ReitMortgageIndex.vue'),
+            meta: { requiredPermission: 'reit-mortgage.index' },
           },
 
           {
             path: 'reit-mortgage/create',
             name: ROUTE_NAMES.REIT_MORTGAGE_CREATE,
             component: () => import('@/views/operations/reits-mortgage/ReitMortgageDetail.vue'),
+            meta: { requiredPermission: 'reit-mortgage.create' },
           },
 
           {
             path: 'reit-mortgage/:reitMortgageId/edit',
             name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE,
             component: () => import('@/views/operations/reits-mortgage/ReitMortgageDetail.vue'),
+            meta: { requiredPermission: ['reit-mortgage.show', 'reit-mortgage.update'] },
           },
 
           {
             path: 'reit-annual',
             name: ROUTE_NAMES.REIT_ANNUAL_INDEX,
             component: () => import('@/views/operations/reitAnnual/ReitAnnualIndex.vue'),
+            meta: { requiredPermission: 'reit-annual.index' },
           },
           {
             path: 'reit-annual/create',
             name: ROUTE_NAMES.REIT_ANNUAL_CREATE,
             component: () => import('@/views/operations/reitAnnual/ReitAnnualForm.vue'),
+            meta: { requiredPermission: 'reit-annual.create' },
           },
           {
             path: 'reit-annual/:reitAnnualId/edit',
             name: ROUTE_NAMES.REIT_ANNUAL_UPDATE,
             component: () => import('@/views/operations/reitAnnual/ReitAnnualForm.vue'),
+            meta: { requiredPermission: ['reit-annual.update', 'reit-annual.show'] },
           },
 
           {
             path: 'reit-quarter',
             name: ROUTE_NAMES.REIT_QUARTER_INDEX,
             component: () => import('@/views/operations/reitAnnual/ReitAnnualIndex.vue'),
+            meta: { requiredPermission: 'reit-annual.index' },
           },
           {
             path: 'reit-quarter/create',
             name: ROUTE_NAMES.REIT_QUARTER_CREATE,
             component: () => import('@/views/operations/reitAnnual/ReitAnnualForm.vue'),
+            meta: { requiredPermission: 'reit-annual.create' },
           },
           {
             path: 'reit-quarter/:reitAnnualId/edit',
             name: ROUTE_NAMES.REIT_QUARTER_UPDATE,
             component: () => import('@/views/operations/reitAnnual/ReitAnnualForm.vue'),
+            meta: { requiredPermission: ['reit-annual.update', 'reit-annual.show'] },
           },
         ],
       },
@@ -318,6 +356,11 @@ const routes = [
     path: '/login',
     name: ROUTE_NAMES.LOGIN,
     component: Login,
+  },
+  {
+    path: '/forbidden',
+    name: ROUTE_NAMES.FORBIDDEN,
+    component: () => import('@/views/pages/Page403.vue'),
   },
 ]
 
@@ -331,13 +374,24 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN)
+  const authStore = useAuthStore()
+  const isAuthenticated = !!authStore.token
 
   if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: ROUTE_NAMES.LOGIN })
-  } else {
-    next()
+    return next({ name: ROUTE_NAMES.LOGIN })
   }
+  if (
+    to.meta.requiredPermission &&
+    to.meta.requiredPermission.length &&
+    !authStore.can(
+      ...(typeof to.meta.requiredPermission === 'string'
+        ? [to.meta.requiredPermission]
+        : to.meta.requiredPermission),
+    )
+  ) {
+    return next({ name: ROUTE_NAMES.FORBIDDEN })
+  }
+  return next()
 })
 
 export default router

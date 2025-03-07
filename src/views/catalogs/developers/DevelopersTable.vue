@@ -2,9 +2,9 @@
 import DevelopersService from '@/services/Developers'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth';
 import { API } from '@/services'
-import MarketsService from '@/services/Markets'
-import SubmarketsService from '@/services/Submarkets'
 
 export default {
   data() {
@@ -12,50 +12,6 @@ export default {
       developers: [],
       markets: [],
       submarkets: [],
-      columns: [
-        {
-          key: 'id',
-          label: 'ID',
-          _style: { width: '5%' },
-        },
-        {
-          key: 'name',
-          label: 'Name',
-          _style: { width: '20%' },
-        },
-        {
-          key: 'is_developer',
-          label: 'Developer',
-          _style: { width: '10%' },
-        },
-        {
-          key: 'is_builder',
-          label: 'Builder',
-          _style: { width: '10%' },
-        },
-        {
-          key: 'is_owner',
-          label: 'Owner',
-          _style: { width: '10%' },
-        },
-        {
-          key: 'market_name',
-          label: 'Market',
-          _style: { width: '20%' },
-        },
-        {
-          key: 'sub_market_name',
-          label: 'SubMarket',
-          _style: { width: '20%' },
-        },
-        {
-          key: 'actions',
-          label: 'Actions',
-          _style: { width: '5%', textAlign: 'center' },
-          sorter: false,
-          filter: false
-        }
-      ]
     }
   },
 
@@ -65,9 +21,10 @@ export default {
   },
 
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async fetchMarkets() {
       try {
-        const response = await MarketsService.getMarkets()
+        const response = await API.markets.getMarkets()
         this.markets = response
       } catch (error) {
         console.error('Error fetching markets:', error)
@@ -76,7 +33,7 @@ export default {
 
     async fetchSubmarkets(market_id) {
       try {
-        const response = await SubmarketsService.getSubmarkets({ market_id })
+        const response = await API.submarkets.getSubmarkets({ market_id })
         this.submarkets = [...this.submarkets, ...response]
       } catch (error) {
         console.error('Error fetching submarkets:', error)
@@ -217,7 +174,7 @@ export default {
 </script>
 
 <template>
-  <CCard class="mb-4">
+  <CCard v-if="can('developers.create')" class="mb-4">
     <CRow>
       <CCol :xs="12" :xl="2">
         <CCardBody style="text-align: right;">
@@ -281,6 +238,7 @@ export default {
           <template #actions="{ item }">
             <td class="py-2" style="text-align: center">
               <CButton 
+                v-if="can('developers.update', 'developers.show')"
                 color="primary" 
                 variant="outline" 
                 square 
@@ -291,6 +249,7 @@ export default {
                 <CIcon icon="cil-pencil" />
               </CButton>
               <CButton 
+                v-if="can('developers.destroy')"
                 color="danger" 
                 variant="outline" 
                 square 
@@ -302,7 +261,6 @@ export default {
               </CButton>
             </td>
           </template>
-
         </CSmartTable>
       </div>
     </CCardBody>

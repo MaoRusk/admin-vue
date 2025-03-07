@@ -8,6 +8,7 @@ import nav from '@/_nav.js'
 
 import simplebar from 'simplebar-vue'
 import 'simplebar-vue/dist/simplebar.min.css'
+import { useAuthStore } from '../stores/auth'
 
 const normalizePath = (path) =>
   decodeURI(path)
@@ -49,6 +50,8 @@ const AppSidebarNav = defineComponent({
     CNavTitle,
   },
   setup() {
+    const authStore = useAuthStore()
+
     const route = useRoute()
     const firstRender = ref(true)
     const { i18next } = useTranslation()
@@ -135,6 +138,26 @@ const AppSidebarNav = defineComponent({
           )
     }
 
+    function checkPermissions(items) {
+      return items
+        .filter((item) =>
+          item.visible
+            ? typeof item.visible === 'boolean'
+              ? item.visible
+              : typeof item.visible === 'string'
+              ? authStore.can(item.visible)
+              : authStore.can(...item.visible)
+            : true,
+        )
+        .map((item) => ({
+          ...item,
+          items: item.items ? checkPermissions(item.items) : undefined,
+        }))
+        .filter((item) => item.items?.length !== 0 || item.items === undefined) // Eliminamos items vacíos
+    }
+
+    const items = checkPermissions(nav)
+
     return () =>
       h(
         CSidebarNav,
@@ -143,7 +166,7 @@ const AppSidebarNav = defineComponent({
           lang: i18next.language,
         },
         {
-          default: () => nav.map((item) => renderItem(item)),
+          default: () => items.map((item) => renderItem(item)),
         },
       )
   },

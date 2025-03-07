@@ -11,8 +11,9 @@ import CIcon from '@coreui/icons-vue'
 import * as icons from '@coreui/icons'
 import DocsExample from '@/components/DocsExample'
 
+const pinia = createPinia()
 const app = createApp(App)
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 app.use(CoreuiVue)
 app.use(I18NextVue, { i18next })

@@ -6,8 +6,10 @@ import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { REIT_MORTGAGE_ITEMS_PER_PAGE } from '../../../constants';
+import { useAuthStore } from '../../../stores/auth';
 
 const storage = useLocalStorage()
+const { can } = useAuthStore()
 
 const reitMortgages = ref([]);
 
@@ -87,7 +89,7 @@ watch([columnSorter, columnFilter], fetchReitMortgages, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_CREATE })">
+    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_CREATE })" v-if="can('reit-mortgage.create')">
       <CIcon name="cilPlus" size="sm" />
       New Reit Mortgage
     </CButton>
@@ -135,16 +137,18 @@ watch([columnSorter, columnFilter], fetchReitMortgages, { deep: true })
     }"
     clickable-rows
     @row-click="item => {
-      $router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE, params: { reitMortgageId: item.id } })
+      if (can('reit-mortgage.update', 'reit-mortgage.show')) {
+        $router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE, params: { reitMortgageId: item.id } })
+      }
     }"
   >
     <template #actions="{ item }">
       <td style="vertical-align: middle;">
         <div class="d-flex gap-1">
-          <CButton color="primary" variant="outline" square size="sm" title="Edit" @click.stop="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE, params: { reitMortgageId: item.id } })">
+          <CButton color="primary" variant="outline" square size="sm" title="Edit" @click.stop="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_UPDATE, params: { reitMortgageId: item.id } })" v-if="can('reit-mortgage.show', 'reit-mortgage.update')">
             <CIcon name="cilPencil" size="sm" />
           </CButton>
-          <CButton color="danger" variant="outline" square size="sm" @click.stop="removeReitMortgage(item.id)">
+          <CButton color="danger" variant="outline" square size="sm" @click.stop="removeReitMortgage(item.id)" v-if="can('reit-mortgage.destroy')">
             <CIcon name="cilTrash" size="sm" />
           </CButton>
         </div>

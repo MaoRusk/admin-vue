@@ -6,6 +6,7 @@ import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { API } from '../../../services';
 import { LANDS_ITEMS_PER_PAGE } from '../../../constants';
 import LandsAvailabilityForm from './LandsAvailabilityForm.vue';
+import { useAuthStore } from '../../../stores/auth';
 
 const props = defineProps({
   landId: {
@@ -16,6 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['submitting', 'changeShowForm'])
 
 const storage = useLocalStorage()
+const { can } = useAuthStore()
 
 const landsAvl = ref([]);
 
@@ -133,7 +135,7 @@ defineExpose({
     <div v-if="!showForm">
       <div class="mb-4 d-flex justify-content-between align-items-center">
         <h2>Lands Availability</h2>
-        <CButton color="primary" @click="handleAddAvailability">
+        <CButton color="primary" @click="handleAddAvailability" v-if="can('lands.available.create')">
           <CIcon name="cilPlus" class="me-2" />
           Add Availability
         </CButton>
@@ -185,10 +187,10 @@ defineExpose({
           >
             <template #actions="{ item }">
               <td class="d-flex gap-1">
-                <CButton color="primary" variant="outline" square size="sm" >
+                <CButton color="primary" variant="outline" square size="sm" v-if="can('lands.available.show', 'lands.available.update')">
                   <CIcon name="cilPencil" size="sm" @click="handleEdit(item)" />
                 </CButton>
-                <CButton color="danger" variant="outline" square size="sm" @click="removeAvailability(item.id)">
+                <CButton color="danger" variant="outline" square size="sm" @click="removeAvailability(item.id)" v-if="can('lands.available.destroy')">
                   <CIcon name="cilTrash" size="sm" />
                 </CButton>
               </td>

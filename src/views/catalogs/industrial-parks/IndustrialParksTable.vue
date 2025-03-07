@@ -1,6 +1,6 @@
 <template>
   <CCard class="mb-4">
-    <CRow>
+    <CRow v-if="can('industrial-parks.create')">
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
@@ -31,7 +31,8 @@
         >
           <template #actions="{ item }">
             <td class="py-2 text-center">
-              <CButton 
+              <CButton
+                v-if="can('industrial-parks.show', 'industrial-parks.update')"
                 color="primary" 
                 variant="outline" 
                 square 
@@ -42,6 +43,7 @@
                 <CIcon icon="cil-pencil" />
               </CButton>
               <CButton 
+                v-if="can('industrial-parks.destroy')"
                 color="danger" 
                 variant="outline" 
                 square 
@@ -65,6 +67,8 @@ import MarketsService from '@/services/Markets'
 import SubmarketsService from '@/services/Submarkets'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth'
 
 export default {
   name: 'IndustrialParksTable',
@@ -107,6 +111,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async fetchData() {
       try {
         const [parksResponse, marketsResponse, submarketResponse] = await Promise.all([

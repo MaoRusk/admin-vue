@@ -2,6 +2,8 @@
 import { API } from '@/services'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '@/router/routeNames'
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth';
 
 export default {
   name: 'Companies',
@@ -33,6 +35,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async fetchData() {
       try {
         const response = await API.companies.getCompanies()
@@ -113,7 +116,7 @@ export default {
 
 <template>
   <!-- Botón New Company responsive -->
-  <CCard class="mb-4">
+  <CCard class="mb-4" v-if="can('companies.create')">
     <CCardBody class="p-3">
       <CRow class="align-items-center">
         <CCol :xs="12" class="text-end">
@@ -188,6 +191,7 @@ export default {
             <td class="text-center py-2">
               <div class="actions-container">
                 <CButton 
+                  v-if="can('companies.show', 'companies.update')"
                   color="primary" 
                   variant="outline" 
                   square 
@@ -198,6 +202,7 @@ export default {
                   <CIcon icon="cil-pencil" />
                 </CButton>
                 <CButton 
+                  v-if="can('companies.destroy')"
                   color="danger" 
                   variant="outline" 
                   square 

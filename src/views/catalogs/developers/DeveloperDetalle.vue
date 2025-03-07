@@ -1,12 +1,14 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import Swal from 'sweetalert2'
 import { useRoute, useRouter } from 'vue-router'
 import { API } from '@/services'
 import { ROUTE_NAMES } from '@/router/routeNames'
-import Swal from 'sweetalert2'
+import { useAuthStore } from '../../../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const { can } = useAuthStore()
 
 const markets = ref([])
 const submarkets = ref([])
@@ -226,7 +228,7 @@ onMounted(async () => {
             </CRow>
             <CRow>
               <CCol xs="12" class="d-flex gap-2 justify-content-end">
-                <CButton type="submit" color="primary">Guardar</CButton>
+                <CButton v-if="can('developers.update', 'developers.create')" type="submit" color="primary">Guardar</CButton>
                 <CButton
                   type="button"
                   color="secondary"

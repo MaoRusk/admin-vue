@@ -11,7 +11,7 @@ export function useLocalStorage() {
 
   const setItem = (key, value) => {
     try {
-      const serializedValue = typeof value === 'object' ? JSON.stringify(value) : value
+      const serializedValue = JSON.stringify(value)
       localStorage.setItem(key, serializedValue)
     } catch (error) {
       console.error(`Error setting localStorage item "${key}":`, error)

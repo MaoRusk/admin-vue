@@ -6,6 +6,7 @@ import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { API } from '../../../services';
 import { LANDS_ITEMS_PER_PAGE } from '../../../constants';
 import LandsAbsorptionForm from './LandsAbsorptionForm.vue';
+import { useAuthStore } from '../../../stores/auth';
 
 const props = defineProps({
   landId: {
@@ -16,6 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['submitting', 'changeShowForm'])
 
 const storage = useLocalStorage()
+const { can } = useAuthStore()
 
 const landsAbs = ref([]);
 
@@ -133,7 +135,7 @@ defineExpose({
     <div v-if="!showForm">
       <div class="mb-4 d-flex justify-content-between align-items-center">
         <h2>Lands Absorption</h2>
-        <CButton color="primary" @click="handleAddAbsorption">
+        <CButton color="primary" @click="handleAddAbsorption" v-if="can('lands.absorption.create')">
           <CIcon name="cilPlus" class="me-2" />
           Add Absorption
         </CButton>
@@ -187,9 +189,9 @@ defineExpose({
               <td style="vertical-align: middle;">
                 <div class="d-flex gap-1">
                   <CButton color="primary" variant="outline" square size="sm" >
-                      <CIcon name="cilPencil" size="sm" @click="handleEdit(item)" />
+                      <CIcon name="cilPencil" size="sm" @click="handleEdit(item)" v-if="can('lands.absorption.show', 'lands.absorption.update')" />
                   </CButton>
-                  <CButton color="danger" variant="outline" square size="sm" @click="removeAbsorption(item.id)">
+                  <CButton color="danger" variant="outline" square size="sm" @click="removeAbsorption(item.id)" v-if="can('lands.absorption.destroy')">
                     <CIcon name="cilTrash" size="sm" />
                   </CButton>
                 </div>

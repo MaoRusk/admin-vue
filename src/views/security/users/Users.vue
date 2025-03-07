@@ -2,14 +2,15 @@
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
-import { cilPlus, cilTrash, cilEyedropper } from '@coreui/icons';
 import { API } from '../../../services';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { USERS_ITEMS_PER_PAGE } from '../../../constants';
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { useAuthStore } from '../../../stores/auth';
 
 const router = useRouter();
 const storage = useLocalStorage();
+const { can } = useAuthStore()
 
 const users = ref([]);
 const loading = ref(false);
@@ -170,11 +171,11 @@ const handleUpdate = (item) => {
 
 <template>
   <CCard class="mb-4">
-    <CRow>
-      <CCol :xs="12" :xl="2">
+    <CRow v-if="can('users.create')">
+      <CCol xs="12" xl="2">
         <CCardBody style="text-align: right;">
           <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.USERS_CREATE })">
-            <CIcon :content="cilPlus" class="me-2" />
+            <CIcon name="cilPlus" class="me-2" />
             New User
           </CButton>
         </CCardBody>
@@ -229,6 +230,7 @@ const handleUpdate = (item) => {
           <template #actions="{ item }">
             <td class="py-2" style="text-align: center">
               <CButton 
+                v-if="can('users.update', 'users.show')"
                 color="primary" 
                 variant="outline" 
                 square 
@@ -239,6 +241,7 @@ const handleUpdate = (item) => {
                 <CIcon icon="cil-pencil" />
               </CButton>
               <CButton 
+                v-if="can('users.destroy')"
                 color="danger" 
                 variant="outline" 
                 square 

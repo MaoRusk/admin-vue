@@ -6,8 +6,10 @@ import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { LANDS_ITEMS_PER_PAGE } from '../../../constants';
+import { useAuthStore } from '../../../stores/auth';
 
 const storage = useLocalStorage()
+const { can } = useAuthStore()
 
 const lands = ref([]);
 
@@ -49,7 +51,6 @@ async function removeLand(id) {
     console.error('Error fetching land:', error);
   }
 }
-// TODO: aplicar filtros de busqueda y definir que campos se mostraran
 async function fetchLands() {
   loading.value = true
 
@@ -88,7 +89,7 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.LANDS_CREATE })">
+    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.LANDS_CREATE })" v-if="can('lands.create')">
       <CIcon name="cilPlus" size="sm" />
       New Land
     </CButton>
@@ -136,19 +137,21 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
     }"
     clickable-rows
     @row-click="item => {
-      $router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id } })
+      if (can('lands.update', 'lands.show')) {
+        $router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id } })
+      }
     }"
   >
     <template #actions="{ item }">
       <td style="vertical-align: middle;">
         <div class="d-flex gap-1">
-          <CButton color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Availability' } })">
+          <CButton v-if="can('lands.available.index')" color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Availability' } })">
             <CIcon name="cilBuilding" size="sm" />
           </CButton>
-          <CButton color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Absorption' } })">
+          <CButton v-if="can('lands.absorption.index')" color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Absorption' } })">
             <CIcon name="cilIndustrySlash" size="sm" />
           </CButton>
-          <CButton color="danger" variant="outline" square size="sm" @click.stop="removeLand(item.id)">
+          <CButton v-if="can('lands.destroy')" color="danger" variant="outline" square size="sm" @click.stop="removeLand(item.id)">
             <CIcon name="cilTrash" size="sm" />
           </CButton>
         </div>

@@ -7,9 +7,11 @@ import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { REIT_ANNUAL_ITEMS_PER_PAGE } from '../../../constants';
+import { useAuthStore } from '../../../stores/auth';
 
 const route = useRoute()
 const storage = useLocalStorage()
+const { can } = useAuthStore()
 
 const isReitAnnual = computed(() => route.name === ROUTE_NAMES.REIT_ANNUAL_INDEX)
 const reitType = computed(() => isReitAnnual.value ? 'annual' : 'quarter')
@@ -108,7 +110,7 @@ watch([columnSorter, columnFilter], fetchReit, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: routeCreate })">
+    <CButton color="success" @click="$router.push({ name: routeCreate })" v-if="can('reit-annual.create')">
       <CIcon name="cilPlus" size="sm" />
       <span class="text-capitalize"></span>New Reit {{ reitType }}
     </CButton>
@@ -158,10 +160,10 @@ watch([columnSorter, columnFilter], fetchReit, { deep: true })
     <template #actions="{ item }">
       <td style="vertical-align: middle;">
         <div class="d-flex gap-1">
-          <CButton color="primary" variant="outline" square size="sm" @click.stop="$router.push({ name: routeUpdate, params: { reitAnnualId: item.id } })">
+          <CButton color="primary" variant="outline" square size="sm" @click.stop="$router.push({ name: routeUpdate, params: { reitAnnualId: item.id } })" v-if="can('reit-annual.show', 'reit-annual.update')">
             <CIcon name="cilPencil" size="sm" />
           </CButton>
-          <CButton color="danger" variant="outline" square size="sm" @click.stop="removeReit(item.id)">
+          <CButton color="danger" variant="outline" square size="sm" @click.stop="removeReit(item.id)" v-if="can('reit-annual.destroy')">
             <CIcon name="cilTrash" size="sm" />
           </CButton>
         </div>

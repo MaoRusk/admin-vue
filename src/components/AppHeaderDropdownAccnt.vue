@@ -1,18 +1,16 @@
 <script setup>
 import { useTranslation } from 'i18next-vue'
 import { useRouter } from 'vue-router';
-import { useLocalStorage } from '../composables/useLocalStorage';
-import { AUTH_TOKEN, AUTH_USER } from '../constants';
 import { ROUTE_NAMES } from '../router/routeNames';
+import { useAuthStore } from '../stores/auth';
 
 const { t } = useTranslation()
-const { removeItem } = useLocalStorage()
-const itemsCount = 42
+
 const router = useRouter()
+const authStore = useAuthStore()
 
 const logout = () => {
-  removeItem(AUTH_TOKEN)
-  removeItem(AUTH_USER)
+  authStore.destroyAuth()
   router.push({ name: ROUTE_NAMES.LOGIN })
 }
 </script>

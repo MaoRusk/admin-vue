@@ -1,5 +1,5 @@
 <template>
-  <CCard class="mb-4">
+  <CCard class="mb-4" v-if="can('tenants.create')">
     <CRow>
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
@@ -32,6 +32,7 @@
           <template #actions="{ item }">
             <td class="py-2" style="text-align: center">
               <CButton 
+                v-if="can('tenants.show', 'tenants.update')"
                 color="primary" 
                 variant="outline" 
                 square 
@@ -42,6 +43,7 @@
                 <CIcon icon="cil-pencil" />
               </CButton>
               <CButton 
+                v-if="can('tenants.destroy')"
                 color="danger" 
                 variant="outline" 
                 square 
@@ -63,6 +65,8 @@
 import TenantsService from '@/services/Tenants'
 import Swal from 'sweetalert2'
 import { ROUTE_NAMES } from '../../../router/routeNames';
+import { mapActions } from 'pinia';
+import { useAuthStore } from '../../../stores/auth';
 
 export default {
   data() {
@@ -91,6 +95,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(useAuthStore, ['can']),
     async fetchTenants() {
       try {
         const response = await TenantsService.getTenants()

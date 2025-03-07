@@ -1,6 +1,7 @@
 export const ROUTE_NAMES = {
   LOGIN: 'Login',
   HOME: 'Home',
+  FORBIDDEN: 'Forbidden',
   DASHBOARD: 'Dashboard',
   OPERATIONS: 'Operation',
   BUILDINGS: 'Market Size',
@@ -45,13 +46,9 @@ export const ROUTE_NAMES = {
   MARKET_SIZE_PENDING_APPROVALS: 'Pending Approvals',
   CATALOGS: 'Catalogs',
 
-  REITS_INDEX: 'Reits',
-
   REIT_MORTGAGE: 'Reit Mortgage',
   REIT_MORTGAGE_CREATE: 'Create Reit Mortgage',
   REIT_MORTGAGE_UPDATE: 'Edit Reit Mortgage',
-
-
 
   REIT_ANNUAL_INDEX: 'REIT Annual',
   REIT_ANNUAL_CREATE: 'Create REIT Annual',
