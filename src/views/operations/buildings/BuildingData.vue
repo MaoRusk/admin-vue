@@ -390,7 +390,7 @@ async function fetchIndustrialParks(marketId, submarketId) {
 
 async function fetchSubmarkets(marketId) {
   submarkets.loading = true
-  const data = await API.submarkets.getSubmarkets({ marketId });
+  const data = await API.submarkets.getSubmarkets({ market_id: marketId });
   submarkets.loading = false
   submarkets.items = data.map(({ id, name }) => ({ label: name, value: id })).sort((a, b) => a.label.localeCompare(b.label))
 }
@@ -597,7 +597,7 @@ watch(() => building.market_id, async () => {
   if (building.market_id) {
     await fetchSubmarkets(building.market_id)
     if (!submarkets.items.find(item => item.value === building.sub_market_id)) {
-      building.su_bmarket_id = ''
+      building.sub_market_id = ''
     }
   } else {
     building.sub_market_id = ''

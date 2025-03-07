@@ -116,7 +116,7 @@ export default {
     async loadMarkets() {
       try {
         const response = await MarketsService.getMarkets()
-        this.markets = response.data.data || []
+        this.markets = response || []
       } catch (error) {
         console.error('Error loading markets:', error)
         this.markets = []
@@ -125,7 +125,7 @@ export default {
     async loadSubmarkets() {
       try {
         const response = await SubmarketsService.getSubmarkets()
-        this.submarkets = response.data.data || []
+        this.submarkets = response || []
       } catch (error) {
         console.error('Error loading submarkets:', error)
         this.submarkets = []
