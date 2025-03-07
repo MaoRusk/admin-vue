@@ -1,4 +1,9 @@
 // Here you can add other styles
+.nav-group-items {
+  padding-left: 1rem !important;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: .47rem;
+} 
 .dark-theme .sidebar, [data-coreui-theme=dark] .sidebar {
     background-color: #15598a !important;
     background-image: none !important;
