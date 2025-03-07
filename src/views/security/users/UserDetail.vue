@@ -566,7 +566,7 @@ async function createOptionGeneral(field, value) {
                       name="status" 
                       id="statusActive" 
                       value="Activo"
-                      label="Activo"
+                      label="Active"
                       :checked="formData.status === 'Activo'"
                       @change="formData.status = 'Activo'"
                     />
@@ -576,7 +576,7 @@ async function createOptionGeneral(field, value) {
                       name="status" 
                       id="statusInactive" 
                       value="Inactivo"
-                      label="Inactivo"
+                      label="Inactive"
                       :checked="formData.status === 'Inactivo'"
                       @change="formData.status = 'Inactivo'"
                     />    
