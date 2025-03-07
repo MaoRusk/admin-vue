@@ -66,7 +66,7 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          await ReitsService.deleteReit(item.id)
+          await API.reits.deleteReit(item.id)
           await this.fetchReits()
           
           Swal.fire({
