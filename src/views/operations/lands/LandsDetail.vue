@@ -139,13 +139,7 @@ function dispatchSubmitForm() {
 }
 
 function showList() {
-  if (activeItemKey.value === 'Land') {
-    router.push({ name: ROUTE_NAMES.LANDS_INDEX })
-  } else if (activeItemKey.value === 'Availability') {
-    availabilityRef.value?.handleReturn?.()
-  } else if (activeItemKey.value === 'Absorption') {
-    absorptionRef.value?.handleReturn?.()
-  }
+  router.push({ name: ROUTE_NAMES.LANDS_INDEX })
 }
 
 watch(() => route.query.tab, (newTab) => {
@@ -187,6 +181,10 @@ watch(activeItemKey, async (newTab) => {
     disabledSave.value = false
   }
 }, { immediate: true })
+
+const goToList = () => {
+  router.push({ name: ROUTE_NAMES.LANDS_INDEX })
+}
 </script>
 <template>
   <div>
@@ -204,8 +202,16 @@ watch(activeItemKey, async (newTab) => {
         </CRow>
       </CCardBody>
     </CCard>
-    <!-- TODO. quitar cuando se detecte error, bug: aveces cuando se da click sobre un tab, no se muestra su contenido, coloco variable para monitorear -->
     {{ activeItemKey }}
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <v-btn
+          icon="mdi-format-list-bulleted"
+          variant="text"
+          @click="goToList"
+        />
+      </div>
+    </div>
     <CTabs :activeItemKey="activeItemKey">
       <CTabList variant="tabs" class="mt-4">
         <CTab v-for="tab in tabs" :itemKey="tab" :key="tab" :disabled="tab !== 'Land' && disabledTab" @click="changeTab(tab)">{{ tab }}</CTab>
