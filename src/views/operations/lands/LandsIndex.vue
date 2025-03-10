@@ -148,7 +148,18 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
           <CButton color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Absorption' } })">
             <CIcon name="cilIndustrySlash" size="sm" />
           </CButton>
-          <CButton color="primary" variant="outline" square size="sm" title="Go to contacts" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_CONTACTS, params: { landId: item.id }, query: { tab: 'Contacts' } })">
+          <CButton 
+            color="primary" 
+            variant="outline" 
+            square 
+            size="sm" 
+            title="Go to contacts" 
+            @click.stop="$router.push({ 
+              name: ROUTE_NAMES.LANDS_UPDATE, 
+              params: { landId: item.id }, 
+              query: { tab: 'Contacts' } 
+            })"
+          >
             <CIcon name="cilContact" size="sm" />
           </CButton>
           <CButton color="danger" variant="outline" square size="sm" @click.stop="removeLand(item.id)">

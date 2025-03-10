@@ -149,7 +149,7 @@ function showList() {
 }
 
 watch(() => route.query.tab, (newTab) => {
-  if (['Land', 'Availability', 'Absorption'].includes(newTab)) {
+  if (['Land', 'Availability', 'Absorption', 'Contacts'].includes(newTab)) {
     activeItemKey.value = newTab
   } else {
     activeItemKey.value = 'Land'

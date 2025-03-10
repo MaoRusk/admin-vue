@@ -250,6 +250,7 @@ const routes = [
             path: 'lands/:landId/edit',
             name: ROUTE_NAMES.LANDS_UPDATE,
             component: () => import('@/views/operations/lands/LandsDetail.vue'),
+            props: true,
           },
           {
             path: 'pending-approvals',
