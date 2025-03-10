@@ -60,23 +60,26 @@ async function fetchCams() {
       search: tableSearch.value,
     }, columnFilter.value, columnSorter.value);
 
-    if (data.success) {
-      page.value = data.data.current_page
-      totalItems.value = data.data.total
-      totalPages.value = data.data.last_page
+    if (data?.data) {
+      page.value = data.data.current_page || 1
+      totalItems.value = data.data.total || 0
+      totalPages.value = data.data.last_page || 1
 
-      cams.value = data.data.data.map((item) => ({
-        ...item,
-        industrial_park_name: item.industrial_park?.name || '-',
-        developer_name: item.developer?.name || '-',
-        market_name: item.market?.name || '-',
-      }))
+      cams.value = Array.isArray(data.data.data) 
+        ? data.data.data.map((item) => ({
+            ...item,
+            industrial_park_name: item.industrial_park?.name || '-',
+            developer_name: item.developer?.name || '-',
+            market_name: item.market?.name || '-',
+          }))
+        : [];
     } else {
       cams.value = []
+      console.warn('Unexpected API response structure:', data)
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: data.message || 'Failed to fetch CAMs',
+        icon: 'warning',
+        title: 'Warning',
+        text: 'Received unexpected data format from server',
       })
     }
   } catch (error) {

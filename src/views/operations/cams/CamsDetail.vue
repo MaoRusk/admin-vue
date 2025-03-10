@@ -1,15 +1,20 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import MASelect from '../../../components/MASelect.vue';
+import CamsForm from './CamsForm.vue'
 
-const router = useRouter()
 const route = useRoute()
-const camId = ref(Number(route.params.camId) || null)
+const router = useRouter()
+
+const camId = computed(() => Number(route.params.camId) || null)
+
+const submittingForm = ref(false)
+const formRef = ref(null)
 
 const emit = defineEmits(['submitting'])
 
@@ -180,197 +185,42 @@ watch(() => cam.sub_market_id, async () => {
   }
 })
 
-defineExpose({
-  submit() {
-    if (formHtmlElement.value?.reportValidity()) {
-      formHtmlElement.value?.requestSubmit()
-    }
-  }
-});
+function dispatchSubmitForm() {
+  formRef.value?.submit?.()
+}
+
+function showList() {
+  router.push({ name: ROUTE_NAMES.CAMS_INDEX })
+}
 </script>
 
 <template>
-  <form @submit.prevent="onSubmit" ref="formHtmlElement">
-    <CCard>
-      <CCardHeader>
-        <h4>{{ camId ? 'Edit CAM' : 'New CAM' }}</h4>
-      </CCardHeader>
-      <CCardBody>
-        <CRow>
-          <!-- Location Section -->
-          <CCol xs="12" md="6">
-            <h5>Location</h5>
-            <div class="mb-3">
-              <label class="form-label">Region *</label>
-              <MASelect
-                v-model="cam.region_id"
-                :options="regions.items"
-                :reduce="option => option.value"
-                label="label"
-                required
-                placeholder="Select..."
-                :loading="regions.loading"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Market *</label>
-              <MASelect
-                v-model="cam.market_id"
-                :options="markets.items"
-                :reduce="option => option.value"
-                label="label"
-                required
-                placeholder="Select..."
-                :loading="markets.loading"
-                :disabled="!cam.region_id"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Submarket *</label>
-              <MASelect
-                v-model="cam.sub_market_id"
-                :options="submarkets.items"
-                :reduce="option => option.value"
-                label="label"
-                required
-                placeholder="Select..."
-                :loading="submarkets.loading"
-                :disabled="!cam.market_id"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Industrial Park *</label>
-              <MASelect
-                v-model="cam.industrial_park_id"
-                :options="industrialParks.items"
-                :reduce="option => option.id"
-                label="name"
-                required
-                placeholder="Select..."
-                :loading="industrialParks.loading"
-                :disabled="!cam.sub_market_id"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Developer *</label>
-              <MASelect
-                v-model="cam.developer_id"
-                :options="developers.items"
-                :reduce="option => option.id"
-                label="name"
-                required
-                placeholder="Select..."
-                :loading="developers.loading"
-                :disabled="!cam.sub_market_id"
-              />
-            </div>
-          </CCol>
-
-          <!-- Details Section -->
-          <CCol xs="12" md="6">
-            <h5>Details</h5>
-            <div class="mb-3">
-              <CFormInput
-                v-model="cam.cam_building_sf"
-                type="number"
-                label="Building SF *"
-                required
-              />
-            </div>
-
-            <div class="mb-3">
-              <CFormInput
-                v-model="cam.cam_land_sf"
-                type="number"
-                label="Land SF *"
-                required
-              />
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Currency *</label>
-              <MASelect
-                v-model="cam.currency"
-                :options="currencies.items"
-                :reduce="option => option.value"
-                label="label"
-                required
-                placeholder="Select..."
-                :loading="currencies.loading"
-              />
-            </div>
-
-            <div class="mb-3">
-              <CFormInput
-                v-model="cam.latitude"
-                label="Latitude *"
-                required
-              />
-            </div>
-
-            <div class="mb-3">
-              <CFormInput
-                v-model="cam.longitude"
-                label="Longitude *"
-                required
-              />
-            </div>
-          </CCol>
-
-          <!-- Services Section -->
-          <CCol xs="12">
-            <h5>Services</h5>
-            <CRow>
-              <CCol xs="12" md="4">
-                <CFormSwitch
-                  v-model="cam.has_cam_services"
-                  label="CAM Services"
-                  size="lg"
-                />
-              </CCol>
-              <CCol xs="12" md="4">
-                <CFormSwitch
-                  v-model="cam.has_lightning_maintenance"
-                  label="Lightning Maintenance"
-                  size="lg"
-                />
-              </CCol>
-              <CCol xs="12" md="4">
-                <CFormSwitch
-                  v-model="cam.has_park_administration"
-                  label="Park Administration"
-                  size="lg"
-                />
-              </CCol>
-              <CCol xs="12" md="4">
-                <CFormSwitch
-                  v-model="cam.storm_sewer_maintenance"
-                  label="Storm Sewer Maintenance"
-                  size="lg"
-                />
-              </CCol>
-              <CCol xs="12" md="4">
-                <CFormSwitch
-                  v-model="cam.has_survelliance"
-                  label="Surveillance"
-                  size="lg"
-                />
-              </CCol>
-              <CCol xs="12" md="4">
-                <CFormSwitch
-                  v-model="cam.has_management_fee"
-                  label="Management Fee"
-                  size="lg"
-                />
-              </CCol>
-            </CRow>
+  <div>
+    <CCard class="container-btn-flotante">
+      <CCardBody class="ps-1 py-3">
+        <CRow class="justify-content-center">
+          <CCol xs="auto" class="btns-flotantes-customer-moviles">
+            <CLoadingButton 
+              color="success" 
+              variant="outline" 
+              @click="dispatchSubmitForm" 
+              class="me-3" 
+              :loading="submittingForm"
+            >
+              <CIcon name="cilSave" size="sm" /> Save
+            </CLoadingButton>
+            <CButton color="primary" variant="outline" @click="showList()">
+              <CIcon name="cilArrowCircleLeft" size="sm" /> List
+            </CButton>
           </CCol>
         </CRow>
       </CCardBody>
     </CCard>
-  </form>
+
+    <CamsForm 
+      :camId="camId" 
+      ref="formRef" 
+      @submitting="(value) => submittingForm = value" 
+    />
+  </div>
 </template> 
