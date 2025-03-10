@@ -7,10 +7,10 @@ const props = defineProps({
   contact: {
     type: Object,
     default: () => ({
-      contact_name: '',
-      contact_email: '',
-      contact_phone: '',
-      contact_comments: '',
+      name: '',
+      email: '',
+      phone: '',
+      comments: '',
       is_buildings_contact: 0,
       is_company_contact: 0,
     }),
@@ -38,10 +38,10 @@ watch(() => props.contact, (newContact) => {
 const handleSubmit = async () => {
   try {
     const requestData = {
-      name: contactForm.contact_name,
-      email: contactForm.contact_email,
-      phone: contactForm.contact_phone,
-      comments: contactForm.contact_comments,
+      name: contactForm.name,
+      email: contactForm.email,
+      phone: contactForm.phone,
+      comments: contactForm.comments,
       is_buildings_contact: props.type === 'building' ? 1 : 0,
       is_company_contact: props.type === 'company' ? 1 : 0
     };
@@ -79,10 +79,10 @@ const handleSubmit = async () => {
 
 const handleCancel = () => {
   Object.assign(contactForm, {
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '', 
-    contact_comments: '',
+    name: '',
+    email: '',
+    phone: '', 
+    comments: '',
     is_buildings_contact: props.type === 'building' ? 1 : 0,
     is_company_contact: props.type === 'company' ? 1 : 0
   });
@@ -130,7 +130,7 @@ watch(() => props.contact.id, (newVal) => {
             <CCol :xs="12" class="mb-3">
               <CFormInput
                 label="Name"
-                v-model="contactForm.contact_name"
+                v-model="contactForm.name"
                 required
                 placeholder="Enter contact name"
               />
@@ -139,7 +139,7 @@ watch(() => props.contact.id, (newVal) => {
               <CFormInput
                 label="Email"
                 type="email"
-                v-model="contactForm.contact_email"
+                v-model="contactForm.email"
                 required
                 placeholder="Enter email address"
               />
@@ -147,7 +147,7 @@ watch(() => props.contact.id, (newVal) => {
             <CCol :xs="12" class="mb-3">
               <CFormInput
                 label="Phone"
-                v-model="contactForm.contact_phone"
+                v-model="contactForm.phone"
                 placeholder="Enter phone number"
                 type="tel"
               />
@@ -155,7 +155,7 @@ watch(() => props.contact.id, (newVal) => {
             <CCol :xs="12" class="mb-3">
               <CFormTextarea
                 label="Comments"
-                v-model="contactForm.contact_comments"
+                v-model="contactForm.comments"
                 placeholder="Add any additional comments"
                 rows="3"
               />

@@ -35,10 +35,10 @@ const tabAbsorptionLoaded = ref(false);
 
 // Add contact state
 const contact = ref({
-  contact_name: '',
-  contact_email: '',
-  contact_phone: '',
-  contact_comments: '',
+  name: '',
+  email: '',
+  phone: '',
+  comments: '',
   is_buildings_contact: 1,
 });
 
@@ -48,20 +48,20 @@ const contacts = ref([]);
 const handleSave = async (savedContact) => {
   await fetchContacts();
   contact.value = {
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    contact_comments: '',
+    name: '',
+    email: '',
+    phone: '',
+    comments: '',
     is_buildings_contact: 1,
   };
 };
 
 const handleCancel = () => {
   contact.value = {
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    contact_comments: '',
+    name: '',
+    email: '',
+    phone: '',
+    comments: '',
     is_buildings_contact: 1,
   };
 };
