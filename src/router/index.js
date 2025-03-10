@@ -361,6 +361,7 @@ const routes = [
             path: 'cams/:camId/edit',
             name: ROUTE_NAMES.CAMS_UPDATE,
             component: () => import('@/views/operations/cams/CamsDetail.vue'),
+            props: true,
           },
         ],
       },
