@@ -178,80 +178,86 @@ onMounted(() => {
 
   <CCard class="mb-4">
     <CCardBody>
-      <CSmartTable
-        v-if="cams.length > 0"
-        :active-page="1"
-        :items="cams"
-        :columns="columns"
-        :items-per-page="itemsPerPage"
-        :table-filter="true"
-        cleaner
-        :table-filter-label="'Search:'"
-        :table-filter-placeholder="'Type something...'"
-        :pagination="true"
-        hover
-        @per-page-change="(newPerPage) => {
-          itemsPerPage = newPerPage
-          storage.setItem(CAMS_ITEMS_PER_PAGE, newPerPage)
-        }"
-        clickable-rows
-        @row-click="item => {
-          $router.push({ name: ROUTE_NAMES.CAMS_UPDATE, params: { camId: item.id } })
-        }"
-      >
-        <template #services="{ item }">
-          <td>
-            <div class="d-flex flex-wrap gap-1">
-              <CBadge v-if="item.has_cam_services" color="info" class="me-1">
-                CAM
-              </CBadge>
-              <CBadge v-if="item.has_lightning_maintenance" color="info" class="me-1">
-                Lightning
-              </CBadge>
-              <CBadge v-if="item.has_park_administration" color="info" class="me-1">
-                Admin
-              </CBadge>
-              <CBadge v-if="item.storm_sewer_maintenance" color="info" class="me-1">
-                Sewer
-              </CBadge>
-              <CBadge v-if="item.has_surveillance" color="info" class="me-1">
-                Security
-              </CBadge>
-              <CBadge v-if="item.has_management_fee" color="info">
-                Management
-              </CBadge>
-            </div>
-          </td>
-        </template>
-
-        <template #actions="{ item }">
-          <td style="vertical-align: middle;">
-            <div class="d-flex gap-1">
-              <CButton 
-                color="primary" 
-                variant="outline" 
-                square 
-                size="sm" 
-                @click.stop="$router.push({ 
-                  name: ROUTE_NAMES.CAMS_UPDATE, 
-                  params: { camId: item.id } 
-                })"
-              >
-                <CIcon name="cilPencil" size="sm" />
-              </CButton>
-              <CButton 
-                color="danger" 
-                variant="outline" 
-                square 
-                size="sm" 
-                @click.stop="removeCam(item.id)"
-              >
-                <CIcon name="cilTrash" size="sm" />
-              </CButton>
-            </div>
-          </td>
-        </template>
-      </CSmartTable>
+      <div class="table-responsive">
+        <CSmartTable
+          v-if="cams.length > 0"
+          :active-page="1"
+          :items="cams"
+          :columns="columns"
+          :items-per-page="itemsPerPage"
+          :table-filter="true"
+          cleaner
+          :table-filter-label="'Search:'"
+          :table-filter-placeholder="'Type something...'"
+          :pagination="true"
+          hover
+          :tableProps="{
+        striped: true,
+      }"
+          responsive
+          @per-page-change="(newPerPage) => {
+            itemsPerPage = newPerPage
+            storage.setItem(CAMS_ITEMS_PER_PAGE, newPerPage)
+          }"
+          clickable-rows
+          @row-click="item => {
+            $router.push({ name: ROUTE_NAMES.CAMS_UPDATE, params: { camId: item.id } })
+          }"
+        >
+          <template #services="{ item }">
+            <td>
+              <div class="d-flex flex-wrap gap-1">
+                <CBadge v-if="item.has_cam_services" color="info" class="me-1">
+                  CAM
+                </CBadge>
+                <CBadge v-if="item.has_lightning_maintenance" color="info" class="me-1">
+                  Lightning
+                </CBadge>
+                <CBadge v-if="item.has_park_administration" color="info" class="me-1">
+                  Admin
+                </CBadge>
+                <CBadge v-if="item.storm_sewer_maintenance" color="info" class="me-1">
+                  Sewer
+                </CBadge>
+                <CBadge v-if="item.has_surveillance" color="info" class="me-1">
+                  Security
+                </CBadge>
+                <CBadge v-if="item.has_management_fee" color="info">
+                  Management
+                </CBadge>
+              </div>
+            </td>
+          </template>
+  
+          <template #actions="{ item }">
+            <td style="vertical-align: middle;">
+              <div class="d-flex gap-1">
+                <CButton 
+                  color="primary" 
+                  variant="outline" 
+                  square 
+                  size="sm" 
+                  @click.stop="$router.push({ 
+                    name: ROUTE_NAMES.CAMS_UPDATE, 
+                    params: { camId: item.id } 
+                  })"
+                >
+                  <CIcon name="cilPencil" size="sm" />
+                </CButton>
+                <CButton 
+                  color="danger" 
+                  variant="outline" 
+                  square 
+                  size="sm" 
+                  @click.stop="removeCam(item.id)"
+                >
+                  <CIcon name="cilTrash" size="sm" />
+                </CButton>
+              </div>
+            </td>
+          </template>
+        </CSmartTable>
+      </div>
     </CCardBody>
   </CCard>
 </template>
