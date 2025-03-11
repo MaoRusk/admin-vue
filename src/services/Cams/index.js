@@ -7,9 +7,9 @@ export default {
   getCams(query, filters = {}, sorter = {}) {
     return httpClient.get(`/cams`, {
       params: {
-        page: query?.page || null,
-        size: query?.size || null,
-        search: query?.search || null,
+        page: Number(query?.page) || 1,
+        per_page: Number(query?.size) || 10,
+        search: query?.search || '',
         ...filters,
         ...sorter,
       },

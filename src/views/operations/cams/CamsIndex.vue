@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 
 import { API } from '../../../services';
@@ -8,9 +8,7 @@ import { useLocalStorage } from '../../../composables/useLocalStorage';
 import { CAMS_ITEMS_PER_PAGE } from '../../../constants';
 
 const storage = useLocalStorage()
-
 const cams = ref([]);
-
 const loading = ref(false)
 const totalItems = ref(0)
 const totalPages = ref(0)
@@ -98,42 +96,41 @@ async function fetchCams() {
   loading.value = true
   try {
     const { data } = await API.cams.getCams({
-      page: page.value,
-      size: itemsPerPage.value,
+      page: Number(page.value),
+      per_page: Number(itemsPerPage.value),
       search: tableSearch.value,
     }, columnFilter.value, columnSorter.value);
 
     if (data?.data) {
-      cams.value = data.data.map((item) => ({
-        ...item,
-        industrial_park_name: item.industrial_park?.name || '-',
-        developer_name: item.developer?.name || '-',
-        region_name: item.region?.name || '-', 
-        market_name: item.market?.name || '-',
-        sub_market_name: item.sub_market?.name || '-',
-        cam_building_sf: `${Number(item.cam_building_sf || 0).toFixed(2)} ${item.currency || ''}`,
-        cam_land_sf: `${Number(item.cam_land_sf || 0).toFixed(2)} ${item.currency || ''}`,
-        has_cam_services: Boolean(item.has_cam_services),
-        has_lightning_maintenance: Boolean(item.has_lightning_maintenance),
-        has_park_administration: Boolean(item.has_park_administration),
-        storm_sewer_maintenance: Boolean(item.storm_sewer_maintenance),
-        has_surveillance: Boolean(item.has_surveillance),
-        has_management_fee: Boolean(item.has_management_fee)
-      }));
+      const items = Array.isArray(data.data) ? data.data : data.data.data;
+      
+      if (items) {
+        cams.value = items.map((item) => ({
+          ...item,
+          industrial_park_name: item.industrial_park?.name || '-',
+          developer_name: item.developer?.name || '-',
+          region_name: item.region?.name || '-', 
+          market_name: item.market?.name || '-',
+          sub_market_name: item.sub_market?.name || '-',
+          cam_building_sf: `${Number(item.cam_building_sf || 0).toFixed(2)} ${item.currency || ''}`,
+          cam_land_sf: `${Number(item.cam_land_sf || 0).toFixed(2)} ${item.currency || ''}`,
+          has_cam_services: Boolean(item.has_cam_services),
+          has_lightning_maintenance: Boolean(item.has_lightning_maintenance),
+          has_park_administration: Boolean(item.has_park_administration),
+          storm_sewer_maintenance: Boolean(item.storm_sewer_maintenance),
+          has_surveillance: Boolean(item.has_surveillance),
+          has_management_fee: Boolean(item.has_management_fee)
+        }));
 
-      totalItems.value = data.data.length;
-      totalPages.value = Math.ceil(data.data.length / itemsPerPage.value);
-      page.value = 1;
-
-    } else {
-      cams.value = []
-      console.warn('Unexpected API response structure:', data)
-      Swal.fire({
-        icon: 'warning',
-        title: 'Warning',
-        text: 'Received unexpected data format from server',
-      })
+        const meta = data.meta || data.data;
+        if (meta) {
+          page.value = Number(meta.current_page || meta.page || page.value);
+          totalItems.value = Number(meta.total || items.length);
+          totalPages.value = Number(meta.last_page || Math.ceil(totalItems.value / itemsPerPage.value));
+        }
+      }
     }
+
   } catch (error) {
     console.error('Error fetching cams:', error);
     cams.value = [];
@@ -141,18 +138,15 @@ async function fetchCams() {
       icon: 'error',
       title: 'Error',
       text: error.response?.data?.message || 'Failed to fetch CAMs',
-    })
+    });
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 onMounted(() => {
   fetchCams();
 });
-
-watch([page, itemsPerPage, tableSearch], fetchCams)
-watch([columnSorter, columnFilter], fetchCams, { deep: true })
 </script>
 
 <template>
@@ -170,38 +164,44 @@ watch([columnSorter, columnFilter], fetchCams, { deep: true })
     :loading="loading"
     :items="cams"
     :paginationProps="{
-      activePage: page,
-      pages: totalPages
+      activePage: Number(page),
+      pages: Number(totalPages),
+      total: Number(totalItems)
     }"
     :columns="columns"
     cleaner
     footer
     header
     items-per-page-select
-    :items-per-page="itemsPerPage"
+    :items-per-page="Number(itemsPerPage)"
     :table-props="{
       hover: true,
       striped: true,
       responsive: true,
     }"
     @active-page-change="(_activePage) => {
-      page = _activePage
+      page = Number(_activePage)
+      fetchCams()
     }"
     @items-per-page-change="(_itemsPerPage) => {
+      itemsPerPage = Number(_itemsPerPage)
       page = 1
-      itemsPerPage = _itemsPerPage
       storage.setItem(CAMS_ITEMS_PER_PAGE, _itemsPerPage)
+      fetchCams()
     }"
     @sorter-change="(sorter) => {
       columnSorter = sorter
+      fetchCams()
     }"
     @table-filter-change="(filter) => {
       page = 1
       tableSearch = filter
+      fetchCams()
     }"
     @column-filter-change="(filter) => {
       page = 1
       columnFilter = filter
+      fetchCams()
     }"
     clickable-rows
     @row-click="item => {
