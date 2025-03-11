@@ -164,7 +164,7 @@
               </CCol>
               <CCol xs="12" md="4">
                 <CFormSwitch
-                  v-model="cam.has_survelliance"
+                  v-model="cam.has_surveillance"
                   label="Surveillance"
                   size="lg"
                 />
@@ -210,7 +210,7 @@ const camEmpty = {
   has_lightning_maintenance: false,
   has_park_administration: false,
   storm_sewer_maintenance: false,
-  has_survelliance: false,
+  has_surveillance: false,
   has_management_fee: false,
   currency: '',
   latitude: '',
