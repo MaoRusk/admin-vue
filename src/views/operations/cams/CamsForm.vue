@@ -193,7 +193,8 @@ import { ROUTE_NAMES } from '../../../router/routeNames';
 import MASelect from '../../../components/MASelect.vue';
 
 const props = defineProps({
-  camId: Number
+  camId: Number,
+  initialData: Object
 })
 
 const emit = defineEmits(['submitting', 'success', 'error'])
@@ -217,7 +218,7 @@ const camEmpty = {
   longitude: '',
 }
 
-const cam = reactive({ ...camEmpty })
+const cam = reactive({ ...props.initialData || camEmpty })
 const formHtmlElement = ref(null)
 
 async function onSubmit() {
@@ -234,21 +235,6 @@ async function onSubmit() {
   } catch (e) {
     emit('submitting', false)
     emit('error', { message: e.response.data.message, errors: e.response.data.errors })
-  }
-}
-
-async function fetchCam() {
-  try {
-    const { data } = await API.cams.getCam(props.camId);
-    Object.keys(camEmpty).forEach(key => {
-      cam[key] = data.data[key] || ''
-    });
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Failed to load CAM data: ' + error.message,
-    });
   }
 }
 
@@ -315,7 +301,7 @@ onMounted(async () => {
     fetchCurrencies(),
   ])
   if (props.camId) {
-    await fetchCam();
+    // No need to fetch again as data is already provided
   }
   Swal.close()
 });
@@ -359,6 +345,14 @@ watch(() => cam.sub_market_id, async () => {
     cam.developer_id = ''
   }
 })
+
+watch(() => props.initialData, (newData) => {
+  if (newData) {
+    Object.keys(newData).forEach(key => {
+      cam[key] = newData[key]
+    })
+  }
+}, { deep: true })
 
 defineExpose({
   submit() {
