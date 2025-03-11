@@ -194,7 +194,10 @@ import MASelect from '../../../components/MASelect.vue';
 
 const props = defineProps({
   camId: Number,
-  initialData: Object
+  initialData: {
+    type: Object,
+    default: () => ({})
+  }
 })
 
 const emit = defineEmits(['submitting', 'success', 'error'])
@@ -296,14 +299,18 @@ onMounted(async () => {
     allowOutsideClick: false,
     allowEscapeKey: false,
   })
-  await Promise.all([
-    fetchRegions(),
-    fetchCurrencies(),
-  ])
-  if (props.camId) {
-    // No need to fetch again as data is already provided
+  
+  try {
+    await Promise.all([
+      fetchRegions(),
+      fetchCurrencies(),
+    ])
+  } catch (error) {
+    console.error('Error loading initial data:', error);
+    showError('Failed to load initial data');
+  } finally {
+    Swal.close();
   }
-  Swal.close()
 });
 
 watch(() => cam.region_id, async () => {

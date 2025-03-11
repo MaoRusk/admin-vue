@@ -70,6 +70,25 @@ const columns = [
   },
 ];
 
+function transformCamData(item) {
+  return {
+    ...item,
+    industrial_park_name: item.industrial_park?.name || '-',
+    developer_name: item.developer?.name || '-',
+    region_name: item.region?.name || '-',
+    market_name: item.market?.name || '-',
+    sub_market_name: item.sub_market?.name || '-',
+    cam_building_sf: `${Number(item.cam_building_sf || 0).toFixed(2)} ${item.currency || ''}`,
+    cam_land_sf: `${Number(item.cam_land_sf || 0).toFixed(2)} ${item.currency || ''}`,
+    has_cam_services: Boolean(item.has_cam_services),
+    has_lightning_maintenance: Boolean(item.has_lightning_maintenance),
+    has_park_administration: Boolean(item.has_park_administration),
+    storm_sewer_maintenance: Boolean(item.storm_sewer_maintenance),
+    has_surveillance: Boolean(item.has_surveillance),
+    has_management_fee: Boolean(item.has_management_fee)
+  };
+}
+
 async function removeCam(id) {
   const { isConfirmed } = await Swal.fire({
     title: "Are you sure?",
@@ -113,47 +132,31 @@ async function removeCam(id) {
 }
 
 async function fetchCams() {
-  loading.value = true
+  loading.value = true;
   try {
     const { data } = await API.cams.getCams();
-    if (data?.data) {
-      const items = Array.isArray(data.data) ? data.data : data.data.data;
-      
-      if (items) {
-        cams.value = items.map((item) => ({
-          ...item,
-          industrial_park_name: item.industrial_park?.name || '-',
-          developer_name: item.developer?.name || '-',
-          region_name: item.region?.name || '-', 
-          market_name: item.market?.name || '-',
-          sub_market_name: item.sub_market?.name || '-',
-          cam_building_sf: `${Number(item.cam_building_sf || 0).toFixed(2)} ${item.currency || ''}`,
-          cam_land_sf: `${Number(item.cam_land_sf || 0).toFixed(2)} ${item.currency || ''}`,
-          has_cam_services: Boolean(item.has_cam_services),
-          has_lightning_maintenance: Boolean(item.has_lightning_maintenance),
-          has_park_administration: Boolean(item.has_park_administration),
-          storm_sewer_maintenance: Boolean(item.storm_sewer_maintenance),
-          has_surveillance: Boolean(item.has_surveillance),
-          has_management_fee: Boolean(item.has_management_fee)
-        }));
-      }
-    }
+    const items = Array.isArray(data?.data) ? data.data : data?.data?.data;
+    cams.value = items ? items.map(transformCamData) : [];
   } catch (error) {
     console.error('Error fetching cams:', error);
     cams.value = [];
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Failed to fetch CAMs',
-      toast: true,
-      position: 'bottom',
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true
-    });
+    showError(error.response?.data?.message || 'Failed to fetch CAMs');
   } finally {
     loading.value = false;
   }
+}
+
+function showError(message) {
+  Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: message,
+    toast: true,
+    position: 'bottom',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
+  });
 }
 
 onMounted(() => {
