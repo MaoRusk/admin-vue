@@ -30,7 +30,7 @@ const camEmpty = {
   has_lightning_maintenance: false,
   has_park_administration: false,
   storm_sewer_maintenance: false,
-  has_survelliance: false,
+  has_surveillance: false,
   has_management_fee: false,
   currency: '',
   latitude: '',
@@ -65,14 +65,34 @@ async function onSubmit() {
 async function fetchCam() {
   try {
     const { data } = await API.cams.getCam(camId.value);
-    Object.keys(camEmpty).forEach(key => {
-      cam[key] = data.data[key] || ''
-    });
+    if (data?.data) {
+      const booleanFields = [
+        'has_cam_services',
+        'has_lightning_maintenance',
+        'has_park_administration',
+        'storm_sewer_maintenance',
+        'has_surveillance',
+        'has_management_fee'
+      ];
+
+      Object.keys(camEmpty).forEach(key => {
+        if (booleanFields.includes(key)) {
+          cam[key] = data.data[key] === 1 || data.data[key] === true;
+        } else {
+          cam[key] = data.data[key] || '';
+        }
+      });
+    }
   } catch (error) {
     Swal.fire({
       icon: 'error',
       title: 'Error',
       text: 'Failed to load CAM data: ' + error.message,
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
     });
   }
 }
@@ -231,7 +251,8 @@ function handleError({ message, errors }) {
     </CCard>
 
     <CamsForm 
-      :camId="camId" 
+      :camId="camId"
+      :initialData="cam"
       ref="formRef" 
       @submitting="(value) => submittingForm = value"
       @success="handleSuccess"
