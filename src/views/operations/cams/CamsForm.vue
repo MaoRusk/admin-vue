@@ -196,7 +196,7 @@ const props = defineProps({
   camId: Number
 })
 
-const emit = defineEmits(['submitting'])
+const emit = defineEmits(['submitting', 'success', 'error'])
 
 const camEmpty = {
   industrial_park_id: '',
@@ -230,14 +230,10 @@ async function onSubmit() {
       ({ data } = await API.cams.createCam(cam));
     }
     emit('submitting', false)
-    Swal.fire({
-      icon: 'success',
-      title: 'Success',
-      text: data.message,
-    });
+    emit('success', data.message)
   } catch (e) {
     emit('submitting', false)
-    Swal.fire(e.response.data.message, JSON.stringify(e.response.data.errors), 'error')
+    emit('error', { message: e.response.data.message, errors: e.response.data.errors })
   }
 }
 

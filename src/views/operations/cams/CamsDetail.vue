@@ -16,7 +16,7 @@ const camId = computed(() => Number(route.params.camId) || null)
 const submittingForm = ref(false)
 const formRef = ref(null)
 
-const emit = defineEmits(['submitting'])
+const emit = defineEmits(['submitting', 'success', 'error'])
 
 const camEmpty = {
   industrial_park_id: '',
@@ -192,6 +192,19 @@ function dispatchSubmitForm() {
 function showList() {
   router.push({ name: ROUTE_NAMES.CAMS_INDEX })
 }
+
+function handleSuccess(message) {
+  Swal.fire({
+    icon: 'success',
+    title: 'Success',
+    text: message,
+  });
+  router.push({ name: ROUTE_NAMES.CAMS_INDEX })
+}
+
+function handleError({ message, errors }) {
+  Swal.fire(message, JSON.stringify(errors), 'error')
+}
 </script>
 
 <template>
@@ -220,7 +233,9 @@ function showList() {
     <CamsForm 
       :camId="camId" 
       ref="formRef" 
-      @submitting="(value) => submittingForm = value" 
+      @submitting="(value) => submittingForm = value"
+      @success="handleSuccess"
+      @error="handleError"
     />
   </div>
 </template> 
