@@ -19,7 +19,8 @@ import Users from './Users'
 import Roles from './Roles'
 import Permissions from './Permissions'
 import Companies from './Companies'
-import Contacts from './CompaniesContacts'
+import CompaniesContacts from './CompaniesContacts'
+import Contacts from './Contacts'
 import Lands from './Lands'
 import LandsAbsorption from './LandsAbsorption'
 import LandsAvailability from './LandsAvailable'
@@ -51,6 +52,7 @@ export const API = {
   permissions: Permissions,
   companies: Companies,
   contacts: Contacts,
+  companiesContacts: CompaniesContacts,
   lands: Lands,
   landsAbsorption: LandsAbsorption,
   landsAvailability: LandsAvailability,

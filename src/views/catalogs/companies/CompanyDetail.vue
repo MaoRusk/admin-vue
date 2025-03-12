@@ -246,7 +246,7 @@
 
       async loadContacts() {
         try {
-          const response = await API.contacts.getCompanyContacts(this.id);
+          const response = await API.companiesContacts.getCompanyContacts(this.id);
           console.log('Contacts response:', response);
           if (response.data.success) {
             this.contacts = response.data.data.filter(contact => contact !== null);
@@ -270,14 +270,14 @@
         try {
           if (contactData.id) {
             // Actualizar contacto existente
-            await API.contacts.updateContact(this.id, contactData.id, {
+            await API.companiesContacts.updateContact(this.id, contactData.id, {
               ...contactData,
               company_id: this.id
             });
           } else {
             // Crear nuevo contacto
             contactData.is_company_contact = 1;
-            await API.contacts.createContact(this.id, {
+            await API.companiesContacts.createContact(this.id, {
               ...contactData,
               company_id: this.id
             });
@@ -345,7 +345,7 @@
           });
 
           if (result.isConfirmed) {
-            await API.contacts.deleteContact(this.id, contact.id);
+            await API.companiesContacts.deleteContact(this.id, contact.id);
             await this.loadContacts();
             
             Swal.fire({
