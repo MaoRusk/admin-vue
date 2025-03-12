@@ -124,7 +124,7 @@ export default {
       },
       availablePermissions: [],
       selectedPermissions: [],
-      actions: ['index', 'show', 'create', 'update', 'destroy'],
+      actions: ['index', 'create', 'update', 'destroy'],
       errors: {
         name: '',
         permissions: ''
