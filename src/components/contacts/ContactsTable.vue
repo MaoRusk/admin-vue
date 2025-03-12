@@ -20,7 +20,7 @@ const filteredContacts = computed(() => {
       (props.type === 'building' && contact.is_buildings_contact === 1) ||
       (props.type === 'company' && contact.is_company_contact === 1)
     ))
-    .sort((a, b) => a.contact_name.localeCompare(b.contact_name));
+    .sort((a, b) => a.name.localeCompare(b.name));
 });
 
 const emit = defineEmits(['edit', 'delete']);
@@ -40,7 +40,7 @@ const emit = defineEmits(['edit', 'delete']);
           class="contact-card p-3 border-bottom"
         >
           <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="mb-0">{{ contact.contact_name }}</h6>
+            <h6 class="mb-0">{{ contact.name }}</h6>
             <div class="d-flex gap-2">
               <CButton
                 color="primary"
@@ -61,17 +61,17 @@ const emit = defineEmits(['edit', 'delete']);
             </div>
           </div>
           <div class="contact-info">
-            <p class="mb-1" v-if="contact.contact_email">
+            <p class="mb-1" v-if="contact.email">
               <CIcon icon="cil-envelope-closed" class="me-2 text-muted" />
-              {{ contact.contact_email }}
+              {{ contact.email }}
             </p>
-            <p class="mb-1" v-if="contact.contact_phone">
+            <p class="mb-1" v-if="contact.phone">
               <CIcon icon="cil-phone" class="me-2 text-muted" />
-              {{ contact.contact_phone }}
+              {{ contact.phone }}
             </p>
-            <p class="mb-1" v-if="contact.contact_comments">
+            <p class="mb-1" v-if="contact.comments">
               <CIcon icon="cil-comment-square" class="me-2 text-muted" />
-              {{ contact.contact_comments }}
+              {{ contact.comments }}
             </p>
           </div>
         </div>
@@ -92,10 +92,10 @@ const emit = defineEmits(['edit', 'delete']);
             </CTableHead>
             <CTableBody>
               <CTableRow v-for="contact in filteredContacts" :key="contact.id">
-                <CTableDataCell>{{ contact.contact_name }}</CTableDataCell>
-                <CTableDataCell>{{ contact.contact_email }}</CTableDataCell>
-                <CTableDataCell>{{ contact.contact_phone }}</CTableDataCell>
-                <CTableDataCell>{{ contact.contact_comments }}</CTableDataCell>
+                <CTableDataCell>{{ contact.name }}</CTableDataCell>
+                <CTableDataCell>{{ contact.email }}</CTableDataCell>
+                <CTableDataCell>{{ contact.phone }}</CTableDataCell>
+                <CTableDataCell>{{ contact.comments }}</CTableDataCell>
                 <CTableDataCell class="text-center">
                   <div class="d-flex justify-content-center gap-2">
                     <CButton

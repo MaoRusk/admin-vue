@@ -15,19 +15,11 @@ export default {
   getContact(buildingId, contactId) {
     return httpClient.get(`/buildings/${buildingId}/contact/${contactId}`)
   },
-  createContact(buildingId, { name, phone, email }) {
-    return httpClient.post(`/buildings/${buildingId}/contact`, {
-      contact_name: name,
-      contact_phone: phone,
-      contact_email: email,
-    })
+  createContact(buildingId, data) {
+    return httpClient.post(`/buildings/${buildingId}/contact`, data)
   },
-  updateContact(buildingId, contactId, { name, phone, email }) {
-    return httpClient.put(`/buildings/${buildingId}/contact/${contactId}`, {
-      contact_name: name,
-      contact_phone: phone,
-      contact_email: email,
-    })
+  updateContact(buildingId, contactId, data) {
+    return httpClient.put(`/buildings/${buildingId}/contact/${contactId}`, data)
   },
   deleteContact(buildingId, contactId) {
     return httpClient.delete(`/buildings/${buildingId}/contact/${contactId}`)
