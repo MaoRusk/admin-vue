@@ -42,8 +42,6 @@ const landEmpty = {
   
   kvas_value_1: '',
   kvas_value_2: '',
-
-  // 'contact_id' => 'nullable|integer|exists:contacts,id',
 }
 
 const land = reactive({ ...landEmpty })

@@ -114,14 +114,21 @@ const handleDelete = async (contactToDelete) => {
 
 const fetchContacts = async () => {
   try {
-    const { data } = await API.BuildingsContacts.getContacts(buildingId.value);
-    contacts.value = data.data;
+    const response = await API.BuildingsContacts.getContacts(buildingId.value);
+    if (response.data.success) {
+      contacts.value = response.data.data;
+    }
   } catch (error) {
-    console.error('Error fetching contacts:', error);
+    console.error('Error loading contacts:', error);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'Failed to load contacts: ' + error.message,
+      title: 'Error!',
+      text: error.response?.data?.message || 'Error loading contacts',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
     });
   }
 };
@@ -138,8 +145,14 @@ function dispatchSubmitForm() {
   }
 }
 
-watch(activeTab, () => {
-  if (activeTab.value === 'DataBuilding') {
+watch(buildingId, async (newId) => {
+  if (newId && activeTab.value === 'ContactBuilding') {
+    await fetchContacts();
+  }
+}, { immediate: true });
+
+watch(activeTab, async (newTab) => {
+  if (newTab === 'DataBuilding') {
     tabDataLoaded.value = true
     showSave.value = can('buildings.create', 'buildings.update')
   } else if (activeTab.value === 'Availability') {
@@ -152,7 +165,7 @@ watch(activeTab, () => {
     tabContactLoaded.value = true
     showSave.value = (buildingContactRef.value?.showForm ?? false) && can('buildings.contacts.create', 'buildings.contacts.update')
   }
-}, { immediate: true })
+}, { immediate: true });
 
 watch(() => route.query.tab, (newTab) => {
   if (['DataBuilding', 'Availability', 'Absorption', 'ContactBuilding'].includes(newTab)) {
@@ -161,13 +174,6 @@ watch(() => route.query.tab, (newTab) => {
     activeTab.value = 'DataBuilding'
   }
 }, { immediate: true })
-
-// Load contacts when tab becomes active
-watch(activeTab, async (newTab) => {
-  if (newTab === 'ContactBuilding') {
-    await fetchContacts();
-  }
-});
 
 function changeTab(tab) {
   activeTab.value = tab

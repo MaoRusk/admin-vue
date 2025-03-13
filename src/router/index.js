@@ -284,6 +284,7 @@ const routes = [
             name: ROUTE_NAMES.LANDS_UPDATE,
             component: () => import('@/views/operations/lands/LandsDetail.vue'),
             meta: { requiredPermission: ['lands.update', 'lands.show'] },
+            props: true,
           },
           {
             path: 'pending-approvals',

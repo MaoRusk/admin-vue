@@ -1,12 +1,15 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
+import Swal from 'sweetalert2';
+import { API } from '@/services';
 
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import LandsForm from './LandsForm.vue'
 import LandsAvailabilityIndex from './LandsAvailabilityIndex.vue';
 import LandsAbsorptionIndex from './LandsAbsorptionIndex.vue';
 import { useAuthStore } from '../../../stores/auth';
+import { ContactForm, ContactsTable } from '@/components/contacts'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,7 +35,106 @@ const tabs = [
   { name: 'Land', visible: can('lands.create', 'lands.show', 'lands.update')},
   { name: 'Availability', visible: showTab.value && can('lands.available.create', 'lands.available.show', 'lands.available.update')},
   { name: 'Absorption', visible: showTab.value && can('lands.absorption.create', 'lands.absorption.show', 'lands.absorption.update')},
+  { name: 'Contacts', visible: showTab.value && can('lands.contacts.create', 'lands.contacts.show', 'lands.contacts.update')},
 ];
+
+const contact = ref({
+  name: '',
+  email: '',
+  phone: '',
+  comments: '',
+  is_land_contact: 1,
+});
+
+const contacts = ref([]);
+
+const fetchContacts = async () => {
+  try {
+    const response = await API.landsContacts.getContacts(landId.value);
+    if (response.data.success) {
+      contacts.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Error loading contacts:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.response?.data?.message || 'Error loading contacts',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  }
+};
+
+const handleSave = async (savedContact) => {
+  await fetchContacts();
+  contact.value = {
+    name: '',
+    email: '',
+    phone: '',
+    comments: '',
+    is_land_contact: 1,
+  };
+};
+
+const handleCancel = () => {
+  contact.value = {
+    name: '',
+    email: '',
+    phone: '',
+    comments: '',
+    is_land_contact: 1,
+  };
+};
+
+const handleEdit = (contactToEdit) => {
+  contact.value = { ...contactToEdit };
+};
+
+const handleDelete = async (contactToDelete) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      await API.landsContacts.deleteContact(landId.value, contactToDelete.id);
+      await fetchContacts();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Contact has been deleted.',
+        toast: true,
+        position: 'bottom',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
+    }
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.response?.data?.message || 'Error deleting contact',
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  }
+};
 
 function dispatchSubmitForm() {
   if (activeItemKey.value === 'Land') {
@@ -45,17 +147,11 @@ function dispatchSubmitForm() {
 }
 
 function showList() {
-  if (activeItemKey.value === 'Land') {
-    router.push({ name: ROUTE_NAMES.LANDS_INDEX })
-  } else if (activeItemKey.value === 'Availability') {
-    availabilityRef.value?.handleReturn?.()
-  } else if (activeItemKey.value === 'Absorption') {
-    absorptionRef.value?.handleReturn?.()
-  }
+  router.push({ name: ROUTE_NAMES.LANDS_INDEX })
 }
 
 watch(() => route.query.tab, (newTab) => {
-  if (['Land', 'Availability', 'Absorption'].includes(newTab)) {
+  if (['Land', 'Availability', 'Absorption', 'Contacts'].includes(newTab)) {
     activeItemKey.value = newTab
   } else {
     activeItemKey.value = 'Land'
@@ -71,18 +167,37 @@ function changeTab(tab) {
   })
 }
 
-watch(activeItemKey, (newTab) => {
+watch(landId, async (newId) => {
+  if (newId && activeItemKey.value === 'Contacts') {
+    await fetchContacts();
+  }
+}, { immediate: true });
+
+watch(activeItemKey, async (newTab) => {
   if (newTab === 'Land') {
     tabLandLoaded.value = true
     showSave.value = can('lands.create', 'lands.update')
   } else if (newTab === 'Availability') {
     tabAvailabilityLoaded.value = true
     showSave.value = (availabilityRef.value?.showForm ?? false) && can('lands.available.create', 'lands.available.update')
+    disabledSave.value = !(availabilityRef.value?.showForm ?? false)
   } else if (newTab === 'Absorption') {
     tabAbsorptionLoaded.value = true
-    showSave.value = (absorptionRef.value?.showForm ?? false) && can('lands.absoption.create', 'lands.absoption.update')
+    showSave.value = (absorptionRef.value?.showForm ?? false) && can('lands.absorption.create', 'lands.absorption.update')
+    disabledSave.value = !(absorptionRef.value?.showForm ?? false)
+  } else if (newTab === 'Contacts' && landId.value) {
+    await fetchContacts();
+    showSave.value = can('lands.contacts.create', 'lands.contacts.update')
+  }
+  
+  if (['Land'].includes(newTab)) {
+    disabledSave.value = false
   }
 }, { immediate: true })
+
+const goToList = () => {
+  router.push({ name: ROUTE_NAMES.LANDS_INDEX })
+}
 </script>
 <template>
   <div>
@@ -100,8 +215,16 @@ watch(activeItemKey, (newTab) => {
         </CRow>
       </CCardBody>
     </CCard>
-    <!-- TODO. quitar cuando se detecte error, bug: aveces cuando se da click sobre un tab, no se muestra su contenido, coloco variable para monitorear -->
     {{ activeItemKey }}
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <v-btn
+          icon="mdi-format-list-bulleted"
+          variant="text"
+          @click="goToList"
+        />
+      </div>
+    </div>
     <CTabs :activeItemKey="activeItemKey">
       <CTabList variant="tabs" class="mt-4">
         <CTab v-for="tab in tabs.filter(({ visible }) => visible)" :itemKey="tab.name" :key="tab.name" @click="changeTab(tab.name)">{{ tab.name }}</CTab>
@@ -115,6 +238,21 @@ watch(activeItemKey, (newTab) => {
         </CTabPanel>
         <CTabPanel class="p-3" itemKey="Absorption">
           <LandsAbsorptionIndex v-if="tabAbsorptionLoaded" :landId="landId" ref="absorptionRef" @submitting="(value) => { submittingForm = value; disabledSave = value }" @changeShowForm="(value) => showSave = value" />
+        </CTabPanel>
+        <CTabPanel class="p-3" itemKey="Contacts">
+          <ContactForm
+            :contact="contact"
+            type="land"
+            :parentId="landId"
+            @save="handleSave"
+            @cancel="handleCancel"
+          />
+          <ContactsTable
+            :contacts="contacts"
+            type="land"
+            @edit="handleEdit"
+            @delete="handleDelete"
+          />
         </CTabPanel>
       </CTabContent>
     </CTabs>

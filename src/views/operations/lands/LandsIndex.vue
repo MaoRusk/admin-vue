@@ -151,6 +151,21 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
           <CButton v-if="can('lands.absorption.index')" color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.LANDS_UPDATE, params: { landId: item.id }, query: { tab: 'Absorption' } })">
             <CIcon name="cilIndustrySlash" size="sm" />
           </CButton>
+          <CButton 
+            v-if="can('lands.contacts.index')"
+            color="primary" 
+            variant="outline" 
+            square 
+            size="sm" 
+            title="Go to contacts" 
+            @click.stop="$router.push({ 
+              name: ROUTE_NAMES.LANDS_UPDATE, 
+              params: { landId: item.id }, 
+              query: { tab: 'Contacts' } 
+            })"
+          >
+            <CIcon name="cilContact" size="sm" />
+          </CButton>
           <CButton v-if="can('lands.destroy')" color="danger" variant="outline" square size="sm" @click.stop="removeLand(item.id)">
             <CIcon name="cilTrash" size="sm" />
           </CButton>
