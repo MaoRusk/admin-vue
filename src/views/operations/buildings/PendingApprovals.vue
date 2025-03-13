@@ -1,146 +1,165 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, watch } from 'vue';
+import Swal from 'sweetalert2';
 
-const router = useRouter();
-const pendingItems = ref([]);
-const selectedItems = ref([]);
+import { API } from '../../../services';
+import { ROUTE_NAMES } from '../../../router/routeNames';
+import { useLocalStorage } from '../../../composables/useLocalStorage';
+import { BUILDINGS_ITEMS_PER_PAGE } from '../../../constants';
+import { useAuthStore } from '../../../stores/auth';
+
+const storage = useLocalStorage()
+const { can } = useAuthStore()
+
+const buildings = ref([]);
+
+const loading = ref(false)
+const totalItems = ref(0)
+const totalPages = ref(0)
+const page = ref(1)
+const itemsPerPage = ref(storage.getItem(BUILDINGS_ITEMS_PER_PAGE) ?? 10)
+const columnFilter = ref({})
+const columnSorter = ref({})
+const tableSearch = ref('')
 
 const columns = [
   { key: 'status', label: 'Status' },
-  { key: 'name1', label: 'Building Name' },
-  { key: 'market', label: 'Market' },
-  { key: 'subMarket', label: 'Sub Market' },
-  { key: 'industrialPark', label: 'Industrial Park' },
-  { key: 'registered', label: 'Registered' },
-  { key: 'actions', label: 'Actions' },
+  { key: 'building_name', label: 'Building Name' },
+  { key: 'marketName', label: 'Market' },
+  { key: 'submarketName', label: 'Submarket' },
+  { key: 'industrialParkName', label: 'Industrial Park' },
+  { key: 'actions', label: 'actions', sorter: false, filter: false },
 ];
 
-const getBadge = (status) => {
-  switch (status) {
-    case 'Availability':
-      return 'success'
-    case 'Absorption':
-      return 'danger'
-    case 'NegativeAbsoprtion':
-      return 'secondary'
-    default:
-      return 'primary'
-  }
-}
-
-const showDetails = (item) => {
-  router.push({
-    name: 'BuildingDetalle',
-    params: { id: Number(item.id) },
-  })
-}
-
-const fetchPendingApprovals = async () => {
+async function removeBuilding(id) {
   try {
-    const response = await axios.get('http://127.0.0.1:8000/api/buildings/table/vo-bo');
-    pendingItems.value = response.data.map(item => ({
-      id: item.id || '',
-      status: item.status || '',
-      name1: item.name1 || '',
-      market: item.market || '',
-      subMarket: item.subMarket || '',
-      industrialPark: item.industrialPark || '',
-      registered: item.registered || '',
-      typeName: item.typeName || ''
-    }));
-  } catch (error) {
-    console.error('Error fetching pending approvals:', error);
-    pendingItems.value = [];
-  }
-};
-
-const approveSelected = async () => {
-  try {
-    if (selectedItems.value.length === 0) {
-      alert('Please select at least one building');
-      return;
+    const { isConfirmed } = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    })
+    if (isConfirmed) {
+      const { data } = await API.buildings.deleteBuilding(id);
+      Swal.fire('Deleted!', data.message, 'success')
+      fetchBuildings()
     }
-
-    const selectedIds = selectedItems.value.map(item => item.id);
-    
-    await axios.post('http://127.0.0.1:8000/api/buildings/approve', {
-      ids: selectedIds,
-      vobo: 1
-    });
-
-    await fetchPendingApprovals();
-    selectedItems.value = [];
-    
-    alert('Buildings approved successfully');
   } catch (error) {
-    console.error('Error approving buildings:', error);
-    alert('Error approving buildings');
+    console.error('Error fetching buildings:', error);
   }
-};
+}
 
-onMounted(async () => {
-  await fetchPendingApprovals();
+async function fetchBuildings () {
+  loading.value = true
+
+  try {
+    const { data } = await API.buildings.getBuildings({
+      page: page.value,
+      size: itemsPerPage.value,
+      search: tableSearch.value,
+    }, {...columnFilter.value, status: 'Pending'}, columnSorter.value);
+    page.value = data.data.current_page
+    totalItems.value = data.data.total
+    totalPages.value = data.data.last_page
+    buildings.value = data.data.data.map((item) => ({
+      ...item,
+      marketName: item.market.name,
+      submarketName: item.sub_market.name,
+      industrialParkName: item.industrial_park.name,
+    }))
+    loading.value = false
+  } catch (error) {
+    console.error('Error fetching buildings:', error);
+    buildings.value = [];
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchBuildings();
 });
+
+watch([page, itemsPerPage, tableSearch], fetchBuildings)
+watch([columnSorter, columnFilter], fetchBuildings, { deep: true })
 </script>
 
 <template>
-  <CCard class="mb-4">
-    <CCardHeader>
-      <strong>Pending Approvals</strong>
-    </CCardHeader>
-    <CCardBody>
-      <CButton
-        color="success"
-        class="mb-3"
-        @click="approveSelected"
-        :disabled="selectedItems.length === 0"
-      >
-        Approve Selected ({{ selectedItems.length }})
-      </CButton>
-
-      <CSmartTable
-        v-model:selected="selectedItems"
-        :columns="columns"
-        :items="pendingItems"
-        :items-per-page="10"
-        :table-props="{
-          hover: true,
-          responsive: true,
-          striped: true,
-        }"
-        cleaner
-        clickable-rows
-        column-filter
-        column-sorter
-        footer
-        header
-        items-per-page-select
-        pagination
-        table-filter
-        selectable
-      >
-        <template #status="{ item }">
-          <td>
-            <CBadge :color="getBadge(item.status)">{{ item.status }}</CBadge>
-          </td>
-        </template>
-
-        <template #actions="{ item }">
-          <td class="py-2">
-            <CButton
-              color="primary"
-              variant="outline"
-              square
-              size="sm"
-              @click="showDetails(item)"
-            >
-              Details
-            </CButton>
-          </td>
-        </template>
-      </CSmartTable>
-    </CCardBody>
-  </CCard>
+  <div class="d-flex justify-content-end mb-3">
+    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.BUILDINGS_CREATE })" v-if="can('buildings.create')">
+      <CIcon name="cilPlus" size="sm" />
+      New Building
+    </CButton>
+  </div>
+  <CSmartTable
+    :pagination="{ external: true }"
+    :column-filter="{ external: true }"
+    :column-sorter="{ external: true }"
+    :table-filter="{ external: true }"
+    :loading="loading"
+    :items="buildings"
+    :paginationProps="{
+      activePage: page,
+      pages: totalPages
+    }"
+    :columns="columns"
+    cleaner
+    footer
+    header
+    items-per-page-select
+    :items-per-page="itemsPerPage"
+    :table-props="{
+      hover: true,
+      striped: true,
+      responsive: true,
+    }"
+    @active-page-change="(_activePage) => {
+      page = _activePage
+    }"
+    @items-per-page-change="(_itemsPerPage) => {
+      activePage = 1
+      itemsPerPage = _itemsPerPage
+      storage.setItem(BUILDINGS_ITEMS_PER_PAGE, _itemsPerPage)
+    }"
+    @sorter-change="(sorter) => {
+      columnSorter = sorter
+    }"
+    @table-filter-change="(filter) => {
+      activePage = 1
+      tableSearch = filter
+    }"
+    @column-filter-change="(filter) => {
+      activePage = 1
+      columnFilter = filter
+    }"
+    clickable-rows
+    @row-click="item => {
+      if (can('buildings.update', 'buildings.show')) {
+        $router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'DataBuilding' } })
+      }
+    }"
+  >
+    <template #actions="{ item }">
+      <td class="d-flex gap-1">
+        <CButton v-if="can('buildings.availability.index')" color="primary" variant="outline" square size="sm" title="Go to availability" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Availability' } })">
+          <CIcon name="cilBuilding" size="sm" />
+        </CButton>
+        <CButton v-if="can('buildings.absorption.index')" color="primary" variant="outline" square size="sm" title="Go to absorption" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'Absorption' } })">
+          <CIcon name="cilIndustrySlash" size="sm" />
+        </CButton>
+        <CButton v-if="can('buildings.contacts.index')" color="primary" variant="outline" square size="sm" title="Go to contacts" @click.stop="$router.push({ name: ROUTE_NAMES.BUILDINGS_UPDATE, params: { buildingId: item.id }, query: { tab: 'ContactBuilding' } })">
+          <CIcon name="cilContact" size="sm" />
+        </CButton>
+        <CButton v-if="can('buildings.destroy')" color="danger" variant="outline" square size="sm" title="remove" @click.stop="removeBuilding(item.id)">
+          <CIcon icon="cilTrash" size="sm" />
+        </CButton>
+      </td>
+    </template>
+  </CSmartTable>
+  <div>
+    Total records {{ totalItems }}
+  </div>
 </template>

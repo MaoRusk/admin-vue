@@ -7,9 +7,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
 import MASelect from '../../../components/MASelect.vue';
+import { useAuthStore } from '../../../stores/auth';
 
 const router = useRouter()
 const route = useRoute()
+const { can } = useAuthStore()
 
 watch(
   () => route.params.id,
@@ -59,7 +61,7 @@ const buildingEmpty = {
   deal: '',
   loading_door: '',
   above_market_tis: [],
-  status: 'Active',
+  status: 'Pending',
   floor_thickness_in: '',
   floor_resistance: '',
   expansion_up_to_sf: '',
@@ -301,7 +303,9 @@ async function fetchBuildingStatuses() {
   statuses.loading = true
   const { data } = await API.buildings.getBuildingsStatus()
   statuses.loading = false
-  statuses.items = Object.values(data.data).map(value => ({ value, label: value }))
+  statuses.items = Object.values(data.data).filter(value => {
+    return can('buildings.approve') || value === 'Pending'
+  }).map(value => ({ value, label: value }))
 }
 
 async function fetchBuildingTechnicalImprovements() {

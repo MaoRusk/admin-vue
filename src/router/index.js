@@ -289,6 +289,7 @@ const routes = [
             path: 'pending-approvals',
             name: ROUTE_NAMES.MARKET_SIZE_PENDING_APPROVALS,
             component: () => import('@/views/operations/buildings/PendingApprovals.vue'),
+            meta: { requiredPermission: 'buildings.approve' },
           },
           {
             path: 'reit-mortgage',
