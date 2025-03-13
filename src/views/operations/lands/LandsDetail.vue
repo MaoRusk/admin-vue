@@ -177,8 +177,8 @@ watch(activeItemKey, async (newTab) => {
   if (newTab === 'Land') {
     showSave.value = can('lands.create', 'lands.update')
   } else if (newTab === 'Availability') {
-    showSave.value = (availabilityRef.value?.showForm ?? false) && can('lands.available.create', 'lands.available.update')
-    disabledSave.value = !(availabilityRef.value?.showForm ?? false)
+    showSave.value = can('lands.available.create', 'lands.available.update')
+    disabledSave.value = false
   } else if (newTab === 'Absorption') {
     showSave.value = (absorptionRef.value?.showForm ?? false) && can('lands.absorption.create', 'lands.absorption.update')
     disabledSave.value = !(absorptionRef.value?.showForm ?? false)

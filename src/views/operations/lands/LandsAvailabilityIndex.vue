@@ -78,6 +78,7 @@ const handleEdit = ({ id: availabilityId }) => {
 const handleReturn = () => {
   showForm.value = false;
   selectedAvailabilityId.value = null;
+  emit('changeShowForm', false);
   fetchLandsAvl();
 };
 
@@ -106,6 +107,7 @@ async function removeAvailability(availabilityId) {
 const handleAddAvailability = () => {
   selectedAvailabilityId.value = 0;
   showForm.value = true;
+  emit('changeShowForm', true);
 };
 
 onMounted(() => {
@@ -113,8 +115,8 @@ onMounted(() => {
 });
 
 watch(showForm, (newValue) => {
-  emit('changeShowForm', newValue)
-})
+  emit('changeShowForm', newValue);
+});
 
 const formAvailabilityRef = ref(null)
 
@@ -210,6 +212,7 @@ defineExpose({
         :availabilityId="selectedAvailabilityId"
         @return="handleReturn"
         @submitting="(value) => emit('submitting', value)"
+        @changeShowForm="(value) => emit('changeShowForm', value)"
         ref="formAvailabilityRef"
       />
     </div>

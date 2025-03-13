@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed, reactive, ref } from 'vue';
+import { onMounted, computed, reactive, ref, watch } from 'vue';
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import { AxiosError } from 'axios';
@@ -17,7 +17,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['return', 'submitting']);
+const emit = defineEmits(['return', 'submitting', 'changeShowForm']);
 
 const isNewRecord = computed(() => !props.availabilityId);
 
@@ -212,6 +212,7 @@ onMounted(async () => {
     fetchStateService(),
   ])
   Swal.close()
+  emit('changeShowForm', true);
 });
 
 async function saveOptionGeneral(field, values, update = false) {
