@@ -78,6 +78,7 @@ const handleEdit = ({ id: absorptionId }) => {
 const handleReturn = () => {
   showForm.value = false;
   selectedAbsorptionId.value = null;
+  emit('changeShowForm', false);
   fetchLandsAbs();
 };
 
@@ -106,6 +107,7 @@ async function removeAbsorption(absorptionId) {
 const handleAddAbsorption = () => {
   selectedAbsorptionId.value = 0;
   showForm.value = true;
+  emit('changeShowForm', true);
 };
 
 onMounted(() => {
@@ -188,10 +190,24 @@ defineExpose({
             <template #actions="{ item }">
               <td style="vertical-align: middle;">
                 <div class="d-flex gap-1">
-                  <CButton color="primary" variant="outline" square size="sm" >
-                      <CIcon name="cilPencil" size="sm" @click="handleEdit(item)" v-if="can('lands.absorption.show', 'lands.absorption.update')" />
+                  <CButton 
+                    color="primary" 
+                    variant="outline" 
+                    square 
+                    size="sm"
+                    v-if="can('lands.absorption.show', 'lands.absorption.update')"
+                    @click="handleEdit(item)"
+                  >
+                    <CIcon name="cilPencil" size="sm" />
                   </CButton>
-                  <CButton color="danger" variant="outline" square size="sm" @click="removeAbsorption(item.id)" v-if="can('lands.absorption.destroy')">
+                  <CButton 
+                    color="danger" 
+                    variant="outline" 
+                    square 
+                    size="sm" 
+                    @click="removeAbsorption(item.id)" 
+                    v-if="can('lands.absorption.destroy')"
+                  >
                     <CIcon name="cilTrash" size="sm" />
                   </CButton>
                 </div>
@@ -210,6 +226,7 @@ defineExpose({
         :absorptionId="selectedAbsorptionId"
         @return="handleReturn"
         @submitting="(value) => emit('submitting', value)"
+        @changeShowForm="(value) => emit('changeShowForm', value)"
         ref="formAbsorptionRef"
       />
     </div>

@@ -17,7 +17,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['return', 'submitting']);
+const emit = defineEmits(['return', 'submitting', 'changeShowForm']);
 
 const isNewRecord = computed(() => !props.absorptionId);
 
@@ -247,6 +247,7 @@ onMounted(async () => {
     fetchTypesBuyers(),
   ])
   Swal.close()
+  emit('changeShowForm', true);
 });
 
 async function saveOptionGeneral(field, values, update = false) {
