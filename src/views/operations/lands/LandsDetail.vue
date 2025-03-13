@@ -26,9 +26,9 @@ const landRef = ref(null);
 const availabilityRef = ref(null);
 const absorptionRef = ref(null);
 
-const tabLandLoaded = ref(false);
-const tabAvailabilityLoaded = ref(false);
-const tabAbsorptionLoaded = ref(false);
+const tabLandLoaded = ref(true);
+const tabAvailabilityLoaded = ref(true);
+const tabAbsorptionLoaded = ref(true);
 
 const activeItemKey = ref(route.query.tab || 'Land')
 const tabs = [
@@ -175,14 +175,11 @@ watch(landId, async (newId) => {
 
 watch(activeItemKey, async (newTab) => {
   if (newTab === 'Land') {
-    tabLandLoaded.value = true
     showSave.value = can('lands.create', 'lands.update')
   } else if (newTab === 'Availability') {
-    tabAvailabilityLoaded.value = true
     showSave.value = (availabilityRef.value?.showForm ?? false) && can('lands.available.create', 'lands.available.update')
     disabledSave.value = !(availabilityRef.value?.showForm ?? false)
   } else if (newTab === 'Absorption') {
-    tabAbsorptionLoaded.value = true
     showSave.value = (absorptionRef.value?.showForm ?? false) && can('lands.absorption.create', 'lands.absorption.update')
     disabledSave.value = !(absorptionRef.value?.showForm ?? false)
   } else if (newTab === 'Contacts' && landId.value) {
@@ -198,6 +195,10 @@ watch(activeItemKey, async (newTab) => {
 const goToList = () => {
   router.push({ name: ROUTE_NAMES.LANDS_INDEX })
 }
+
+// Verifica en la consola del navegador si tienes los permisos necesarios
+const auth = useAuthStore();
+console.log(auth.can('lands.contacts.index'));
 </script>
 <template>
   <div>
@@ -218,11 +219,13 @@ const goToList = () => {
     {{ activeItemKey }}
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <v-btn
-          icon="mdi-format-list-bulleted"
-          variant="text"
+        <CButton
+          color="primary"
+          variant="ghost"
           @click="goToList"
-        />
+        >
+          <CIcon name="cilList" size="sm" />
+        </CButton>
       </div>
     </div>
     <CTabs :activeItemKey="activeItemKey">
