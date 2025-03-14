@@ -11,11 +11,10 @@
             <h5>Location</h5>
             <div class="mb-3">
               <label class="form-label">Region *</label>
-              <MASelect
+              <MSelect
                 v-model="cam.region_id"
                 :options="regions.items"
                 :reduce="option => option.value"
-                label="label"
                 required
                 placeholder="Select..."
                 :loading="regions.loading"
@@ -24,11 +23,10 @@
 
             <div class="mb-3">
               <label class="form-label">Market *</label>
-              <MASelect
+              <MSelect
                 v-model="cam.market_id"
                 :options="markets.items"
                 :reduce="option => option.value"
-                label="label"
                 required
                 placeholder="Select..."
                 :loading="markets.loading"
@@ -38,11 +36,10 @@
 
             <div class="mb-3">
               <label class="form-label">Submarket *</label>
-              <MASelect
+              <MSelect
                 v-model="cam.sub_market_id"
                 :options="submarkets.items"
                 :reduce="option => option.value"
-                label="label"
                 required
                 placeholder="Select..."
                 :loading="submarkets.loading"
@@ -52,29 +49,41 @@
 
             <div class="mb-3">
               <label class="form-label">Industrial Park *</label>
-              <MASelect
+              <MSelect
                 v-model="cam.industrial_park_id"
                 :options="industrialParks.items"
-                :reduce="option => option.id"
-                label="name"
+                :reduce="option => option.value"
                 required
                 placeholder="Select..."
                 :loading="industrialParks.loading"
                 :disabled="!cam.sub_market_id"
+                createOption
+                :isIndustrialParkForm="true"
+                :marketId="cam.market_id?.toString()"
+                :submarketId="cam.sub_market_id?.toString()"
+                @submitOption="saveOptionGeneral('industrial_park_id', $event)"
+                @editOption="saveOptionGeneral('industrial_park_id', $event, true)"
+                @deleteOption="fetchIndustrialParks(cam.market_id, cam.sub_market_id)"
               />
             </div>
 
             <div class="mb-3">
               <label class="form-label">Developer *</label>
-              <MASelect
+              <MSelect
                 v-model="cam.developer_id"
                 :options="developers.items"
                 :reduce="option => option.id"
-                label="name"
                 required
                 placeholder="Select..."
                 :loading="developers.loading"
                 :disabled="!cam.sub_market_id"
+                createOption
+                :isDevForm="true"
+                :marketId="cam.market_id?.toString()"
+                :submarketId="cam.sub_market_id?.toString()"
+                @submitOption="saveOptionGeneral('developer_id', $event)"
+                @editOption="saveOptionGeneral('developer_id', $event, true)"
+                @deleteOption="fetchDevelopers(cam.market_id, cam.sub_market_id)"
               />
             </div>
           </CCol>
@@ -102,11 +111,10 @@
 
             <div class="mb-3">
               <label class="form-label">Currency *</label>
-              <MASelect
+              <MSelect
                 v-model="cam.currency"
                 :options="currencies.items"
                 :reduce="option => option.value"
-                label="label"
                 required
                 placeholder="Select..."
                 :loading="currencies.loading"
@@ -190,7 +198,7 @@ import Swal from 'sweetalert2';
 
 import { API } from '../../../services';
 import { ROUTE_NAMES } from '../../../router/routeNames';
-import MASelect from '../../../components/MASelect.vue';
+import MSelect from '../../../components/MSelect.vue';
 
 const props = defineProps({
   camId: Number,
@@ -264,30 +272,93 @@ async function fetchDevelopers(marketId, submarketId) {
 
 async function fetchIndustrialParks(marketId, submarketId) {
   industrialParks.loading = true
-  const { data } = await API.industrialparks.getIndustrialParks({ marketId, submarketId});
-  industrialParks.loading = false
-  industrialParks.items = data.data.sort((a, b) => a.name.localeCompare(b.name))
+  try {
+    const { data } = await API.industrialparks.getIndustrialParks({ marketId, submarketId });
+    console.log('Industrial Parks Response:', data);
+    
+    // Asegurarnos de que data.data existe y es un array
+    const parksArray = Array.isArray(data.data) ? data.data : [];
+    
+    industrialParks.items = parksArray
+      .filter(park => park && park.name) // Asegurarnos de que el parque existe y tiene nombre
+      .map(park => ({
+        ...park,
+        label: park.name,
+        value: park.id
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    console.log('Processed Industrial Parks:', industrialParks.items);
+  } catch (error) {
+    console.error('Error fetching industrial parks:', error);
+    industrialParks.items = [];
+  } finally {
+    industrialParks.loading = false
+  }
 }
 
 async function fetchSubmarkets(marketId) {
   submarkets.loading = true
-  const { data } = await API.submarkets.getSubmarkets({ marketId });
+  const data = await API.submarkets.getSubmarkets({ market_id: marketId });
   submarkets.loading = false
-  submarkets.items = data.data.map(({ id, name }) => ({ label: name, value: id }))
+  submarkets.items = data.map(({ id, name }) => ({ label: name, value: id }))
+    .sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchMarkets(regionId) {
   markets.loading = true
-  const { data } = await API.markets.getMarkets({ regionId });
+  const data = await API.markets.getMarkets({ regionId });
   markets.loading = false
-  markets.items = data.data.map(({ id, name }) => ({ label: name, value: id }))
+  markets.items = data.map(({ id, name }) => ({ label: name, value: id }))
+    .sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function fetchRegions() {
   regions.loading = true
   const { data } = await API.regions.getRegions();
   regions.loading = false
-  regions.items = data.data.map(({ id, name }) => ({ label: name, value: id}))
+  regions.items = data.data.map(({ id, name }) => ({ label: name, value: id }))
+}
+
+async function saveOptionGeneral(field, values, update = false) {
+  try {
+    let data;
+    if (field === 'developer_id') {
+      const body = {
+        name: values.name,
+        is_developer: true,
+        market_id: cam.market_id,
+        sub_market_id: cam.sub_market_id
+      }
+      if (update) {
+        ({ data } = await API.developers.updateDeveloper(values.id, body));
+        if (cam.developer_id === data.data.id && !data.data.is_developer) {
+          cam.developer_id = ''
+        }
+      } else {
+        ({ data } = await API.developers.createDeveloper(body));
+        cam[field] = data.data.id
+      }
+      await fetchDevelopers(cam.market_id, cam.sub_market_id)
+    } else if (field === 'industrial_park_id') {
+      const body = {
+        name: values.name,
+        market_id: cam.market_id,
+        sub_market_id: cam.sub_market_id
+      }
+      if (update) {
+        ({ data } = await API.industrialparks.updateIndustrialPark(values.id, body))
+      } else {
+        ({ data } = await API.industrialparks.createIndustrialPark(body))
+        cam[field] = data.data.id
+      }
+      await fetchIndustrialParks(cam.market_id, cam.sub_market_id)
+    }
+    return data
+  } catch (error) {
+    console.error('Error saving option:', error);
+    throw error;
+  }
 }
 
 onMounted(async () => {
@@ -341,7 +412,7 @@ watch(() => cam.sub_market_id, async () => {
       fetchIndustrialParks(cam.market_id, cam.sub_market_id),
       fetchDevelopers(cam.market_id, cam.sub_market_id),
     ])
-    if (!industrialParks.items.find(item => item.id === cam.industrial_park_id)) {
+    if (!industrialParks.items.find(item => item.value === cam.industrial_park_id)) {
       cam.industrial_park_id = ''
     }
     if (!developers.items.find(item => item.id === cam.developer_id)) {
