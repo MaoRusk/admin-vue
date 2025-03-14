@@ -73,6 +73,7 @@
                 v-model="cam.developer_id"
                 :options="developers.items"
                 :reduce="option => option.id"
+                :get-option-label="option => option.name"
                 required
                 placeholder="Select..."
                 :loading="developers.loading"
@@ -83,7 +84,7 @@
                 :submarketId="cam.sub_market_id?.toString()"
                 @submitOption="saveOptionGeneral('developer_id', $event)"
                 @editOption="saveOptionGeneral('developer_id', $event, true)"
-                @deleteOption="fetchDevelopers(cam.market_id, cam.sub_market_id)"
+                @deleteOption="fetchDevelopers()"
               />
             </div>
           </CCol>
@@ -211,11 +212,11 @@ const props = defineProps({
 const emit = defineEmits(['submitting', 'success', 'error'])
 
 const camEmpty = {
-  industrial_park_id: '',
-  developer_id: '',
-  region_id: '',
-  market_id: '',
-  sub_market_id: '',
+  industrial_park_id: null,
+  developer_id: null,
+  region_id: null,
+  market_id: null,
+  sub_market_id: null,
   cam_building_sf: '',
   cam_land_sf: '',
   has_cam_services: false,
@@ -235,17 +236,130 @@ const formHtmlElement = ref(null)
 async function onSubmit() {
   emit('submitting', true)
   try {
+    // Define field mappings for better error messages and validation
+    const numericFieldMappings = {
+      'region_id': 'Region',
+      'market_id': 'Market',
+      'sub_market_id': 'Submarket',
+      'industrial_park_id': 'Industrial Park',
+      'developer_id': 'Developer',
+      'cam_building_sf': 'Building SF',
+      'cam_land_sf': 'Land SF'
+    };
+
+    const formData = {};
+    const invalidFields = [];
+
+    // Improved ID extraction function
+    const extractId = (value) => {
+      if (value === null || value === undefined) return null;
+      
+      // Handle array values (from select components)
+      if (Array.isArray(value)) {
+        value = value[0]; // Take the first item if it's an array
+      }
+      
+      // Handle primitive number or numeric string
+      if (typeof value === 'number') return value;
+      if (typeof value === 'string' && !isNaN(value)) return Number(value);
+      
+      // Handle object with id or value property
+      if (typeof value === 'object' && value !== null) {
+        if ('id' in value && value.id !== null) return Number(value.id);
+        if ('value' in value && value.value !== null) return Number(value.value);
+      }
+      
+      return null;
+    };
+
+    // Process numeric fields
+    Object.entries(numericFieldMappings).forEach(([field, label]) => {
+      const value = cam[field];
+      const extractedId = extractId(value);
+      
+      console.log(`Processing ${label}:`, {
+        originalValue: value,
+        extractedId: extractedId,
+        valueType: typeof value,
+        isArray: Array.isArray(value)
+      });
+
+      if (extractedId === null || isNaN(extractedId) || extractedId <= 0) {
+        invalidFields.push(`${label} (received: ${JSON.stringify(value)})`);
+      } else {
+        formData[field] = extractedId;
+      }
+    });
+
+    // Extract and validate currency
+    const currencyValue = Array.isArray(cam.currency) ? cam.currency[0]?.value : 
+                         typeof cam.currency === 'object' ? cam.currency.value : 
+                         cam.currency;
+                         
+    console.log('Processing currency:', {
+      originalValue: cam.currency,
+      extractedValue: currencyValue,
+      typeOf: typeof cam.currency,
+      isArray: Array.isArray(cam.currency)
+    });
+
+    if (!currencyValue) {
+      invalidFields.push('Currency');
+    } else {
+      formData.currency = currencyValue;
+    }
+
+    // Validate other required non-numeric fields
+    if (!cam.latitude?.toString().trim()) {
+      invalidFields.push('Latitude');
+    }
+    if (!cam.longitude?.toString().trim()) {
+      invalidFields.push('Longitude');
+    }
+
+    if (invalidFields.length > 0) {
+      throw new Error(`Please provide valid values for: ${invalidFields.join(', ')}`);
+    }
+
+    // Add non-numeric fields to form data
+    formData.latitude = String(cam.latitude).trim();
+    formData.longitude = String(cam.longitude).trim();
+    
+    // Add boolean fields
+    const booleanFields = [
+      'has_cam_services',
+      'has_lightning_maintenance',
+      'has_park_administration',
+      'storm_sewer_maintenance',
+      'has_surveillance',
+      'has_management_fee'
+    ];
+    
+    booleanFields.forEach(field => {
+      formData[field] = Boolean(cam[field]);
+    });
+
+    console.log('Final validated form data:', formData);
+
     let data;
     if (props.camId) {
-      ({ data } = await API.cams.updateCam(props.camId, cam));
+      ({ data } = await API.cams.updateCam(props.camId, formData));
     } else {
-      ({ data } = await API.cams.createCam(cam));
+      ({ data } = await API.cams.createCam(formData));
     }
+    
+    console.log('API Response:', data);
     emit('submitting', false)
     emit('success', data.message)
   } catch (e) {
+    console.error('Form submission error:', e);
+    console.error('Error details:', e.response?.data);
     emit('submitting', false)
-    emit('error', { message: e.response.data.message, errors: e.response.data.errors })
+    const errorMessage = e.response?.data?.message || e.message || 'Error submitting form';
+    emit('error', { 
+      message: errorMessage, 
+      errors: e.response?.data?.errors || {}
+    })
   }
 }
 
@@ -258,16 +372,48 @@ const currencies = reactive({ loading: false, items: []})
 
 async function fetchCurrencies() {
   currencies.loading = true
-  const { data } = await API.currencies.getCurrencies();
-  currencies.loading = false
-  currencies.items = Object.values(data.data).map(value => ({ value, label: value }))
+  try {
+    const { data } = await API.currencies.getCurrencies();
+    currencies.loading = false
+    currencies.items = Object.values(data.data).map(value => ({ 
+      value: value,
+      label: value
+    }))
+  } catch (error) {
+    console.error('Error fetching currencies:', error);
+    currencies.items = [];
+  } finally {
+    currencies.loading = false;
+  }
 }
 
-async function fetchDevelopers(marketId, submarketId) {
-  developers.loading = true
-  const data = await API.developers.getDevelopers({ is_developer: true, marketId, submarketId });
-  developers.loading = false
-  developers.items = data.sort((a, b) => a.name.localeCompare(b.name))
+async function fetchDevelopers() {
+  developers.loading = true;
+  try {
+    const response = await API.developers.getDevelopers({ is_developer: true });
+    console.log('Developers API Response:', response);
+    
+    // Manejar el caso donde response es directamente el array
+    const developersData = Array.isArray(response) ? response : response?.data || [];
+    
+    developers.items = developersData
+      .filter(dev => dev && dev.name)
+      .map(dev => ({
+        id: dev.id,
+        name: dev.name,
+        label: dev.name,
+        value: dev.id,
+        ...dev
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log('Final developers items:', developers.items);
+  } catch (error) {
+    console.error('Error fetching developers:', error);
+    developers.items = [];
+  } finally {
+    developers.loading = false;
+  }
 }
 
 async function fetchIndustrialParks(marketId, submarketId) {
@@ -339,7 +485,7 @@ async function saveOptionGeneral(field, values, update = false) {
         ({ data } = await API.developers.createDeveloper(body));
         cam[field] = data.data.id
       }
-      await fetchDevelopers(cam.market_id, cam.sub_market_id)
+      await fetchDevelopers();
     } else if (field === 'industrial_park_id') {
       const body = {
         name: values.name,
@@ -410,7 +556,7 @@ watch(() => cam.sub_market_id, async () => {
   if (cam.sub_market_id) {
     await Promise.all([
       fetchIndustrialParks(cam.market_id, cam.sub_market_id),
-      fetchDevelopers(cam.market_id, cam.sub_market_id),
+      fetchDevelopers(),
     ])
     if (!industrialParks.items.find(item => item.value === cam.industrial_park_id)) {
       cam.industrial_park_id = ''
