@@ -28,6 +28,7 @@ import BuildingsContacts from './BuildingsContacts'
 import ReitMortgages from './ReitMortgages'
 import Reits from './Reits'
 import ReitTypes from './ReitTypes'
+import MarketGrowth from './MarketGrowth'
 
 export const API = {
   auth: Auth,
@@ -60,4 +61,5 @@ export const API = {
   reitMortgages: ReitMortgages,
   reits: Reits,
   reitTypes: ReitTypes,
+  marketGrowth: MarketGrowth,
 }

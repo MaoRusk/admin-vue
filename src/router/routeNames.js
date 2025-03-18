@@ -57,4 +57,8 @@ export const ROUTE_NAMES = {
   REIT_QUARTER_INDEX: 'REIT Quarter',
   REIT_QUARTER_CREATE: 'Create REIT Quarter',
   REIT_QUARTER_UPDATE: 'Update REIT Quarter',
+
+  MARKET_GROWTH_INDEX: 'Market Growth',
+  MARKET_GROWTH_CREATE: 'Create Market Growth',
+  MARKET_GROWTH_UPDATE: 'Edit Market Growth',
 }

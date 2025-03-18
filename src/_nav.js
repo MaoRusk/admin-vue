@@ -122,7 +122,7 @@ export default [
   {
     component: 'CNavTitle',
     name: 'Operation',
-    visible: ['buildings.index', 'lands.index', 'reit-annual.index', 'reit-mortgage.index'],
+    visible: ['buildings.index', 'lands.index', 'reit-annual.index', 'reit-mortgage.index', 'market-growth.index'],
   },
   {
     component: 'CNavGroup',
@@ -153,6 +153,14 @@ export default [
     to: { name: ROUTE_NAMES.LANDS_INDEX },
     icon: 'cilTerrain',
     visible: 'lands.index',
+  },
+
+  {
+    component: 'CNavItem',
+    name: 'Market Growth',
+    to: { name: ROUTE_NAMES.MARKET_GROWTH_INDEX },
+    icon: 'cilChart',
+    visible: true,
   },
 
   {
