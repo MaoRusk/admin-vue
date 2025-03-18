@@ -142,7 +142,7 @@ export default [
         name: 'Pending Approvals',
         to: { name: ROUTE_NAMES.MARKET_SIZE_PENDING_APPROVALS },
         icon: 'cilCheckCircle',
-        visible: true,
+        visible: 'buildings.approve',
       },
     ],
   },
