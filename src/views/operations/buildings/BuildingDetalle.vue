@@ -45,7 +45,7 @@ const contact = ref({
 const contacts = ref([]);
 
 // Add contact handlers
-const handleSave = async (savedContact) => {
+const handleSave = async () => {
   await fetchContacts();
   contact.value = {
     name: '',
@@ -214,10 +214,10 @@ function showList() {
       </CCardBody>
     </CCard>
     <!-- TODO. quitar cuando se detecte error, bug: aveces cuando se da click sobre un tab, no se muestra su contenido, coloco variable para monitorear -->
-    {{ activeTab }}
+    <!-- {{ activeTab }} -->
     <CTabs :activeItemKey="activeTab">
       <CTabList variant="tabs" class="mt-4">
-        <CTab itemKey="DataBuilding" @click="changeTab('DataBuilding')" v-if="can('buildings.show', 'buildings.create', 'buildings.update')">Data Building</CTab>
+        <CTab itemKey="DataBuilding" @click="changeTab('DataBuilding')" v-if="can('buildings.show', 'buildings.create', 'buildings.update')">Building Data</CTab>
         <CTab itemKey="Availability" @click="changeTab('Availability')" v-if="showTab && can('buildings.availability.show', 'buildings.availability.create', 'buildings.availability.update')">Availability</CTab>
         <CTab itemKey="Absorption" @click="changeTab('Absorption')" v-if="showTab && can('buildings.absorption.show', 'buildings.absorption.create', 'buildings.absorption.update')">Absorption</CTab>
         <CTab itemKey="ContactBuilding" @click="changeTab('ContactBuilding')" v-if="showTab && can('buildings.contacts.show', 'buildings.contacts.create', 'buildings.contacts.update')">Building Contact</CTab>
