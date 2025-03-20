@@ -58,7 +58,7 @@ watch(showModal, (value) => {
           <li class="d-flex">
             <div class="flex-grow-1">{{ slotProps.name }}</div>
             <button
-              class="btn btn-sm p-0"
+              class="btn btn-sm p-0 btn-add"
               @click.stop.prevent="startEdit(slotProps)"
             >
               <CIcon icon="cilPencil" size="sm" />
@@ -69,7 +69,7 @@ watch(showModal, (value) => {
           <slot :name="name" v-bind="slotProps" />
         </template>
       </VueSelect>
-      <button v-if="props.editOptions" :disabled="$attrs?.disabled ?? false" class="btn btn-secondary btn-edit-options" type="button" @click="showModal = true;">+</button>
+      <button v-if="props.editOptions" :disabled="$attrs?.disabled ?? false" class="btn btn-edit-options" type="button" @click="showModal = true;">+</button>
     </div>
 
     <CModal
@@ -102,7 +102,7 @@ watch(showModal, (value) => {
           <div class="row mt-3">
             <div class="col d-flex justify-content-between align-items-center">
               <div>
-                <CButton color="success" type="submit" class="text-white fw-bold me-2">
+                <CButton color="primary" type="submit" class="text-white fw-bold me-2">
                   {{ props.btnTextSubmit }}
                 </CButton>
                 <CButton color="dark" type="reset" class="fw-bold">Cancel</CButton>
@@ -139,6 +139,14 @@ watch(showModal, (value) => {
   --vs-dropdown-option--active-bg: #5897fb;
   --vs-dropdown-option--active-color: var(--cui-body-bg);
 }
+.btn-add {
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  color: inherit !important;
+}
+.btn-add:hover {
+  outline: 1px white solid;
+}
 .ma-select {
   background: var(--cui-body-bg);
 }
@@ -146,5 +154,11 @@ watch(showModal, (value) => {
   padding: 4px 12px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  background-color: #00AEEF;
+  color: white
+}
+.market-analysis-wrapper-select-group .btn-edit-options:hover {
+  background-color: #0088C4;
+  box-shadow: 0 0 3px #0088C4;
 }
 </style>
