@@ -85,7 +85,7 @@ const formHtmlElement = ref(null)
 const VALUE_SEPARATOR = ' x '
 
 const inputFiles = [
-  {category: 'Front Page', type: 'frontpage', label: 'Upload Front Page File', multiple: false},
+  {category: 'Front Page', type: 'frontpage', label: 'Upload Cover File', multiple: false},
   {category: 'Aerial', type: 'aerial', label: 'Upload Drone photo', multiple: false},
   {category: '360', type: '360', label: 'Upload 360 Photo', multiple: false},
   {category: 'Layout', type: 'layout', label: 'Upload Layout File', multiple: false},
@@ -360,23 +360,23 @@ async function fetchBuildingDeals() {
   deals.items = Object.values(data.data).map(value => ({ value, label: value }))
 }
 
-async function fetchDevelopers(marketId, submarketId) {
+async function fetchDevelopers() {
   developers.loading = true
-  const data = await API.developers.getDevelopers({ is_developer: true, marketId, submarketId });
+  const data = await API.developers.getDevelopers({ is_developer: true });
   developers.loading = false
   developers.items = data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
-async function fetchBuilders(marketId, submarketId) {
+async function fetchBuilders() {
   builders.loading = true
-  const data = await API.developers.getDevelopers({ is_builder: true, marketId, submarketId });
+  const data = await API.developers.getDevelopers({ is_builder: true });
   builders.loading = false
   builders.items = data.sort((a, b) => a.name.localeCompare(b.name))
 }
 
-async function fetchOwners(marketId, submarketId) {
+async function fetchOwners() {
   owners.loading = true
-  const data = await API.developers.getDevelopers({ is_owner: true, marketId, submarketId });
+  const data = await API.developers.getDevelopers({ is_owner: true });
   owners.loading = false
   owners.items = data.sort((a, b) => a.name.localeCompare(b.name))
 }
@@ -433,6 +433,9 @@ onMounted(async () => {
     allowEscapeKey: false,
   })
   await Promise.all([
+    fetchOwners(),
+    fetchDevelopers(),
+    fetchBuilders(),
     fetchClasses(),
     fetchRegions(),
     fetchTenancies(),
@@ -475,9 +478,9 @@ async function saveOptionGeneral(field, values, update = false) {
         building[field] = data.data.id
       }
       await Promise.all([
-        fetchOwners(building.market_id, building.sub_market_id),
-        fetchDevelopers(building.market_id, building.sub_market_id),
-        fetchBuilders(building.market_id, building.sub_market_id),
+        fetchOwners(),
+        fetchDevelopers(),
+        fetchBuilders(),
       ])
     } else if (field === 'industrial_park_id') {
       const body = {
@@ -542,7 +545,11 @@ async function deleteOptionGeneral(field, optionReactive) {
     let data;
     if (['owner_id', 'builder_id', 'developer_id'].includes(field)) {
       ({ data } = await API.developers.deleteDeveloper(option.id));
-      await fetchDevelopers();
+      await Promise.all([
+        fetchOwners(),
+        fetchDevelopers(),
+        fetchBuilders(),
+      ])
     } else if (field === 'industrial_park_id') {
       ({ data } = await API.industrialparks.deleteIndustrialPark(option.id))
       await fetchIndustrialParks(building.market_id, building.sub_market_id)
@@ -608,19 +615,10 @@ watch(() => building.sub_market_id, async () => {
   if (building.sub_market_id) {
     await Promise.all([
       fetchIndustrialParks(building.market_id, building.sub_market_id),
-      fetchOwners(building.market_id, building.sub_market_id),
-      fetchBuilders(building.market_id, building.sub_market_id),
-      fetchDevelopers(building.market_id, building.sub_market_id),
     ])
     if (!industrialParks.items.find(item => item.id === building.industrial_park_id)) building.industrial_park_id = ''
-    if (!owners.items.find(item => item.id === building.owner_id)) building.owner_id = ''
-    if (!developers.items.find(item => item.id === building.developer_id)) building.developer_id = ''
-    if (!builders.items.find(item => item.id === building.builder_id)) building.builder_id = ''
   } else {
     building.industrial_park_id = ''
-    building.owner_id = ''
-    building.builder_id = ''
-    building.developer_id = ''
   }
 })
 
@@ -675,7 +673,7 @@ defineExpose({
                     <CFormInput
                       type="number"
                       v-model="building.building_size_sf"
-                      label="Building Size (SF) *"
+                      :label="`Building Size (${building.sfSm ? 'SM' : 'SF'}) *`"
                       required
                     />
                   </div>
@@ -684,8 +682,8 @@ defineExpose({
                   <div class="mt-2">
                     <CFormInput
                       type="number"
-                      v-model="building.expansion_land"
-                      label="Expansion Land (SF) *"
+                      v-model="building.expansion_up_to_sf"
+                      :label="`Expansion up to (${building.sfSm ? 'SM' : 'SF'}) *`"
                       required
                     />
                   </div>
@@ -696,7 +694,7 @@ defineExpose({
                     <CFormInput
                       type="number"
                       v-model="building.total_land_sf"
-                      label="Total Land (SF)"
+                      :label="`Total Land (${building.sfSm ? 'SM' : 'SF'})`"
                     />
                   </div>
                 </div>
@@ -704,8 +702,8 @@ defineExpose({
                   <div class="mt-2">
                     <CFormInput
                       type="number"
-                      v-model="building.expansion_up_to_sf"
-                      label="Expansion up to (SF) *"
+                      v-model="building.expansion_land"
+                      :label="`Expansion Land (${building.sfSm ? 'SM' : 'SF'}) *`"
                       required
                     />
                   </div>
@@ -1093,7 +1091,7 @@ defineExpose({
                     <CFormInput
                       type="number"
                       v-model="building.clear_height_ft"
-                      label="Clear Height FT"
+                      :label="`Clear Height (${building.sfSm ? 'MT' : 'FT'})`"
                       max="99"
                     />
                   </div>
@@ -1110,7 +1108,7 @@ defineExpose({
                     <CFormInput
                       type="number"
                       v-model="building.offices_space_sf"
-                      label="Offices Space (SF)"
+                      :label="`Offices Space (${building.sfSm ? 'SM' : 'SF'})`"
                     />
                   </div>
                   <div class="mt-2">
@@ -1126,7 +1124,7 @@ defineExpose({
                     />
                   </div>
                   <div class="mt-2">
-                    <label class="form-label">Floor Thickness FT *</label>
+                    <label class="form-label">Floor Thickness ({{ building.sfSm ? 'MT' : 'FT' }}) *</label>
                     <CInputGroup>
                       <CFormInput
                         type="number"
@@ -1174,7 +1172,7 @@ defineExpose({
                     />
                   </div>
                   <div class="mt-2">
-                    <label class="form-label">Skylights (SF)</label>
+                    <label class="form-label">Skylights ({{ building.sfSm ? 'SM' : 'SF' }})</label>
                     <CInputGroup>
                       <CFormInput
                         type="number"
@@ -1293,7 +1291,7 @@ defineExpose({
                   </div>
 
                   <div class="mt-2">
-                    <label class="form-label">Column Spacing FT *</label>
+                    <label class="form-label">Column Spacing ({{ building.sfSm ? 'MT' : 'FT' }}) *</label>
                     <CInputGroup>
                       <CFormInput
                         type="number"
@@ -1302,7 +1300,7 @@ defineExpose({
                         required
                         @blur="validateRangeColumnsSpacing"
                       />
-                      <CInputGroupText>@</CInputGroupText>
+                      <CInputGroupText>X</CInputGroupText>
                       <CFormInput
                         type="number"
                         v-model="building.columns_spacing_value_2"

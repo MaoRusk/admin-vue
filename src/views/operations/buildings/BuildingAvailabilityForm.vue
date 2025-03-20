@@ -370,7 +370,7 @@ defineExpose({
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Availability Size (SF) *</CFormLabel>
+                  <CFormLabel>Availability ({{ availability.sqftToM2 ? 'SM' : 'SF'}}) *</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.size_sf"
@@ -387,7 +387,7 @@ defineExpose({
                       required
                       @blur="validateRangeAvlBuildingDimensions"
                     />
-                    <CInputGroupText>@</CInputGroupText>
+                    <CInputGroupText>X</CInputGroupText>
                     <CFormInput
                       type="number"
                       v-model="availability.avl_building_dimensions_value_2"
@@ -399,7 +399,7 @@ defineExpose({
                 </div>
 
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Minimum Space (SF)</CFormLabel>
+                  <CFormLabel>Minimum Space ({{ availability.sqftToM2 ? 'SM' : 'SF'}})</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.avl_minimum_space_sf"
@@ -437,28 +437,28 @@ defineExpose({
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Ramp</CFormLabel>
+                  <CFormLabel>Ramps</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.rams"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Truck Court (FT)</CFormLabel>
+                  <CFormLabel>Truck Court ({{ availability.sqftToM2 ? 'MT' : 'FT'}})</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.truck_court_ft"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Trailer Parking Space</CFormLabel>
+                  <CFormLabel>Trailer Parking Spaces</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.trailer_parking_space"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Parking Space</CFormLabel>
+                  <CFormLabel>Automobile Parking Spaces</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.parking_space"
@@ -518,13 +518,13 @@ defineExpose({
             <CCardBody>
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Availability Since</CFormLabel>
+                  <CFormLabel>Available Since</CFormLabel>
                   <CDatePicker
                     v-model:date="availability.avl_date"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Minimum Lease *</CFormLabel>
+                  <CFormLabel>Minimum Lease (SF/Mo) *</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.avl_min_lease"
@@ -533,7 +533,7 @@ defineExpose({
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Maximum Lease *</CFormLabel>
+                  <CFormLabel>Maximum Lease (SF/Mo) *</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.avl_max_lease"

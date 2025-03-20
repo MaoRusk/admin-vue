@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed, reactive, ref } from 'vue';
+import { onMounted, computed, reactive, ref, watch } from 'vue';
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 
@@ -393,6 +393,20 @@ onMounted(async () => {
   Swal.close()
 });
 
+watch(() => absorption.abs_sale_price, (value) => {
+  console.log('cambio abs_sale_price', value)
+  if (+value > 0) {
+    absorption.abs_closing_rate = 0
+  }
+})
+
+watch(() => absorption.abs_closing_rate, (value) => {
+  console.log('cambio abs_closing_rate', value)
+  if (+value > 0) {
+    absorption.abs_sale_price = 0
+  }
+})
+
 defineExpose({
   submit() {
     if (formHtmlElement.value?.reportValidity()) {
@@ -418,6 +432,13 @@ defineExpose({
             <CCardHeader>Basic Information</CCardHeader>
             <CCardBody>
               <div class="row">
+                <div class="col-12 mb-3">
+                  <label class="form-label">SF/SM</label>
+                  <CFormSwitch
+                    size="lg"
+                    v-model="absorption.sqftToM2"
+                  />
+                </div>
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Tenant *</CFormLabel>
                   <MASelect
@@ -476,7 +497,7 @@ defineExpose({
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Absorption Broker *</CFormLabel>
+                  <CFormLabel>Broker *</CFormLabel>
                   <MASelect
                     v-model="absorption.abs_broker_id"
                     :options="brokers.items"
@@ -491,7 +512,7 @@ defineExpose({
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Absorption Shelter</CFormLabel>
+                  <CFormLabel>Shelter</CFormLabel>
                   <MASelect
                     v-model="absorption.abs_shelter_id"
                     :options="shelters.items"
@@ -538,7 +559,7 @@ defineExpose({
                   <CFormInput type="number" v-model="absorption.dock_doors" />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Ramp</CFormLabel>
+                  <CFormLabel>Ramps</CFormLabel>
                   <CFormInput type="number" v-model="absorption.rams" />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -546,7 +567,7 @@ defineExpose({
                   <CFormInput type="number" v-model="absorption.truck_court_ft" />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Size (SF) * </CFormLabel>
+                  <CFormLabel>Size ({{absorption.sqftToM2 ? 'SM' : 'SF'}}) * </CFormLabel>
                   <CFormInput type="number" v-model="absorption.size_sf" required :max="building?.building_size_sf" />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -604,7 +625,7 @@ defineExpose({
               <div class="row">
                 <div class="col-md-6">
                   <div class="mb-3">
-                    <CFormLabel>Lease Term (months)</CFormLabel>
+                    <CFormLabel>Lease Term (MO)</CFormLabel>
                     <CFormInput type="number" v-model="absorption.abs_lease_term_month" />
                   </div>
 
@@ -614,7 +635,7 @@ defineExpose({
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Trailer Parking Space</CFormLabel>
+                    <CFormLabel>Trailer Parking Spaces</CFormLabel>
                     <CFormInput type="number" v-model="absorption.trailer_parking_space" />
                   </div>
 
@@ -709,7 +730,7 @@ defineExpose({
                         <CDatePicker
                           v-model:date="absorption.abs_closing_date"
                         />
-                        <CFormLabel>Lease Up</CFormLabel>
+                        <CFormLabel>Lease Up (MO)</CFormLabel>
                         <CDatePicker
                           v-model:date="absorption.abs_lease_up"
                         />
