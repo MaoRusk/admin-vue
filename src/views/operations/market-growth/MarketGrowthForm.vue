@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
@@ -67,58 +67,71 @@ async function onSubmit() {
   }
 }
 
-async function fetchMarketGrowth() {
+async function loadInitialData(data) {
   try {
-    const { data } = await API.marketGrowth.getMarketGrowth(props.marketGrowthId);
-    
-    // Primero asignamos el region_id y cargamos los markets
-    marketGrowth.region_id = data.data.region_id ? +(data.data.region_id) : '';
+    // 1. Cargar región y esperar que se complete
+    marketGrowth.region_id = data.region_id ? +(data.region_id) : '';
     if (marketGrowth.region_id) {
       await fetchMarkets(marketGrowth.region_id);
+      // Esperar un tick para asegurar que los markets estén disponibles
+      await nextTick();
     }
 
-    // Luego asignamos el market_id y cargamos los submarkets
-    marketGrowth.market_id = data.data.market_id ? +(data.data.market_id) : '';
-    if (marketGrowth.market_id) {
+    // 2. Cargar market y esperar que se complete
+    if (data.market_id) {
+      marketGrowth.market_id = +(data.market_id);
       await fetchSubmarkets(marketGrowth.market_id);
+      await nextTick();
     }
 
-    // Después asignamos el submarket_id y cargamos los datos dependientes
-    marketGrowth.sub_market_id = data.data.sub_market_id ? +(data.data.sub_market_id) : '';
-    if (marketGrowth.sub_market_id) {
+    // 3. Cargar submarket y sus dependientes
+    if (data.sub_market_id) {
+      marketGrowth.sub_market_id = +(data.sub_market_id);
       await Promise.all([
         fetchIndustrialParks(marketGrowth.market_id, marketGrowth.sub_market_id),
         fetchOwners(marketGrowth.market_id, marketGrowth.sub_market_id),
         fetchDevelopers(marketGrowth.market_id, marketGrowth.sub_market_id),
         fetchBuilders(marketGrowth.market_id, marketGrowth.sub_market_id),
       ]);
+      await nextTick();
     }
 
-    // Finalmente asignamos el industrial_park_id y cargamos los buildings
-    marketGrowth.industrial_park_id = data.data.industrial_park_id ? +(data.data.industrial_park_id) : '';
-    if (marketGrowth.industrial_park_id) {
+    // 4. Cargar industrial park y buildings
+    if (data.industrial_park_id) {
+      marketGrowth.industrial_park_id = +(data.industrial_park_id);
       await fetchBuildings(
-        marketGrowth.market_id, 
-        marketGrowth.sub_market_id, 
+        marketGrowth.market_id,
+        marketGrowth.sub_market_id,
         marketGrowth.industrial_park_id
       );
     }
 
-    // Asignamos el resto de los valores
+    // 5. Asignar el resto de los valores
     ['building_id', 'owner_id', 'developer_id', 'builder_id'].forEach(prop => 
-      marketGrowth[prop] = data.data[prop] ? +(data.data[prop]) : ''
+      marketGrowth[prop] = data[prop] ? +(data[prop]) : ''
     );
     
     ['size_sf', 'deal', 'type', 'comments', 'latitude', 'longitude'].forEach(prop => 
-      marketGrowth[prop] = data.data[prop] ? `${data.data[prop]}` : ''
+      marketGrowth[prop] = data[prop] ? `${data[prop]}` : ''
     );
-    
-    if (data.data.start_date) {
-      marketGrowth.start_date = dayjs(data.data.start_date).format('YYYY-MM-DD')
+
+    if (data.start_date) {
+      marketGrowth.start_date = dayjs(data.start_date).format('YYYY-MM-DD');
     }
-    if (data.data.end_date) {
-      marketGrowth.end_date = dayjs(data.data.end_date).format('YYYY-MM-DD')
+    if (data.end_date) {
+      marketGrowth.end_date = dayjs(data.end_date).format('YYYY-MM-DD');
     }
+
+  } catch (error) {
+    console.error('Error loading initial data:', error);
+    throw error;
+  }
+}
+
+async function fetchMarketGrowth() {
+  try {
+    const { data } = await API.marketGrowth.getMarketGrowth(props.marketGrowthId);
+    await loadInitialData(data.data);
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -271,25 +284,25 @@ onMounted(async () => {
   Swal.close()
 });
 
-// Watch for changes in region/market/submarket to update dependent dropdowns
-watch(() => marketGrowth.region_id, async (newValue) => {
+// Modificar los watchers para que no se ejecuten en la carga inicial
+watch(() => marketGrowth.region_id, async (newValue, oldValue) => {
+  if (newValue === oldValue) return;
+  markets.items = [];
+  marketGrowth.market_id = '';
+  marketGrowth.sub_market_id = '';
   if (newValue) {
-    await fetchMarkets(newValue)
-  } else {
-    markets.items = []
+    await fetchMarkets(newValue);
   }
-  marketGrowth.market_id = ''
-  marketGrowth.sub_market_id = ''
-})
+}, { flush: 'post' });
 
-watch(() => marketGrowth.market_id, async (newValue) => {
+watch(() => marketGrowth.market_id, async (newValue, oldValue) => {
+  if (newValue === oldValue) return;
+  submarkets.items = [];
+  marketGrowth.sub_market_id = '';
   if (newValue) {
-    await fetchSubmarkets(newValue)
-  } else {
-    submarkets.items = []
+    await fetchSubmarkets(newValue);
   }
-  marketGrowth.sub_market_id = ''
-})
+}, { flush: 'post' });
 
 watch(() => marketGrowth.sub_market_id, async (newValue) => {
   if (newValue) {

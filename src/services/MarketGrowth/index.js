@@ -95,10 +95,4 @@ export default {
   deleteMarketGrowth(marketGrowthId) {
     return httpClient.delete(`/market-growths/${marketGrowthId}`)
   },
-  getTypes() {
-    return httpClient.get('/market-growths/types')
-  },
-  getDeals() {
-    return httpClient.get('/market-growths/deals')
-  },
 } 
