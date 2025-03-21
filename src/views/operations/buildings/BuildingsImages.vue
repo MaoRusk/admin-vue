@@ -73,7 +73,7 @@ const uploadFiles = () => {
                       <CButton
                         v-if="selectedFiles.length"
                         type="button"
-                        color="success"
+                        color="primary"
                         variant="outline"
                         id="inputGroupFileAddon04"
                         @click="uploadFiles">Upload Files

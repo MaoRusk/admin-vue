@@ -89,7 +89,7 @@ watch([columnSorter, columnFilter], fetchReitMortgages, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_CREATE })" v-if="can('reit-mortgage.create')">
+    <CButton color="primary" @click="$router.push({ name: ROUTE_NAMES.REIT_MORTGAGE_CREATE })" v-if="can('reit-mortgage.create')">
       <CIcon name="cilPlus" size="sm" />
       New Reit Mortgage
     </CButton>

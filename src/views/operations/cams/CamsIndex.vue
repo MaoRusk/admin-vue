@@ -170,7 +170,7 @@ onMounted(() => {
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.CAMS_CREATE })">
+          <CButton color="primary" @click="$router.push({ name: ROUTE_NAMES.CAMS_CREATE })">
             <CIcon name="cilPlus" class="me-2" />
             New CAM
           </CButton>

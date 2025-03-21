@@ -174,7 +174,7 @@ const handleUpdate = (item) => {
     <CRow v-if="can('users.create')">
       <CCol xs="12" xl="2">
         <CCardBody style="text-align: right;">
-          <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.USERS_CREATE })">
+          <CButton color="primary" @click="$router.push({ name: ROUTE_NAMES.USERS_CREATE })">
             <CIcon name="cilPlus" class="me-2" />
             New User
           </CButton>

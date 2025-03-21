@@ -206,7 +206,7 @@ console.log(auth.can('lands.contacts.index'));
       <CCardBody class="ps-1 py-3">
         <CRow class="justify-content-center">
           <CCol xs="auto" class="btns-flotantes-customer-moviles">
-            <CLoadingButton color="success" variant="outline" @click="dispatchSubmitForm" class="me-3" :loading="submittingForm" :disabled="disabledSave" v-if="showSave">
+            <CLoadingButton color="primary" variant="outline" @click="dispatchSubmitForm" class="me-3" :loading="submittingForm" :disabled="disabledSave" v-if="showSave">
               <CIcon name="cilSave" size="sm" /> Save
             </CLoadingButton>
             <CButton color="primary" variant="outline" @click="showList()">

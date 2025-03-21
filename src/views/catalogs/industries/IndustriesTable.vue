@@ -109,7 +109,7 @@ export default {
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <CButton color="success" @click="newIndustry">
+          <CButton color="primary" @click="newIndustry">
             <CIcon icon="cilPlus" class="me-2" />New Industry
           </CButton>
         </CCardBody>

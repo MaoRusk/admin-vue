@@ -120,7 +120,7 @@ export default {
     <CCardBody class="p-3">
       <CRow class="align-items-center">
         <CCol :xs="12" class="text-end">
-          <CButton color="success" @click="newCompany()">
+          <CButton color="primary" @click="newCompany()">
             <CIcon icon="cilPlus" class="me-2" />New Company
           </CButton>
         </CCol>

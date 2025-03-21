@@ -17,3 +17,17 @@
 
 // If you want to add custom CSS you can put it here
 @import "custom";
+
+
+.btn-primary {
+  --cui-btn-color: #fff;
+  --cui-btn-bg: #00AEEF;
+  --cui-btn-hover-color: white;
+}
+
+.btn-outline-primary {
+  --cui-btn-color: #00AEEF;
+  --cui-btn-hover-color: #fff;
+  --cui-btn-hover-bg: #00AEEF;
+  --cui-btn-border-color: #00AEEF;
+}

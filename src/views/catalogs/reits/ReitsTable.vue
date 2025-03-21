@@ -107,7 +107,7 @@ export default {
     <CRow>
       <CCol :xs="12" :xl="2">
         <CCardBody style="text-align: end;">
-          <CButton color="success" @click="newReit()">
+          <CButton color="primary" @click="newReit()">
             <CIcon icon="cilPlus" class="me-2" />New REIT
           </CButton>
         </CCardBody>

@@ -430,7 +430,7 @@ const props = defineProps({
         <CRow>
             <div style="display: flex; justify-content: space-evenly; padding:1rem">
               <CButton 
-              color="success" 
+              color="primary" 
               variant="outline" 
               type="submit"
               @click="submitFunction"
