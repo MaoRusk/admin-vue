@@ -39,8 +39,12 @@
                         />
                       </div>
                     </th>
-                    <th v-for="action in actions" :key="action" class="action-column text-center">
-                      <!-- Empty headers for actions -->
+                    <th 
+                      v-for="action in filteredActions" 
+                      :key="action" 
+                      class="action-column text-center"
+                    >
+                      <span>{{ formatActionName(action) }}</span>
                     </th>
                   </tr>
                 </thead>
@@ -57,7 +61,7 @@
                         class="resource-select-all"
                       />
                     </td>
-                    <td v-for="action in actions" :key="action" class="text-center permission-cell">
+                    <td v-for="action in filteredActions" :key="action" class="text-center permission-cell">
                       <div class="d-flex align-items-center gap-2 justify-content-center">
                         <CFormCheck
                           v-if="hasPermission(resource, action)"
@@ -154,19 +158,48 @@ export default {
     hasIndeterminateSelection() {
       return this.selectedPermissions.length > 0 && 
              this.selectedPermissions.length < this.availablePermissions.length
+    },
+    filteredActions() {
+      // Solo mostrar acciones que tengan al menos un permiso en algún módulo
+      return this.actions.filter(action => {
+        return Object.keys(this.groupedPermissions).some(resource => 
+          this.hasPermission(resource, action)
+        )
+      })
     }
   },
   methods: {
     ...mapActions(useAuthStore, ['can', 'setUser']),
     extractUniqueActions() {
       const actionSet = new Set()
+      
+      // Solo agregar acciones que al menos un recurso utiliza
       this.availablePermissions.forEach(permission => {
         const [, action] = permission.name.split('.')
         if (action) {
           actionSet.add(action)
         }
       })
-      this.actions = Array.from(actionSet).sort()
+
+      // Definir el orden de los permisos CRUD y otros comunes
+      const crudOrder = ['index', 'create', 'show', 'edit', 'update', 'destroy'];
+      
+      // Ordenar las acciones: primero CRUD, luego el resto alfabéticamente
+      this.actions = Array.from(actionSet).sort((a, b) => {
+        const aIndex = crudOrder.indexOf(a);
+        const bIndex = crudOrder.indexOf(b);
+        
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex;
+        }
+        if (aIndex !== -1) {
+          return -1;
+        }
+        if (bIndex !== -1) {
+          return 1;
+        }
+        return a.localeCompare(b);
+      });
     },
     formatResourceName(resource) {
       return resource.charAt(0).toUpperCase() + resource.slice(1)
@@ -441,54 +474,58 @@ export default {
 
 <style scoped>
 .permissions-wrapper {
-  border: 1px solid #ebedef;
-  border-radius: 0.375rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-  max-height: 500px;
-  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .permissions-table {
   margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .permissions-table th {
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #ebedef;
-  color: #4f5d73;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.875rem;
-  padding: 1rem;
-  text-align: center;
-  vertical-align: middle;
+  background-color: #f0f2f5;
+  padding: 1.25rem 1rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  border-bottom: none;
 }
 
-.resource-column {
-  min-width: 150px;
-  text-align: left !important;
+.permissions-table tbody tr {
+  transition: all 0.2s ease;
 }
 
-.action-column {
-  min-width: 150px;
+.permissions-table tbody tr:nth-child(even) {
+  background-color: #f8fafc;
 }
 
 .resource-name {
-  font-weight: 500;
-  color: #321fdb;
-  background-color: #ffffff;
-  padding: 0.75rem 1rem !important;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c3e50;
+  padding: 1rem 1.25rem !important;
 }
 
 .permission-cell {
-  padding: 0.75rem 0.5rem !important;
-  vertical-align: middle;
-  background-color: #ffffff;
+  background-color: transparent;
+  border-left: 1px solid #ebedef;
 }
 
-.permission-unavailable {
-  color: #c4c9d0;
-  font-weight: 300;
+.form-check-input {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.permission-action-name {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-left: 0.5rem;
+  min-width: 60px;
+  text-align: left;
 }
 
 .select-all-column {
@@ -535,7 +572,7 @@ export default {
 
 /* Hover effect en las filas */
 .permissions-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: #f1f5f9;
 }
 
 /* Estilo para las celdas de la tabla */
@@ -544,24 +581,24 @@ export default {
   border-color: #ebedef;
 }
 
-/* Scrollbar personalizado */
+/* Scrollbar más suave */
 .permissions-wrapper::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
 }
 
 .permissions-wrapper::-webkit-scrollbar-track {
-  background: #f8f9fa;
-  border-radius: 3px;
+  background: #f8fafc;
+  border-radius: 4px;
 }
 
 .permissions-wrapper::-webkit-scrollbar-thumb {
-  background-color: #321fdb;
-  border-radius: 3px;
+  background-color: #cbd5e1;
+  border-radius: 4px;
+  border: 2px solid #f8fafc;
 }
 
 .permissions-wrapper::-webkit-scrollbar-thumb:hover {
-  background-color: #2819b0;
+  background-color: #94a3b8;
 }
 
 /* Estilo para los botones de selección */
@@ -643,12 +680,23 @@ export default {
 }
 
 .permissions-header {
-  display: flex;
-  align-items: center;
+  background-color: #fff;
+  padding: 1rem;
+  border-bottom: 2px solid #ebedef;
 }
 
-.permission-action-name {
-  font-size: 0.875rem;
-  color: #4f5d73;
+.permissions-header h4 {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.permission-unavailable {
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.form-check-input:checked {
+  box-shadow: 0 0 0 2px rgba(50, 31, 219, 0.1);
 }
 </style> 
