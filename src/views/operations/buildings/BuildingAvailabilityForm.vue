@@ -31,16 +31,17 @@ const availabilityObj = {
   shared_truck: false,
   new_construction: false,
   is_starting_construction: false,
+  offices_space_sf: '',
   
   avl_date: '',
   parking_space: '',
   avl_min_lease: '',
   avl_max_lease: '',
-  avl_building_phase: '',
+  avl_type: '',
   
   size_sf: '',
   truck_court_ft: '',
-  rams: '',
+  ramps: '',
   
   trailer_parking_space: '',
 
@@ -156,7 +157,7 @@ async function fetchBrokers() {
 async function fetchAvailability() {
   try {
     const { data } = await API.buildingsAvailability.getAvailableBuilding(props.availabilityId, props.buildingId);
-    ['size_sf', 'avl_building_dimensions', 'avl_minimum_space_sf', 'dock_doors', 'rams', 'truck_court_ft', 'trailer_parking_space', 'avl_date', 'parking_space', 'avl_min_lease', 'avl_max_lease', 'avl_building_phase']
+    ['size_sf', 'avl_building_dimensions', 'avl_minimum_space_sf', 'offices_space_sf', 'dock_doors', 'ramps', 'truck_court_ft', 'trailer_parking_space', 'avl_date', 'parking_space', 'avl_min_lease', 'avl_max_lease', 'avl_type']
     .forEach(prop => availability[prop] = `${data.data[prop] ?? ''}`);
     ['broker_id']
     .forEach(prop => availability[prop] = data.data[prop] ? +data.data[prop] : '');
@@ -360,7 +361,7 @@ defineExpose({
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Building Phase *</CFormLabel>
                   <MASelect
-                    v-model="availability.avl_building_phase"
+                    v-model="availability.avl_type"
                     :options="phases.items"
                     :reduce="option => option.value"
                     label="label"
@@ -370,11 +371,35 @@ defineExpose({
                   />
                 </div>
                 <div class="col-md-6 mb-3">
+                  <CFormLabel>Listing Broker *</CFormLabel>
+                  <MASelect
+                    v-model="availability.broker_id"
+                    :options="brokers.items"
+                    :reduce="option => option.id"
+                    label="name"
+                    required
+                    placeholder="Select..."
+                    :loading="brokers.loading"
+                    edit-options
+                    @submitOption="(option, update) => { saveOptionGeneral('broker_id', option, update) }"
+                    @deleteOption="(option) => { deleteOptionGeneral('broker_id', option) }"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <CFormInput
+                    type="number"
+                    v-model="availability.offices_space_sf"
+                    :label="`Offices Space (${availability.sqftToM2 ? 'SM' : 'SF'}) *`"
+                    required
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
                   <CFormLabel>Availability ({{ availability.sqftToM2 ? 'SM' : 'SF'}}) *</CFormLabel>
                   <CFormInput
                     type="number"
                     v-model="availability.size_sf"
                     required
+                    :max="`${+building?.building_size_sf || 0}`"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -403,24 +428,10 @@ defineExpose({
                   <CFormInput
                     type="number"
                     v-model="availability.avl_minimum_space_sf"
+                    min="0"
                   />
                 </div>
-  
-                <div class="col-md-6 mb-3">
-                  <CFormLabel>Listing Broker *</CFormLabel>
-                  <MASelect
-                    v-model="availability.broker_id"
-                    :options="brokers.items"
-                    :reduce="option => option.id"
-                    label="name"
-                    required
-                    placeholder="Select..."
-                    :loading="brokers.loading"
-                    edit-options
-                    @submitOption="(option, update) => { saveOptionGeneral('broker_id', option, update) }"
-                    @deleteOption="(option) => { deleteOptionGeneral('broker_id', option) }"
-                  />
-                </div>
+
               </div>
             </CCardBody>
           </CCard>
@@ -434,13 +445,15 @@ defineExpose({
                   <CFormInput
                     type="number"
                     v-model="availability.dock_doors"
+                    min="0"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Ramps</CFormLabel>
                   <CFormInput
                     type="number"
-                    v-model="availability.rams"
+                    v-model="availability.ramps"
+                    min="0"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -448,6 +461,7 @@ defineExpose({
                   <CFormInput
                     type="number"
                     v-model="availability.truck_court_ft"
+                    min="0"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -455,6 +469,7 @@ defineExpose({
                   <CFormInput
                     type="number"
                     v-model="availability.trailer_parking_space"
+                    min="0"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -462,6 +477,7 @@ defineExpose({
                   <CFormInput
                     type="number"
                     v-model="availability.parking_space"
+                    min="0"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -530,6 +546,7 @@ defineExpose({
                     v-model="availability.avl_min_lease"
                     step="0.01"
                     required
+                    min="0"
                   />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -539,6 +556,7 @@ defineExpose({
                     v-model="availability.avl_max_lease"
                     step="0.01"
                     required
+                    min="0"
                   />
                 </div>
               </div>

@@ -17,13 +17,13 @@ export default {
   },
   createBuilding(formData) {
     return httpClient.post(`/buildings`, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   },
   updateBuilding(buildingId, formData) {
     return httpClient.post(`/buildings/${buildingId}`, formData, {
-      headers: {"Content-Type": "multipart/form-data"}
-    });
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   },
   deleteBuilding(buildingId) {
     return httpClient.delete(`/buildings/${buildingId}`)
@@ -39,12 +39,12 @@ export default {
     if (availability) params.availability = true
     if (absorption) params.absorption = true
 
-    return httpClient.get(`/buildings/phases`, {
+    return httpClient.get(`/buildings/types`, {
       params,
     })
   },
   getBuildingsTypesGeneration() {
-    return httpClient.get(`/buildings/types-generation`)
+    return httpClient.get(`/buildings/generation`)
   },
   getBuildingsTypesConstruction() {
     return httpClient.get(`/buildings/types-construction`)
@@ -72,5 +72,17 @@ export default {
   },
   getBuildingsCompanyTypes() {
     return httpClient.get(`/buildings/company-types`)
+  },
+  getBuildingTypes() {
+    return httpClient.get(`/buildings/building-types`)
+  },
+  getCertfications() {
+    return httpClient.get(`/buildings/certifications`)
+  },
+  getOwnerTypes() {
+    return httpClient.get(`/buildings/owner-types`)
+  },
+  getStages() {
+    return httpClient.get(`/buildings/stages`)
   },
 }

@@ -23,6 +23,9 @@ const isNewRecord = computed(() => !props.absorptionId);
 
 const building = ref(null)
 const VALUE_SEPARATOR = ' x '
+const months = Array.from({ length: 12 }, (_, i) =>
+  dayjs().month(i).format("MMMM")
+);
 
 const absorptionObj = {
   building_id: props.buildingId,
@@ -31,7 +34,11 @@ const absorptionObj = {
   abs_industry_id: '',
   abs_country_id: '',
   broker_id: '',
-  rams: '',
+  ramps: '',
+  offices_space_sf: '',
+  avl_date: '',
+  abs_min_lease: '',
+  abs_max_lease: '',
   truck_court_ft: '',
   shared_truck: false,
   new_construction: false,
@@ -43,7 +50,7 @@ const absorptionObj = {
   abs_lease_up: '',
   abs_month: '',
   abs_sale_price: '',
-  abs_building_phase: '',
+  abs_type: '',
   abs_final_use: '',
   abs_company_type: '',
   size_sf: '',
@@ -51,7 +58,6 @@ const absorptionObj = {
   fire_protection_system: [],
   above_market_tis: [],
   abs_deal: '',
-  abs_broker_id: '',
   abs_shelter_id: '',
   sqftToM2: false,
 
@@ -181,7 +187,7 @@ async function saveAbsorption() {
       bay_size: (absorption.bay_size_value_1 && absorption.bay_size_value_2) ? `${absorption.bay_size_value_1}${VALUE_SEPARATOR}${absorption.bay_size_value_2}` : '',
       abs_closing_date: absorption.abs_closing_date ? dayjs(absorption.abs_closing_date).format('YYYY-MM-DD') : '',
       abs_lease_up: absorption.abs_lease_up ? dayjs(absorption.abs_lease_up).format('YYYY-MM-DD') : '',
-      abs_month: absorption.abs_month ? dayjs(absorption.abs_month).format('YYYY-MM-DD') : '',
+      avl_date: absorption.avl_date ? dayjs(absorption.avl_date).format('YYYY-MM-DD') : '',
       fire_protection_system: absorption.fire_protection_system.length ? absorption.fire_protection_system : null,
       above_market_tis: absorption.above_market_tis.length ? absorption.above_market_tis : null,
     }
@@ -212,9 +218,9 @@ async function saveAbsorption() {
 async function fetchAbsorption() {
   try {
     const { data } = await API.buildingsAbsorption.getAbsorptionBuilding(props.absorptionId, props.buildingId);
-    ['dock_doors', 'rams', 'truck_court_ft', 'abs_lease_term_month', 'parking_space', 'abs_closing_rate', 'abs_closing_date', 'abs_lease_up', 'abs_month', 'abs_sale_price', 'abs_building_phase', 'abs_final_use', 'abs_company_type', 'size_sf', 'trailer_parking_space', 'abs_deal']
+    ['dock_doors', 'ramps', 'truck_court_ft', 'offices_space_sf', 'abs_min_lease', 'abs_max_lease', 'abs_lease_term_month', 'parking_space', 'avl_date', 'abs_closing_rate', 'abs_closing_date', 'abs_lease_up', 'abs_month', 'abs_sale_price', 'abs_type', 'abs_final_use', 'abs_company_type', 'size_sf', 'trailer_parking_space', 'abs_deal']
     .forEach(prop => absorption[prop] = `${data.data[prop] ?? ''}`);
-    ['abs_tenant_id', 'abs_industry_id', 'abs_country_id', 'broker_id', 'abs_broker_id', 'abs_shelter_id']
+    ['abs_tenant_id', 'abs_industry_id', 'abs_country_id', 'broker_id', 'abs_shelter_id']
     .forEach(prop => absorption[prop] = data.data[prop] ? +data.data[prop] : '');
     ['shared_truck', 'new_construction', 'is_starting_construction']
     .forEach(prop => absorption[prop] = Boolean(data.data[prop]));
@@ -257,7 +263,7 @@ async function saveOptionGeneral(field, values, update = false) {
       absorption[field] = data.data.id
     }
     await fetchTenants()
-  } else if (['broker_id', 'abs_broker_id'].includes(field)) {
+  } else if (['broker_id'].includes(field)) {
     const body = {
       name: values.name,
     }
@@ -302,11 +308,10 @@ async function deleteOptionGeneral(field, optionReactive) {
 
   try {
     let data;
-    if (['broker_id', 'abs_broker_id'].includes(field)) {
+    if (['broker_id'].includes(field)) {
       ({ data } = await API.brokers.deleteBroker(option.id));
       await fetchBrokers();
       if (absorption.broker_id === option.id) absorption.broker_id = ''
-      if (absorption.abs_broker_id === option.id) absorption.abs_broker_id = ''
     } else if (field === 'abs_industry_id') {
       ({ data } = await API.industries.deleteIndustry(option.id));
       await fetchIndustries();
@@ -394,14 +399,12 @@ onMounted(async () => {
 });
 
 watch(() => absorption.abs_sale_price, (value) => {
-  console.log('cambio abs_sale_price', value)
   if (+value > 0) {
     absorption.abs_closing_rate = 0
   }
 })
 
 watch(() => absorption.abs_closing_rate, (value) => {
-  console.log('cambio abs_closing_rate', value)
   if (+value > 0) {
     absorption.abs_sale_price = 0
   }
@@ -497,21 +500,6 @@ defineExpose({
                   />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <CFormLabel>Broker *</CFormLabel>
-                  <MASelect
-                    v-model="absorption.abs_broker_id"
-                    :options="brokers.items"
-                    :reduce="option => option.id"
-                    label="name"
-                    required
-                    placeholder="Select..."
-                    :loading="brokers.loading"
-                    edit-options
-                    @submitOption="(option, update) => { saveOptionGeneral('abs_broker_id', option, update) }"
-                    @deleteOption="(option) => { deleteOptionGeneral('abs_broker_id', option) }"
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
                   <CFormLabel>Shelter</CFormLabel>
                   <MASelect
                     v-model="absorption.abs_shelter_id"
@@ -525,7 +513,7 @@ defineExpose({
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Building Phase *</CFormLabel>
                   <MASelect
-                    v-model="absorption.abs_building_phase"
+                    v-model="absorption.abs_type"
                     :options="phases.items"
                     :reduce="option => option.value"
                     label="label"
@@ -555,16 +543,24 @@ defineExpose({
             <CCardBody>
               <div class="row">
                 <div class="col-md-6 mb-3">
+                  <CFormInput
+                    type="number"
+                    v-model="absorption.offices_space_sf"
+                    :label="`Offices Space (${absorption.sqftToM2 ? 'SM' : 'SF'}) *`"
+                    required
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
                   <CFormLabel>Dock Doors</CFormLabel>
-                  <CFormInput type="number" v-model="absorption.dock_doors" />
+                  <CFormInput type="number" v-model="absorption.dock_doors" min="0" />
                 </div>
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Ramps</CFormLabel>
-                  <CFormInput type="number" v-model="absorption.rams" />
+                  <CFormInput type="number" v-model="absorption.ramps" min="0" />
                 </div>
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Truck Court</CFormLabel>
-                  <CFormInput type="number" v-model="absorption.truck_court_ft" />
+                  <CFormInput type="number" v-model="absorption.truck_court_ft" min="0" />
                 </div>
                 <div class="col-md-6 mb-3">
                   <CFormLabel>Size ({{absorption.sqftToM2 ? 'SM' : 'SF'}}) * </CFormLabel>
@@ -625,18 +621,37 @@ defineExpose({
               <div class="row">
                 <div class="col-md-6">
                   <div class="mb-3">
+                    <CFormLabel>Company Type</CFormLabel>
+                    <MASelect
+                      v-model="absorption.abs_company_type"
+                      :options="companyTypes.items"
+                      :reduce="option => option.value"
+                      label="label"
+                      required
+                      placeholder="Select..."
+                      :loading="companyTypes.loading"
+                    />
+                  </div>
+
+                  <div class="mb-3">
                     <CFormLabel>Lease Term (MO)</CFormLabel>
                     <CFormInput type="number" v-model="absorption.abs_lease_term_month" />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Parking Space</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.parking_space" />
+                    <CFormLabel>Trailer Parking Spaces</CFormLabel>
+                    <CFormInput type="number" v-model="absorption.trailer_parking_space" />
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Trailer Parking Spaces</CFormLabel>
-                    <CFormInput type="number" v-model="absorption.trailer_parking_space" />
+                    <CFormLabel>Minimum Lease (SF/Mo) *</CFormLabel>
+                    <CFormInput
+                      type="number"
+                      v-model="absorption.abs_min_lease"
+                      step="0.01"
+                      required
+                      min="0"
+                    />
                   </div>
 
                   <div class="mb-3">
@@ -665,16 +680,8 @@ defineExpose({
                   </div>
 
                   <div class="mb-3">
-                    <CFormLabel>Company Type</CFormLabel>
-                    <MASelect
-                      v-model="absorption.abs_company_type"
-                      :options="companyTypes.items"
-                      :reduce="option => option.value"
-                      label="label"
-                      required
-                      placeholder="Select..."
-                      :loading="companyTypes.loading"
-                    />
+                    <CFormLabel>Parking Space</CFormLabel>
+                    <CFormInput type="number" v-model="absorption.parking_space" />
                   </div>
 
                   <div class="mb-3">
@@ -683,6 +690,23 @@ defineExpose({
                       type="number" 
                       v-model="absorption.abs_sale_price"
                       step="0.01" 
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <CFormLabel>Maximum Lease (SF/Mo) *</CFormLabel>
+                    <CFormInput
+                      type="number"
+                      v-model="absorption.abs_max_lease"
+                      step="0.01"
+                      required
+                      min="0"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <CFormLabel>Available Since</CFormLabel>
+                    <CDatePicker
+                      v-model:date="absorption.avl_date"
                     />
                   </div>
                 </div>
@@ -725,7 +749,7 @@ defineExpose({
                     <!-- Dates & Status -->
                     <div class="col-md-4 mb-4">
                       <h6 class="mb-3">Dates & Status</h6>
-                      <div class="d-flex flex-column gap-3">
+                      <div class="d-flex flex-column gap-1">
                         <CFormLabel>Closing Date</CFormLabel>
                         <CDatePicker
                           v-model:date="absorption.abs_closing_date"
@@ -735,8 +759,10 @@ defineExpose({
                           v-model:date="absorption.abs_lease_up"
                         />
                         <CFormLabel>Month</CFormLabel>
-                        <CDatePicker
-                          v-model:date="absorption.abs_month"
+                        <MASelect
+                          v-model="absorption.abs_month"
+                          :options="months"
+                          placeholder="Select month"
                         />
                       </div>
                     </div>

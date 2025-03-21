@@ -15,6 +15,9 @@ export default {
   getAvailableBuilding(buildingAvailableId, buildingId) {
     return httpClient.get(`/buildings/${buildingId}/availability/${buildingAvailableId}`)
   },
+  /**
+    building_available_id
+   */
   createAvailableBuilding(
     buildingId,
     {
@@ -30,14 +33,15 @@ export default {
       parking_space,
       avl_min_lease,
       avl_max_lease,
-      avl_building_phase,
+      avl_type,
       size_sf,
       avl_building_dimensions_ft,
       truck_court_ft,
-      rams,
+      ramps,
       trailer_parking_space,
       fire_protection_system,
       above_market_tis,
+      offices_space_sf,
       sqftToM2,
     },
   ) {
@@ -55,14 +59,15 @@ export default {
       parking_space,
       avl_min_lease,
       avl_max_lease,
-      avl_building_phase,
+      avl_type,
       size_sf,
       avl_building_dimensions_ft,
       truck_court_ft,
-      rams,
+      ramps,
       trailer_parking_space,
       fire_protection_system,
       above_market_tis,
+      offices_space_sf,
       sqftToM2,
     })
   },
@@ -83,14 +88,15 @@ export default {
       parking_space,
       avl_min_lease,
       avl_max_lease,
-      avl_building_phase,
+      avl_type,
       size_sf,
       avl_building_dimensions_ft,
       truck_court_ft,
-      rams,
+      ramps,
       trailer_parking_space,
       fire_protection_system,
       above_market_tis,
+      offices_space_sf,
       sqftToM2,
     },
   ) {
@@ -108,14 +114,15 @@ export default {
       parking_space,
       avl_min_lease,
       avl_max_lease,
-      avl_building_phase,
+      avl_type,
       size_sf,
       avl_building_dimensions_ft,
       truck_court_ft,
-      rams,
+      ramps,
       trailer_parking_space,
       fire_protection_system,
       above_market_tis,
+      offices_space_sf,
       sqftToM2,
     })
   },

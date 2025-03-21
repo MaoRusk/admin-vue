@@ -25,6 +25,9 @@ const props = defineProps({
 
 const emit = defineEmits(['submitting'])
 
+/**
+'building_id' => 'nullable|integer|exists:buildings,id',
+*/
 const buildingEmpty = {
   region_id: '',
   market_id: '',
@@ -40,17 +43,13 @@ const buildingEmpty = {
   year_built: '',
   clear_height_ft: '',
   total_land_sf: '',
-  offices_space_sf: '',
-  has_crane: false,
-  has_rail_spur: false,
-  has_leed: false,
   ventilation: '',
   roof_system: '',
   skylights_sf: '',
   coverage: '',
   expansion_land: '',
   class: '',
-  type_generation: '',
+  generation: '',
   currency: '',
   tenancy: '',
   construction_type: '',
@@ -58,11 +57,14 @@ const buildingEmpty = {
   fire_protection_system: [],
   deal: '',
   loading_door: '',
-  above_market_tis: [],
   status: 'Active',
   floor_thickness_in: '',
   floor_resistance: '',
   expansion_up_to_sf: '',
+  building_type: '',
+  certifications: '',
+  stage: '',
+  owner_type: '',
 
   hvacProduction: '',
   hvacArea: '',
@@ -143,10 +145,9 @@ async function onSubmit() {
       hvac_production_area: (building.hvacProduction && building.hvacArea) ? `${building.hvacProduction}${VALUE_SEPARATOR}${building.hvacArea}` : '',
       columns_spacing_ft: (building.columns_spacing_value_1 && building.columns_spacing_value_2) ? `${building.columns_spacing_value_1}${VALUE_SEPARATOR}${building.columns_spacing_value_2}` : '',
       bay_size: (building.bay_size_value_1 && building.bay_size_value_2) ? `${building.bay_size_value_1}${VALUE_SEPARATOR}${building.bay_size_value_2}` : '',
-      kvas: (building.kvas_value_1 && building.kvas_value_2) ? `${building.kvas_value_1}${VALUE_SEPARATOR}${building.kvas_value_2}` : '',
+      transformer_capacity: (building.kvas_value_1 && building.kvas_value_2) ? `${building.kvas_value_1}${VALUE_SEPARATOR}${building.kvas_value_2}` : '',
       coverage: `${coverage.value}`,
       fire_protection_system: Array.isArray(building.fire_protection_system) ? building.fire_protection_system : [],
-      above_market_tis: Array.isArray(building.above_market_tis) ? building.above_market_tis : [],
     };
 
     Object.keys(body).forEach((key) => {
@@ -200,11 +201,9 @@ const fetchBuildingData = async () => {
     const { data } = await API.buildings.getBuilding(buildingId);
     ['region_id', 'market_id', 'sub_market_id', 'industrial_park_id', 'builder_id', 'developer_id', 'owner_id']
     .forEach(prop => building[prop] = data.data[prop] ? +(data.data[prop]) : '');
-    ['building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height_ft', 'total_land_sf', 'expansion_up_to_sf', 'offices_space_sf', 'ventilation', 'roof_system', 'skylights_sf', 'coverage', 'kvas', 'expansion_land', 'class', 'type_generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'deal', 'loading_door', 'status', 'floor_thickness_in', 'floor_resistance']
+    ['building_name', 'building_size_sf', 'latitud', 'longitud', 'clear_height_ft', 'total_land_sf', 'expansion_up_to_sf', 'ventilation', 'roof_system', 'skylights_sf', 'coverage', 'transformer_capacity', 'expansion_land', 'class', 'generation', 'currency', 'tenancy', 'construction_type', 'lightning', 'deal', 'loading_door', 'status', 'floor_thickness_in', 'floor_resistance', 'building_type', 'certifications', 'stage', 'owner_type']
     .forEach(prop => building[prop] = data.data[prop] ? `${data.data[prop]}` : '');
-    ['has_crane', 'has_rail_spur', 'has_leed']
-    .forEach(prop => building[prop] = Boolean(data.data[prop]));
-    ['fire_protection_system', 'above_market_tis', 'files_by_type']
+    ['fire_protection_system', 'files_by_type']
     .forEach(prop => building[prop] = data.data[prop] ? data.data[prop] : []);
 
     building.year_built = data.data.year_built ? `${data.data.year_built}` : ''
@@ -217,8 +216,8 @@ const fetchBuildingData = async () => {
     if (data.data.bay_size && data.data.bay_size.length > VALUE_SEPARATOR.length) {
       ([building.bay_size_value_1, building.bay_size_value_2] = data.data.bay_size.split(VALUE_SEPARATOR))
     }
-    if (data.data.kvas && data.data.kvas.length > VALUE_SEPARATOR.length) {
-      ([building.kvas_value_1, building.kvas_value_2] = data.data.kvas.split(VALUE_SEPARATOR))
+    if (data.data.transformer_capacity && data.data.transformer_capacity.length > VALUE_SEPARATOR.length) {
+      ([building.kvas_value_1, building.kvas_value_2] = data.data.transformer_capacity.split(VALUE_SEPARATOR))
     }
   } catch (error) {
     Swal.fire({
@@ -247,6 +246,10 @@ const generationsTypes = reactive({ loading: false, items: []})
 const typesLightnings = reactive({ loading: false, items: []})
 const loadingDoors = reactive({ loading: false, items: []})
 const technicalImprovements = reactive({ loading: false, items: []})
+const buildingTypes = reactive({ loading: false, items: []})
+const certifications = reactive({ loading: false, items: []})
+const ownerTypes = reactive({ loading: false, items: []})
+const stages = reactive({ loading: false, items: []})
 
 const allowedTypes = ['image/jpeg', 'image/jpeg', 'image/png', 'application/pdf', 'application/vnd.google-earth.kmz'];
 const handleFiles = (filePrefix, event) => {
@@ -296,6 +299,34 @@ const handleFiles = (filePrefix, event) => {
 
   console.log("Updated files:", building.files);
 };
+
+async function fetchBuildingTypes() {
+  buildingTypes.loading = true
+  const { data } = await API.buildings.getBuildingTypes()
+  buildingTypes.loading = false
+  buildingTypes.items = Object.values(data.data).map(value => ({ value, label: value }))
+}
+
+async function fetchCertifications() {
+  certifications.loading = true
+  const { data } = await API.buildings.getCertfications()
+  certifications.loading = false
+  certifications.items = Object.values(data.data).map(value => ({ value, label: value }))
+}
+
+async function fetchOwnerTypes() {
+  ownerTypes.loading = true
+  const { data } = await API.buildings.getOwnerTypes()
+  ownerTypes.loading = false
+  ownerTypes.items = Object.values(data.data).map(value => ({ value, label: value }))
+}
+
+async function fetchStages() {
+  stages.loading = true
+  const { data } = await API.buildings.getStages()
+  stages.loading = false
+  stages.items = Object.values(data.data).map(value => ({ value, label: value }))
+}
 
 async function fetchBuildingStatuses() {
   statuses.loading = true
@@ -447,7 +478,11 @@ onMounted(async () => {
     fetchBuildingLoadingDoors(),
     fetchBuildingTypesLightnings(),
     fetchBuildingTechnicalImprovements(),
-    fetchBuildingStatuses()
+    fetchBuildingStatuses(),
+    fetchBuildingTypes(),
+    fetchCertifications(),
+    fetchOwnerTypes(),
+    fetchStages(),
   ])
   if (props.buildingId) {
     await fetchBuildingData();
@@ -651,6 +686,7 @@ defineExpose({
                       v-model="building.building_name"
                       label="Building Name *"
                       required
+                      maxlength="255"
                     />
                   </div>
                 </CCol>
@@ -695,6 +731,8 @@ defineExpose({
                       type="number"
                       v-model="building.total_land_sf"
                       :label="`Total Land (${building.sfSm ? 'SM' : 'SF'})`"
+                      min="0"
+                      max="999999999999999999"
                     />
                   </div>
                 </div>
@@ -820,6 +858,7 @@ defineExpose({
               label="Latitude *"
               v-model="building.latitud"
               required
+              maxlength="45"
               />
             </div>
           </div>
@@ -831,6 +870,7 @@ defineExpose({
               label="Longitude *"
               v-model="building.longitud"
               required
+              maxlength="45"
               />
             </div>
           </div>
@@ -1077,7 +1117,7 @@ defineExpose({
                   <div class="mt-2">
                     <label class="form-label">Type *</label>
                     <MASelect
-                      v-model="building.type_generation"
+                      v-model="building.generation"
                       :options="generationsTypes.items"
                       :reduce="option => option.value"
                       label="label"
@@ -1102,13 +1142,6 @@ defineExpose({
                       :value="coverage"
                       label="Coverage (read only)"
                       readonly
-                    />
-                  </div>
-                  <div class="mt-2">
-                    <CFormInput
-                      type="number"
-                      v-model="building.offices_space_sf"
-                      :label="`Offices Space (${building.sfSm ? 'SM' : 'SF'})`"
                     />
                   </div>
                   <div class="mt-2">
@@ -1155,6 +1188,7 @@ defineExpose({
                     <CFormInput
                       v-model="building.roof_system"
                       label="Roof System"
+                      maxlength="45"
                     />
                   </div>
                   <!-- FIRE PROTECTION SYSTEM -->
@@ -1180,18 +1214,6 @@ defineExpose({
                       />
                       <CInputGroupText>%</CInputGroupText>
                     </CInputGroup>
-                  </div>
-                  <div class="mt-2">
-                    <label class="form-label">Above Market TI's</label>
-                    <MASelect
-                      v-model="building.above_market_tis"
-                      :options="technicalImprovements.items"
-                      :reduce="option => option.value"
-                      label="label"
-                      placeholder="Select..."
-                      :loading="technicalImprovements.loading"
-                      multiple
-                    />
                   </div>
                   <div class="mt-2">
                     <label class="form-label">Floor Resistance *</label>
@@ -1227,12 +1249,13 @@ defineExpose({
                       <CFormInput
                         type="number"
                         v-model="building.ventilation"
+                        maxlength="45"
                       />
                       <CInputGroupText>CH/PH</CInputGroupText>
                     </CInputGroup>
                   </div>
                   <div class="mt-2">
-                    <label class="form-label">KVAS</label>
+                    <label class="form-label">Transformer Capacity</label>
                     <CInputGroup>
                       <CFormInput
                         type="number"
@@ -1314,31 +1337,56 @@ defineExpose({
 
                 <!-- Cuarta columna: Switches de características -->
                 <CCol :md="3">
-                  <div class="switches-container">
-                    <!-- CRANE -->
-                    <div class="switch-item">
-                      <label class="switch-label">Crane</label>
-                      <CFormSwitch
-                        size="lg"
-                        v-model="building.has_crane"
-                      />
-                    </div>
-                    <!-- LEED -->
-                    <div class="switch-item">
-                      <label class="switch-label">LEED</label>
-                      <CFormSwitch
-                        size="lg"
-                        v-model="building.has_leed"
-                      />
-                    </div>
-                    <!-- RAIL SPUR -->
-                    <div class="switch-item">
-                      <label class="switch-label">Rail Spur</label>
-                      <CFormSwitch
-                        size="lg"
-                        v-model="building.has_rail_spur"
-                      />
-                    </div>
+                  <div class="mt-2">
+                    <label class="form-label">Building Type *</label>
+                    <MASelect
+                      v-model="building.building_type"
+                      :options="buildingTypes.items"
+                      :reduce="option => option.value"
+                      label="label"
+                      required
+                      placeholder="Select..."
+                      :loading="buildingTypes.loading"
+                    />
+                  </div>
+
+                  <div class="mt-2">
+                    <label class="form-label">Certification *</label>
+                    <MASelect
+                      v-model="building.certifications"
+                      :options="certifications.items"
+                      :reduce="option => option.value"
+                      label="label"
+                      required
+                      placeholder="Select..."
+                      :loading="certifications.loading"
+                    />
+                  </div>
+
+                  <div class="mt-2">
+                    <label class="form-label">Owner Type *</label>
+                    <MASelect
+                      v-model="building.owner_type"
+                      :options="ownerTypes.items"
+                      :reduce="option => option.value"
+                      label="label"
+                      required
+                      placeholder="Select..."
+                      :loading="ownerTypes.loading"
+                    />
+                  </div>
+
+                  <div class="mt-2">
+                    <label class="form-label">Stage *</label>
+                    <MASelect
+                      v-model="building.stage"
+                      :options="stages.items"
+                      :reduce="option => option.value"
+                      label="label"
+                      required
+                      placeholder="Select..."
+                      :loading="stages.loading"
+                    />
                   </div>
                 </CCol>
               </CRow>
