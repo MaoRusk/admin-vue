@@ -110,7 +110,7 @@ watch([columnSorter, columnFilter], fetchReit, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: routeCreate })" v-if="can('reit-annual.create')">
+    <CButton color="primary" @click="$router.push({ name: routeCreate })" v-if="can('reit-annual.create')">
       <CIcon name="cilPlus" size="sm" />
       <span class="text-capitalize"></span>New Reit {{ reitType }}
     </CButton>

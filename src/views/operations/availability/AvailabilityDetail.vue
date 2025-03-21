@@ -338,11 +338,11 @@
 
         <CCol :xs="6">
           <!-- * Para Agregar nuevo -->
-          <CButton color="success" type="submit" variant="outline" v-if="this.id == 0">
+          <CButton color="primary" type="submit" variant="outline" v-if="this.id == 0">
             <CIcon icon="cil-plus" class="me-2" />Add Company
           </CButton>
           <!-- * Para Editar -->
-          <CButton color="success" type="submit" variant="outline" v-else>
+          <CButton color="primary" type="submit" variant="outline" v-else>
             <CIcon icon="cil-pencil" class="me-2" />Update Company
           </CButton>          
           &nbsp;

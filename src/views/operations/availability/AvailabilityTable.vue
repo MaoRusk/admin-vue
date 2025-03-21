@@ -110,7 +110,7 @@
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <CButton color="success" @click="newAvailability()">
+          <CButton color="primary" @click="newAvailability()">
             <CIcon icon="cilCloudUpload" class="me-2" />Upload
           </CButton>
         </CCardBody>

@@ -354,7 +354,7 @@ const updateFunction = async () => {
               </CCol>
               <CCol :md="3">
                 <CButton 
-                  color="success" 
+                  color="primary" 
                   variant="outline" 
                   type="submit"
                   @click="updateFunction"

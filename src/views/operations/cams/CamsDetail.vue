@@ -81,7 +81,7 @@ onMounted(async () => {
         <CRow class="justify-content-center">
           <CCol xs="auto" class="btns-flotantes-customer-moviles">
             <CLoadingButton 
-              color="success" 
+              color="primary" 
               variant="outline" 
               @click="formRef?.submit?.()" 
               class="me-3" 

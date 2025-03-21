@@ -89,7 +89,7 @@ watch([columnSorter, columnFilter], fetchLands, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.LANDS_CREATE })" v-if="can('lands.create')">
+    <CButton color="primary" @click="$router.push({ name: ROUTE_NAMES.LANDS_CREATE })" v-if="can('lands.create')">
       <CIcon name="cilPlus" size="sm" />
       New Land
     </CButton>

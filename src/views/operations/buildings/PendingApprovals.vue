@@ -92,7 +92,7 @@ onMounted(async () => {
     </CCardHeader>
     <CCardBody>
       <CButton
-        color="success"
+        color="primary"
         class="mb-3"
         @click="approveSelected"
         :disabled="selectedItems.length === 0"

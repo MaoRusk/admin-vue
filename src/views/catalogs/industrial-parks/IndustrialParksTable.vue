@@ -4,7 +4,7 @@
       <CCol :xs="12" :xl="10">&nbsp;</CCol>
       <CCol :xs="12" :xl="2">
         <CCardBody>
-          <CButton color="success" @click="newIndustrialPark()">
+          <CButton color="primary" @click="newIndustrialPark()">
             <CIcon icon="cilPlus" class="me-2" />New Industrial Park
           </CButton>
         </CCardBody>

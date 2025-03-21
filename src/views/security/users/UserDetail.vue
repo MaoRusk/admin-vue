@@ -522,7 +522,7 @@ async function createOptionGeneral(field, value) {
               <template v-else>
                 <CButton
                   v-if="can('users.create')"
-                  color="success" 
+                  color="primary" 
                   variant="outline" 
                   type="submit"
                   @click="handleSubmit"

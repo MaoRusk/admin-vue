@@ -469,7 +469,7 @@ watch(() => props.company, (newVal) => {
             <template v-else>
               <div style="display: flex; justify-content: center;padding:1rem">
                 <CButton 
-                color="success" 
+                color="primary" 
                 variant="outline" 
                 type="submit"
                 @click="submitFunction" >Save</CButton>

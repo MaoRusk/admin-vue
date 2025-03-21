@@ -272,7 +272,7 @@ onMounted(() => {
           <div class="row mt-3">
             <div class="col d-flex justify-content-between align-items-center">
               <div>
-                <CButton color="success" type="submit" class="text-white fw-bold me-2">
+                <CButton color="primary" type="submit" class="text-white fw-bold me-2">
                   {{ isEditing ? 'Update' : props.btnTextSubmit }}
                 </CButton>
                 <CButton color="dark" type="reset" class="fw-bold">Cancel</CButton>
