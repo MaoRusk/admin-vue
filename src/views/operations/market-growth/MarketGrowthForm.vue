@@ -70,10 +70,48 @@ async function onSubmit() {
 async function fetchMarketGrowth() {
   try {
     const { data } = await API.marketGrowth.getMarketGrowth(props.marketGrowthId);
-    ['building_id', 'owner_id', 'developer_id', 'builder_id', 'industrial_park_id', 'region_id', 'market_id', 'sub_market_id']
-    .forEach(prop => marketGrowth[prop] = data.data[prop] ? +(data.data[prop]) : '');
-    ['size_sf', 'deal', 'type', 'comments', 'latitude', 'longitude']
-    .forEach(prop => marketGrowth[prop] = data.data[prop] ? `${data.data[prop]}` : '');
+    
+    // Primero asignamos el region_id y cargamos los markets
+    marketGrowth.region_id = data.data.region_id ? +(data.data.region_id) : '';
+    if (marketGrowth.region_id) {
+      await fetchMarkets(marketGrowth.region_id);
+    }
+
+    // Luego asignamos el market_id y cargamos los submarkets
+    marketGrowth.market_id = data.data.market_id ? +(data.data.market_id) : '';
+    if (marketGrowth.market_id) {
+      await fetchSubmarkets(marketGrowth.market_id);
+    }
+
+    // Después asignamos el submarket_id y cargamos los datos dependientes
+    marketGrowth.sub_market_id = data.data.sub_market_id ? +(data.data.sub_market_id) : '';
+    if (marketGrowth.sub_market_id) {
+      await Promise.all([
+        fetchIndustrialParks(marketGrowth.market_id, marketGrowth.sub_market_id),
+        fetchOwners(marketGrowth.market_id, marketGrowth.sub_market_id),
+        fetchDevelopers(marketGrowth.market_id, marketGrowth.sub_market_id),
+        fetchBuilders(marketGrowth.market_id, marketGrowth.sub_market_id),
+      ]);
+    }
+
+    // Finalmente asignamos el industrial_park_id y cargamos los buildings
+    marketGrowth.industrial_park_id = data.data.industrial_park_id ? +(data.data.industrial_park_id) : '';
+    if (marketGrowth.industrial_park_id) {
+      await fetchBuildings(
+        marketGrowth.market_id, 
+        marketGrowth.sub_market_id, 
+        marketGrowth.industrial_park_id
+      );
+    }
+
+    // Asignamos el resto de los valores
+    ['building_id', 'owner_id', 'developer_id', 'builder_id'].forEach(prop => 
+      marketGrowth[prop] = data.data[prop] ? +(data.data[prop]) : ''
+    );
+    
+    ['size_sf', 'deal', 'type', 'comments', 'latitude', 'longitude'].forEach(prop => 
+      marketGrowth[prop] = data.data[prop] ? `${data.data[prop]}` : ''
+    );
     
     if (data.data.start_date) {
       marketGrowth.start_date = dayjs(data.data.start_date).format('YYYY-MM-DD')
@@ -104,10 +142,10 @@ const types = reactive({ loading: false, items: []})
 async function fetchDeals() {
   deals.loading = true
   try {
-    // Valores estáticos para deals
+    // Valores exactos del enum de la BD
     const data = {
-      'SALE': 'Sale',
-      'LEASE': 'Lease',
+      'Sale': 'Sale',
+      'Lease': 'Lease'
     }
     deals.items = Object.entries(data).map(([value, label]) => ({ value, label }))
   } catch (error) {
@@ -120,11 +158,11 @@ async function fetchDeals() {
 async function fetchTypes() {
   types.loading = true
   try {
-    // Valores estáticos para types
+    // Valores exactos del enum de la BD
     const data = {
-      'EXPANSION': 'Expansion',
-      'NEW': 'New',
-      'RELOCATION': 'Relocation'
+      'BTS': 'Build to Suit',
+      'Expansion': 'Expansion',
+      'Inventory': 'Inventory'
     }
     types.items = Object.entries(data).map(([value, label]) => ({ value, label }))
   } catch (error) {
