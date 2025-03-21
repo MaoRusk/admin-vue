@@ -134,17 +134,19 @@ async function fetchTypes() {
   }
 }
 
-async function fetchBuildings(marketId, submarketId) {
+async function fetchBuildings(marketId, submarketId, industrialParkId) {
   buildings.loading = true
   try {
     const { data } = await API.buildings.getBuildings({
       marketId,
       submarketId,
+      industrial_park_id: industrialParkId,
       page: 1,
-      size: 100, // Ajusta según necesites
+      size: 100,
     });
     
     buildings.items = data.data.data
+      .filter(building => building.industrial_park_id === industrialParkId)
       .map(building => ({
         id: building.id,
         name: building.building_name || `Building ${building.id}`,
@@ -254,7 +256,6 @@ watch(() => marketGrowth.market_id, async (newValue) => {
 watch(() => marketGrowth.sub_market_id, async (newValue) => {
   if (newValue) {
     await Promise.all([
-      fetchBuildings(marketGrowth.market_id, newValue),
       fetchIndustrialParks(marketGrowth.market_id, newValue),
       fetchOwners(marketGrowth.market_id, newValue),
       fetchDevelopers(marketGrowth.market_id, newValue),
@@ -266,6 +267,19 @@ watch(() => marketGrowth.sub_market_id, async (newValue) => {
     owners.items = []
     developers.items = []
     builders.items = []
+  }
+})
+
+watch(() => marketGrowth.industrial_park_id, async (newValue) => {
+  if (newValue && marketGrowth.market_id && marketGrowth.sub_market_id) {
+    await fetchBuildings(
+      marketGrowth.market_id, 
+      marketGrowth.sub_market_id, 
+      newValue
+    )
+  } else {
+    buildings.items = []
+    marketGrowth.building_id = ''
   }
 })
 
