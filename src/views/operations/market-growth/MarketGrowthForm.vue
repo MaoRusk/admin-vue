@@ -103,23 +103,63 @@ const types = reactive({ loading: false, items: []})
 
 async function fetchDeals() {
   deals.loading = true
-  const { data } = await API.buildings.getBuildingsTypesDeals();
-  deals.loading = false
-  deals.items = Object.values(data.data).map(value => ({ value, label: value }))
+  try {
+    // Valores estáticos para deals
+    const data = {
+      'SALE': 'Sale',
+      'LEASE': 'Lease',
+    }
+    deals.items = Object.entries(data).map(([value, label]) => ({ value, label }))
+  } catch (error) {
+    console.error('Error setting deals:', error)
+  } finally {
+    deals.loading = false
+  }
 }
 
 async function fetchTypes() {
   types.loading = true
-  const { data } = await API.buildings.getBuildingsTypes();
-  types.loading = false
-  types.items = Object.values(data.data).map(value => ({ value, label: value }))
+  try {
+    // Valores estáticos para types
+    const data = {
+      'EXPANSION': 'Expansion',
+      'NEW': 'New',
+      'RELOCATION': 'Relocation'
+    }
+    types.items = Object.entries(data).map(([value, label]) => ({ value, label }))
+  } catch (error) {
+    console.error('Error setting types:', error)
+  } finally {
+    types.loading = false
+  }
 }
 
 async function fetchBuildings(marketId, submarketId) {
   buildings.loading = true
-  const { data } = await API.buildings.getBuildings({ marketId, submarketId });
-  buildings.loading = false
-  buildings.items = data.data.data.sort((a, b) => a.name.localeCompare(b.name))
+  try {
+    const { data } = await API.buildings.getBuildings({
+      marketId,
+      submarketId,
+      page: 1,
+      size: 100, // Ajusta según necesites
+    });
+    
+    buildings.items = data.data.data
+      .map(building => ({
+        id: building.id,
+        name: building.building_name || `Building ${building.id}`,
+        size_sf: building.building_size_sf,
+        marketName: building.marketName,
+        submarketName: building.submarketName,
+        industrialParkName: building.industrialParkName
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  } catch (error) {
+    console.error('Error fetching buildings:', error);
+    buildings.items = [];
+  } finally {
+    buildings.loading = false;
+  }
 }
 
 async function fetchDevelopers(marketId, submarketId) {
@@ -358,7 +398,7 @@ defineExpose({
       <CCol>
         <CRow>
           <!-- *** BASIC INFORMATION *** -->
-          <CCard class="mb-4">
+          <CCard class="mb-4 p-0">
             <CCardHeader>Basic Information</CCardHeader>
             <CCardBody>
               <div class="row">
@@ -424,7 +464,7 @@ defineExpose({
           </CCard>
 
           <!-- *** LOCATION *** -->
-          <CCard class="mb-4">
+          <CCard class="mb-4 p-0">
             <CCardHeader>Location</CCardHeader>
             <CCardBody>
               <div class="row">
@@ -496,7 +536,11 @@ defineExpose({
                     placeholder="Select..."
                     :loading="buildings.loading"
                     :disabled="!marketGrowth.sub_market_id"
-                  />
+                  >
+                    <template #option="{ name, size_sf, industrialParkName }">
+                      {{ name }} - {{ size_sf }} SF - {{ industrialParkName }}
+                    </template>
+                  </MASelect>
                 </div>
 
                 <div class="col-md-4 mt-2">
@@ -521,7 +565,7 @@ defineExpose({
           </CCard>
 
           <!-- *** PROPERTY DETAILS *** -->
-          <CCard class="mb-4">
+          <CCard class="mb-4 p-0">
             <CCardHeader>Property Details</CCardHeader>
             <CCardBody>
               <div class="row">

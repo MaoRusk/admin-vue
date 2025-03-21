@@ -2,10 +2,10 @@ import httpClient from '../../plugins/axios'
 
 export default {
   getMarketGrowth(marketGrowthId) {
-    return httpClient.get(`/market-growth/${marketGrowthId}`)
+    return httpClient.get(`/market-growths/${marketGrowthId}`)
   },
   getMarketGrowths(query, filters = {}, sorter = {}) {
-    return httpClient.get(`/market-growth`, {
+    return httpClient.get(`/market-growths`, {
       params: {
         page: query?.page || null,
         size: query?.size || null,
@@ -33,7 +33,7 @@ export default {
     latitude,
     longitude,
   }) {
-    return httpClient.post(`/market-growth`, {
+    return httpClient.post(`/market-growths`, {
       building_id,
       owner_id,
       developer_id,
@@ -73,7 +73,7 @@ export default {
       longitude,
     },
   ) {
-    return httpClient.put(`/market-growth/${marketGrowthId}`, {
+    return httpClient.put(`/market-growths/${marketGrowthId}`, {
       building_id,
       owner_id,
       developer_id,
@@ -93,6 +93,12 @@ export default {
     })
   },
   deleteMarketGrowth(marketGrowthId) {
-    return httpClient.delete(`/market-growth/${marketGrowthId}`)
+    return httpClient.delete(`/market-growths/${marketGrowthId}`)
+  },
+  getTypes() {
+    return httpClient.get('/market-growths/types')
+  },
+  getDeals() {
+    return httpClient.get('/market-growths/deals')
   },
 } 

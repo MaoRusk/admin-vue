@@ -54,7 +54,7 @@ defineExpose({
               class="me-3" 
               :loading="submittingForm" 
               :disabled="disabledSave"
-              v-if="can('market-growth.create', 'market-growth.update')"
+              v-if="can('market-growths.create', 'market-growths.update')"
             >
               <CIcon name="cilSave" size="sm" /> Save
             </CLoadingButton>
@@ -73,21 +73,3 @@ defineExpose({
     />
   </div>
 </template>
-
-<style scoped>
-.container-btn-flotante {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  margin: 0;
-  background-color: white;
-}
-
-.btns-flotantes-customer-moviles {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-</style> 

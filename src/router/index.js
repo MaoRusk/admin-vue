@@ -352,19 +352,21 @@ const routes = [
             path: 'market-growth',
             name: ROUTE_NAMES.MARKET_GROWTH_INDEX,
             component: () => import('@/views/operations/market-growth/MarketGrowthIndex.vue'),
-            meta: { requiredPermission: 'market-growth.index' },
+            meta: { requiredPermission: 'market-growths.index' },
           },
           {
             path: 'market-growth/create',
             name: ROUTE_NAMES.MARKET_GROWTH_CREATE,
             component: () => import('@/views/operations/market-growth/MarketGrowthDetail.vue'),
-            meta: { requiredPermission: 'market-growth.create' },
+            meta: { requiredPermission: 'market-growths.create' },
           },
           {
             path: 'market-growth/:marketGrowthId/edit',
             name: ROUTE_NAMES.MARKET_GROWTH_UPDATE,
             component: () => import('@/views/operations/market-growth/MarketGrowthDetail.vue'),
-            meta: { requiredPermission: ['market-growth.update', 'market-growth.show'] },
+            meta: { 
+              requiredPermission: ['market-growths.update', 'market-growths.show'] 
+            }
           },
         ],
       },

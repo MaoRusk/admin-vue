@@ -31,7 +31,13 @@ const columns = [
   { key: 'marketName', label: 'Market' },
   { key: 'submarketName', label: 'Submarket' },
   { key: 'industrialParkName', label: 'Industrial Park' },
-  { key: 'actions', label: 'actions', sorter: false, filter: false },
+  { 
+    key: 'actions', 
+    label: 'Actions', 
+    sorter: false, 
+    filter: false,
+    _style: { width: '1%' }  // Para que la columna de acciones sea más pequeña
+  },
 ];
 
 async function removeMarketGrowth(id) {
@@ -65,16 +71,25 @@ async function fetchMarketGrowths() {
       search: tableSearch.value,
     }, columnFilter.value, columnSorter.value);
     
-    page.value = data.data.current_page
-    totalItems.value = data.data.total
-    totalPages.value = data.data.last_page
+    console.log('Response data:', data);
 
-    marketGrowths.value = data.data.data.map((item) => ({
-      ...item,
-      marketName: item.market?.name || '-',
-      submarketName: item.sub_market?.name || '-',
-      industrialParkName: item.industrial_park?.name || '-',
-    }))
+    // Si data es directamente el array de resultados
+    page.value = data.current_page || 1;
+    totalItems.value = data.total || 0;
+    totalPages.value = data.last_page || 0;
+
+    if (Array.isArray(data.data)) {
+      marketGrowths.value = data.data.map((item) => ({
+        ...item,
+        marketName: item?.market?.name || '-',
+        submarketName: item?.sub_market?.name || '-',
+        industrialParkName: item?.industrial_park?.name || '-',
+      }));
+    } else {
+      marketGrowths.value = [];
+    }
+
+    console.log('Processed market growths:', marketGrowths.value);
   } catch (error) {
     console.error('Error fetching market growths:', error);
     marketGrowths.value = [];
@@ -84,6 +99,7 @@ async function fetchMarketGrowths() {
 }
 
 onMounted(() => {
+  console.log('Component mounted');
   fetchMarketGrowths();
 });
 
@@ -93,55 +109,56 @@ watch([columnSorter, columnFilter], fetchMarketGrowths, { deep: true })
 
 <template>
   <div class="d-flex justify-content-end mb-3">
-    <CButton color="success" @click="$router.push({ name: ROUTE_NAMES.MARKET_GROWTH_CREATE })" v-if="can('market-growth.create')">
+    <CButton 
+      color="success" 
+      @click="$router.push({ name: ROUTE_NAMES.MARKET_GROWTH_CREATE })" 
+      v-if="can('market-growths.create')"
+    >
       <CIcon name="cilPlus" size="sm" />
       New Market Growth
     </CButton>
   </div>
+
   <CSmartTable
-    :pagination="{ external: true }"
-    :column-filter="{ external: true }"
-    :column-sorter="{ external: true }"
-    :table-filter="{ external: true }"
     :loading="loading"
     :items="marketGrowths"
+    :columns="columns"
+    :pagination="{ external: true }"
     :paginationProps="{
       activePage: page,
       pages: totalPages
     }"
-    :columns="columns"
+    :items-per-page="itemsPerPage"
+    :column-filter="{ external: true }"
+    :column-sorter="{ external: true }"
+    :table-filter="{ external: true }"
     cleaner
     footer
     header
     items-per-page-select
-    :items-per-page="itemsPerPage"
     :table-props="{
       hover: true,
       striped: true,
       responsive: true,
     }"
-    @active-page-change="(_activePage) => {
-      page = _activePage
-    }"
+    @active-page-change="(_activePage) => page = _activePage"
     @items-per-page-change="(_itemsPerPage) => {
-      activePage = 1
+      page = 1
       itemsPerPage = _itemsPerPage
       storage.setItem(MARKET_GROWTH_ITEMS_PER_PAGE, _itemsPerPage)
     }"
-    @sorter-change="(sorter) => {
-      columnSorter = sorter
-    }"
+    @sorter-change="(sorter) => columnSorter = sorter"
     @table-filter-change="(filter) => {
-      activePage = 1
+      page = 1
       tableSearch = filter
     }"
     @column-filter-change="(filter) => {
-      activePage = 1
+      page = 1
       columnFilter = filter
     }"
     clickable-rows
     @row-click="item => {
-      if (can('market-growth.update', 'market-growth.show')) {
+      if (can('market-growths.update', 'market-growths.show')) {
         $router.push({ name: ROUTE_NAMES.MARKET_GROWTH_UPDATE, params: { marketGrowthId: item.id } })
       }
     }"
@@ -149,14 +166,22 @@ watch([columnSorter, columnFilter], fetchMarketGrowths, { deep: true })
     <template #actions="{ item }">
       <td style="vertical-align: middle;">
         <div class="d-flex gap-1">
-          <CButton color="danger" variant="outline" square size="sm" @click.stop="removeMarketGrowth(item.id)" v-if="can('market-growth.destroy')">
+          <CButton 
+            color="danger" 
+            variant="outline" 
+            square 
+            size="sm" 
+            @click.stop="removeMarketGrowth(item.id)" 
+            v-if="can('market-growths.destroy')"
+          >
             <CIcon name="cilTrash" size="sm" />
           </CButton>
         </div>
       </td>
     </template>
   </CSmartTable>
+
   <div>
-    Total records {{ totalItems }}
+    Total records: {{ totalItems }}
   </div>
 </template> 
