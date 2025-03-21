@@ -124,7 +124,7 @@ export default {
       },
       availablePermissions: [],
       selectedPermissions: [],
-      actions: ['index', 'show', 'create', 'update', 'destroy'],
+      actions: [],
       errors: {
         name: '',
         permissions: ''
@@ -158,13 +158,36 @@ export default {
   },
   methods: {
     ...mapActions(useAuthStore, ['can', 'setUser']),
+    extractUniqueActions() {
+      const actionSet = new Set()
+      this.availablePermissions.forEach(permission => {
+        const [, action] = permission.name.split('.')
+        if (action) {
+          actionSet.add(action)
+        }
+      })
+      this.actions = Array.from(actionSet).sort()
+    },
     formatResourceName(resource) {
       return resource.charAt(0).toUpperCase() + resource.slice(1)
     },
     formatActionName(action) {
-      if (action === 'index') return 'List'
-      if (action === 'destroy') return 'Delete'
-      return action.charAt(0).toUpperCase() + action.slice(1)
+      const specialCases = {
+        'index': 'List',
+        'destroy': 'Delete',
+        'approve': 'Approve',
+        'draft': 'Draft',
+        'uploadFiles': 'Upload Files'
+      }
+      
+      if (specialCases[action]) {
+        return specialCases[action]
+      }
+      
+      return action
+        .split(/(?=[A-Z])/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
     },
     hasPermission(resource, action) {
       return this.availablePermissions.some(p => p.name === `${resource}.${action}`)
@@ -383,11 +406,11 @@ export default {
   },
   async created() {
     try {
-      // Primero cargar todos los permisos disponibles
       const permissionsResponse = await PermissionsService.getPermissions()
       this.availablePermissions = permissionsResponse.data.data || []
       
-      // Luego cargar el rol si estamos editando
+      this.extractUniqueActions()
+      
       if (!this.isNew) {
         const roleResponse = await RolesService.getRole(this.id)
         if (roleResponse.data.data) {
@@ -396,7 +419,6 @@ export default {
             name,
             permissions: permissions || []
           }
-          // Inicializar los permisos seleccionados
           this.selectedPermissions = [...permissions]
         }
       }
